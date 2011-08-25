@@ -50,6 +50,7 @@
     <Compile Include="BitSplitter.cs" />
     <Compile Include="CRYFORCE.cs" />
     <Compile Include="EcdhP521.cs" />
+    <Compile Include="IN2ition.cs" />
     <Compile Include="ProgressChangedArg.cs" />
     <Compile Include="Test\BitSplitterTest.cs" />
     <Compile Include="Test\EcdhP521Test.cs" />
