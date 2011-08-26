@@ -3,7 +3,7 @@ using System.Linq;
 
 using NUnit.Framework;
 
-namespace CRYFORCE.Engine
+namespace CRYFORCE.Engine.Test
 {
 	[TestFixture]
 	public class BitSplitterTest

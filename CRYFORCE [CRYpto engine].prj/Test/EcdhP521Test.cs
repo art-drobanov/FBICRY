@@ -4,7 +4,7 @@ using System.Text;
 
 using NUnit.Framework;
 
-namespace CRYFORCE.Engine
+namespace CRYFORCE.Engine.Test
 {
 	[TestFixture]
 	public class EcdhP521Test
