@@ -18,26 +18,31 @@ namespace CRYFORCE.Engine
 	/// заменено другим, оно выделяется заглавными буквами (в опциональном поле текстового вывода).</remarks>
 	class IN2ition
 	{
-		/// <summary>
-		/// Получение бита из байта в байтовой форме
-		/// </summary>
-		/// <param name="data">Байт данных.</param>
-		/// <param name="bitIdx">Индекс выделяемого бита.</param>
-		/// <returns>Бит в байтовой форме.</returns>
-		public byte GetBit(byte data, int bitIdx)
-		{
-			return (byte)((data >> bitIdx) & 0x01);
-		}
+		#region Static
+		#endregion Static
 
-		/// <summary>
-		/// Установка бита в байте
-		/// </summary>
-		/// <param name="data">Байт данных.</param>
-		/// <param name="bitIdx">Индекс устанавливаемого бита.</param>
-		/// <param name="bitValue">Значение устанавливаемого бита.</param>
-		public void SetBit(ref byte data, int bitIdx, byte bitValue)
-		{
-			data = (byte)((((0x01 << bitIdx) ^ 0xFF) & data) | ((bitValue & 0x01) << bitIdx));
-		}
+		#region Constants
+		#endregion Constants
+
+		#region Data
+		#endregion Data
+
+		#region Events
+		#endregion Events
+
+		#region .ctor
+		#endregion .ctor
+
+		#region Properties
+		#endregion Properties
+
+		#region Private
+		#endregion Private
+
+		#region Protected
+		#endregion Protected
+
+		#region Public
+		#endregion Public
 	}
 }

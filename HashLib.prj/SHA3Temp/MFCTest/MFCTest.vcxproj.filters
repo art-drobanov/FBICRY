@@ -1,0 +1,63 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClInclude Include="Blake.h" />
+    <ClInclude Include="BlakeTest.h" />
+    <ClInclude Include="JH.h" />
+    <ClInclude Include="JH-org.h" />
+    <ClInclude Include="JHTest.h" />
+    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="Stopwatch.h" />
+    <ClInclude Include="TestBase.h" />
+    <ClInclude Include="Blake-org.h" />
+    <ClInclude Include="BlueMidnightWish-org.h" />
+    <ClInclude Include="BlueMidnightWish.h" />
+    <ClInclude Include="BlueMidnightWishTest.h" />
+    <ClInclude Include="CubeHash-org.h" />
+    <ClInclude Include="CubeHashTest.h" />
+    <ClInclude Include="CubeHash.h" />
+    <ClInclude Include="EchoTest.h" />
+    <ClInclude Include="Echo-org.h" />
+    <ClInclude Include="Echo.h" />
+    <ClInclude Include="Fugue-org.h" />
+    <ClInclude Include="FugueTest.h" />
+    <ClInclude Include="Fugue.h" />
+    <ClInclude Include="Groestl-org.h" />
+    <ClInclude Include="Groestl.h" />
+    <ClInclude Include="GroestlTest.h" />
+    <ClInclude Include="HamsiTest.h" />
+    <ClInclude Include="Hamsi-org.h" />
+    <ClInclude Include="Hamsi.h" />
+    <ClInclude Include="Keccak-org.h" />
+    <ClInclude Include="KeccakTest.h" />
+    <ClInclude Include="Keccak.h" />
+    <ClInclude Include="LuffaTest.h" />
+    <ClInclude Include="Luffa-org.h" />
+    <ClInclude Include="Luffa.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="MFCTest.cpp" />
+    <ClCompile Include="stdafx.cpp" />
+    <ClCompile Include="Blake.cpp" />
+    <ClCompile Include="Blake-org.cpp" />
+    <ClCompile Include="BlueMidnightWish-org.cpp" />
+    <ClCompile Include="BlueMidnightWish.cpp" />
+    <ClCompile Include="CubeHash-org.cpp" />
+    <ClCompile Include="CubeHash.cpp" />
+    <ClCompile Include="Echo-org.cpp" />
+    <ClCompile Include="Echo.cpp" />
+    <ClCompile Include="Fugue-org.cpp" />
+    <ClCompile Include="Fugue.cpp" />
+    <ClCompile Include="Fugue256.cpp" />
+    <ClCompile Include="Fugue512.cpp" />
+    <ClCompile Include="Fugue384.cpp" />
+    <ClCompile Include="Groestl-org.cpp" />
+    <ClCompile Include="Groestl.cpp" />
+    <ClCompile Include="Hamsi-org.cpp" />
+    <ClCompile Include="Hamsi.cpp" />
+    <ClCompile Include="Keccak-org.cpp" />
+    <ClCompile Include="Keccak.cpp" />
+    <ClCompile Include="Luffa-org.cpp" />
+    <ClCompile Include="Luffa.cpp" />
+  </ItemGroup>
+</Project>

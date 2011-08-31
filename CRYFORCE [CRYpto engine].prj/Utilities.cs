@@ -231,5 +231,27 @@ namespace CRYFORCE.Engine
 			// Возвращаем результат
 			return fileNames;
 		}
+
+		/// <summary>
+		/// Получение бита из байта в байтовой форме
+		/// </summary>
+		/// <param name="data">Байт данных.</param>
+		/// <param name="bitIdx">Индекс выделяемого бита.</param>
+		/// <returns>Бит в байтовой форме.</returns>
+		public static byte GetBit(byte data, int bitIdx)
+		{
+			return (byte)((data >> bitIdx) & 0x01);
+		}
+
+		/// <summary>
+		/// Установка бита в байте
+		/// </summary>
+		/// <param name="data">Байт данных.</param>
+		/// <param name="bitIdx">Индекс устанавливаемого бита.</param>
+		/// <param name="bitValue">Значение устанавливаемого бита.</param>
+		public static void SetBit(ref byte data, int bitIdx, byte bitValue)
+		{
+			data = (byte)((((0x01 << bitIdx) ^ 0xFF) & data) | ((bitValue & 0x01) << bitIdx));
+		}
 	}
 }

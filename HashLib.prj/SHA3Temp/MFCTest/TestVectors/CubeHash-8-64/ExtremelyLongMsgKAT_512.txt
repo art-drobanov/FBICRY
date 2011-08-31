@@ -1,0 +1,7 @@
+# ExtremelyLongMsgKAT_512.txt
+# Algorithm Name: CubeHash
+# Principal Submitter: Daniel J. Bernstein
+
+Repeat = 16777216
+Text = abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghijklmnhijklmno
+MD = BF017F49FD879CB2F8427551FB654B5BBB616E91F1F5CCC1097B5EBF781F6BFD4A6C7777435DF1E0B136BC3B46C089916E9507713E1DF17AEF40616B49D9E9A0

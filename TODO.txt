@@ -1,3 +1,1 @@
-1) Проверить безопасность использования DateTime.Now.Ticks.GetHashCode();
-2) "Reading binary data in C#.htm"
-3) Реализовать статический класс RandomDataProvider
+п»ї1) Р РµР°Р»РёР·РѕРІР°С‚СЊ СЃС‚Р°С‚РёС‡РµСЃРєРёР№ РєР»Р°СЃСЃ RandomDataProvider
