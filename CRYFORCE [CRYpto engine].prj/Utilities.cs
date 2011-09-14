@@ -119,7 +119,7 @@ namespace CRYFORCE.Engine
 				//...и обновляем прогресс...
 				if(progressChanged != null)
 				{
-					progressChanged(null, new EventArgs_Generic<ProgressChangedArg>(new ProgressChangedArg((nIter / (double)nIters) * 100, "WipeStream")));
+					progressChanged(null, new EventArgs_Generic<ProgressChangedArg>(new ProgressChangedArg("WipeStream", (nIter / (double)nIters) * 100)));
 				}
 
 				// Учитываем произведенную итерацию
@@ -162,6 +162,37 @@ namespace CRYFORCE.Engine
 
 				//...закрывая затем файловый поток
 				bs.Close();
+			}
+		}
+
+		/// <summary>
+		/// Подготовка выходного потока к работе
+		/// </summary>
+		/// <param name="progressChanged">Событие обновления прогресса обработки.</param>
+		/// <param name="fileName">Имя файла.</param>
+		/// <param name="bufferSizePerStream">Размер буфера на файловый поток.</param>
+		/// <param name="zeroOut">Затирать выходной поток нулями?</param>
+		/// <param name="workInMemory"></param>
+		/// <param name="rndSeed">Инициализирующее значение генератора случайных чисел.</param>
+		public static Stream PrepareOutputStream(EventHandler<EventArgs_Generic<ProgressChangedArg>> progressChanged,
+		                                         string fileName, int bufferSizePerStream, bool zeroOut, bool workInMemory, int rndSeed = int.MinValue)
+		{
+			// Если работаем не в ОЗУ...
+			if(!workInMemory)
+			{
+				//...если указанный временный файл уже существует...
+				if(File.Exists(fileName))
+				{
+					//...затираем файл, с которым планируется работать...
+					WipeFile(progressChanged, fileName, bufferSizePerStream, zeroOut, rndSeed);
+				}
+
+				//...и создаем файловый поток с требуемым именем
+				return new BufferedStream(new FileStream(fileName, FileMode.Create, FileAccess.ReadWrite, FileShare.None), bufferSizePerStream);
+			}
+			else
+			{
+				return new MemoryStream();
 			}
 		}
 

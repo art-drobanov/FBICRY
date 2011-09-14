@@ -7,23 +7,23 @@ namespace CRYFORCE.Engine
 		/// <summary>
 		/// Конструктор аргумента обработчика события "Изменение прогресса процесса"
 		/// </summary>
-		/// <param name="processProgress">Прогресс процесса.</param>
 		/// <param name="processDescription">Описание процесса.</param>
+		/// <param name="processProgress">Прогресс процесса.</param>
 		/// <param name="messageClassId">Класс сообщения.</param>
-		public ProgressChangedArg(double processProgress, string processDescription, long messageClassId = 0)
-		{
-			ProcessProgress = processProgress;
+		public ProgressChangedArg(string processDescription, double processProgress, long messageClassId = 0)
+		{			
 			ProcessDescription = processDescription;
+			ProcessProgress = processProgress;
 			MessageClassId = messageClassId;
 			MessageGuid = Guid.NewGuid();
 		}
 
-		/// <summary>Прогресс процесса.</summary>
-		public readonly double ProcessProgress;
-
 		/// <summary>Описание процесса.</summary>
 		public readonly string ProcessDescription;
 
+		/// <summary>Прогресс процесса.</summary>
+		public readonly double ProcessProgress;
+		
 		/// <summary>Класс сообщения.</summary>
 		public readonly long MessageClassId;
 

@@ -122,51 +122,20 @@ namespace CRYFORCE.Engine
 		/// </summary>
 		/// <param name="workInMemory">Работаем в ОЗУ?</param>
 		public void Initialize(bool workInMemory = true)
-		{
+		{			
+			WorkInMemory = workInMemory;
+			
+			// Выделяем память под массив битовых потоков
+			_bitStreams = WorkInMemory ? (Stream[])new MemoryStream[NBITS] : (Stream[])new BufferedStream[NBITS];
+
 			// Генерируем случайные имена файлов...
-			_bitStreamsNames = Utilities.GetRandomFilenames(NBITS, NBITS, RndSeed);
-			_bitStreamsNames = _bitStreamsNames.Select(item => item + ".jpg").ToArray();
+			_bitStreamsNames = Utilities.GetRandomFilenames(NBITS, NBITS, RndSeed).Select(item => item + ".jpg").ToArray();
 
-			// Если работаем не в ОЗУ...
-			if(!workInMemory)
+			// ...для всех потоков...
+			for(int i = 0; i < _bitStreams.Length; i++)
 			{
-				// Создаем массив буферизированных потоков...
-				_bitStreams = new BufferedStream[NBITS];
-
-				// Для всех потоков...
-				for(int i = 0; i < _bitStreams.Length; i++)
-				{
-					//...если указанный временный файл уже существует...
-					if(File.Exists(_bitStreamsNames[i]))
-					{
-						//...для того, чтобы повысить вероятность успешного удаления файла, устанавливаем нормальные атрибуты...
-						File.SetAttributes(_bitStreamsNames[i], FileAttributes.Normal);
-
-						//...стираем его содержимое...
-						_bitStreams[i] = new BufferedStream(new FileStream(_bitStreamsNames[i], FileMode.Open, FileAccess.ReadWrite, FileShare.None), BufferSizePerStream);
-						Utilities.WipeStream(ProgressChanged, _bitStreams[i], BufferSizePerStream, 0, _bitStreams[i].Length, ZeroOut);
-
-						//...и, затем, удаляем его
-						File.Delete(_bitStreamsNames[i]);
-					}
-
-					// Создаем файловый поток с требуемым именем...
-					_bitStreams[i] = new BufferedStream(new FileStream(_bitStreamsNames[i], FileMode.Create, FileAccess.ReadWrite, FileShare.None), BufferSizePerStream);
-				}
-			}
-			else // Если работаем в ОЗУ...
-			{
-				// Если работаем в ОЗУ - затираем потоки нулями
-				ZeroOut = true;
-
-				// ...создаем массив потоков в памяти
-				_bitStreams = new MemoryStream[NBITS];
-
-				// Для всех потоков...
-				for(int i = 0; i < _bitStreams.Length; i++)
-				{
-					_bitStreams[i] = new MemoryStream();
-				}
+				//...готовим их к работе...
+				_bitStreams[i] = Utilities.PrepareOutputStream(ProgressChanged, _bitStreamsNames[i], BufferSizePerStream, ZeroOut, WorkInMemory, RndSeed);
 			}
 
 			// Указываем, что инициализация прошла успешно
@@ -265,6 +234,10 @@ namespace CRYFORCE.Engine
 			{
 				bytesIn[i] = bytesOut[i] = 0x00;
 			}
+
+			// Устанавливаем потоки на начальные позиции...
+			inputStream.Seek(0, SeekOrigin.Begin);
+			outputStream.Seek(0, SeekOrigin.Begin);
 
 			// Синхронизируем буфер с физическим носителем...
 			outputStream.Flush();
@@ -395,6 +368,10 @@ namespace CRYFORCE.Engine
 			{
 				bytesIn[i] = bytesOut[i] = 0x00;
 			}
+
+			// Устанавливаем потоки на начальные позиции...
+			inputStream.Seek(0, SeekOrigin.Begin);
+			outputStream.Seek(0, SeekOrigin.Begin);
 
 			// Синхронизируем буфер с физическим носителем...
 			outputStream.Flush();
