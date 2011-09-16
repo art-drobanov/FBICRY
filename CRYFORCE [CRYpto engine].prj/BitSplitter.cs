@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -27,9 +28,6 @@ namespace CRYFORCE.Engine
 		/// <summary>Битовые потоки.</summary>
 		private Stream[] _bitStreams;
 
-		/// <summary>Имена битовых потоков.</summary>
-		private string[] _bitStreamsNames;
-
 		#endregion Data
 
 		#region Events
@@ -44,31 +42,30 @@ namespace CRYFORCE.Engine
 		#region .ctor
 
 		/// <summary>
-		/// Конструктор по-умолчанию
+		/// Конструктор с параметрами
 		/// </summary>
-		public BitSplitter()
+		/// <param name="workInMemory">Работать в ОЗУ?</param>
+		public BitSplitter(bool workInMemory = false)
 		{
-			DirectMode = true;
-			WorkInMemory = false;
 			BufferSizePerStream = 16 * 1024 * 1024; // 16 мегабайт
 			RndSeed = DateTime.Now.Ticks.GetHashCode();
 
-			// Работа в ОЗУ
-			Initialize(true);
+			// Работаем так, как желает пользователь
+			Initialize(CryforceUtilities.GetRandomFilenames(NBITS, NBITS, RndSeed).Select(item => item + ".jpg").ToArray(), workInMemory);
 		}
 
 		/// <summary>
 		/// Конструктор с параметрами
 		/// </summary>
+		/// <param name="bitStreamsNames">Имена битовых потоков.</param>
 		/// <param name="workInMemory">Работать в ОЗУ?</param>
-		public BitSplitter(bool workInMemory = true)
+		public BitSplitter(IEnumerable<string> bitStreamsNames, bool workInMemory = false)
 		{
-			WorkInMemory = workInMemory;
 			BufferSizePerStream = 16 * 1024 * 1024; // 16 мегабайт
 			RndSeed = DateTime.Now.Ticks.GetHashCode();
 
 			// Работаем так, как желает пользователь
-			Initialize(workInMemory);
+			Initialize(bitStreamsNames, workInMemory);
 		}
 
 		/// <summary>
@@ -77,7 +74,7 @@ namespace CRYFORCE.Engine
 		public void Dispose()
 		{
 			// Очищаем секретные данные
-			Clear();
+			ClearAndClose();
 
 			// Финализатор для данного объекта не запускать!
 			GC.SuppressFinalize(this);
@@ -87,14 +84,11 @@ namespace CRYFORCE.Engine
 
 		#region Properties
 
-		/// <summary>Используется прямое направление преобразования?</summary>
-		public bool DirectMode { get; private set; }
-
 		/// <summary>Работаем в ОЗУ?</summary>
-		public bool WorkInMemory { get; private set; }
+		public bool WorkInMemory { get; set; }
 
 		/// <summary>Размер буфера в ОЗУ под каждый поток.</summary>
-		public int BufferSizePerStream { get; private set; }
+		public int BufferSizePerStream { get; set; }
 
 		/// <summary>Инициализирующее значение генератора случайных чисел.</summary>
 		public int RndSeed { get; set; }
@@ -105,10 +99,13 @@ namespace CRYFORCE.Engine
 		/// <summary>Экземпляр класса инициализирован?</summary>
 		public bool IsInitialized { get; private set; }
 
+		/// <summary>Имена битовых потоков.</summary>
+		public string[] BitStreamsNames { get; private set; }
+		
 		#endregion Properties
 
 		#region Private
-
+	
 		#endregion Private
 
 		#region Protected
@@ -120,22 +117,27 @@ namespace CRYFORCE.Engine
 		/// <summary>
 		/// Инициализация экземпляра класса
 		/// </summary>
-		/// <param name="workInMemory">Работаем в ОЗУ?</param>
-		public void Initialize(bool workInMemory = true)
-		{			
+		/// <param name="bitStreamsNames">Имена битовых потоков.</param>
+		/// <param name="workInMemory">Работать в ОЗУ?</param>
+		public void Initialize(IEnumerable<string> bitStreamsNames, bool workInMemory = false)
+		{
+			if(bitStreamsNames.Count() < NBITS)
+			{
+				throw new Exception("BitSplitter::Initialize() ==> bitStreamsNames count is too small!");
+			}
+
+			BitStreamsNames = bitStreamsNames.ToArray();
+
 			WorkInMemory = workInMemory;
 			
 			// Выделяем память под массив битовых потоков
 			_bitStreams = WorkInMemory ? (Stream[])new MemoryStream[NBITS] : (Stream[])new BufferedStream[NBITS];
 
-			// Генерируем случайные имена файлов...
-			_bitStreamsNames = Utilities.GetRandomFilenames(NBITS, NBITS, RndSeed).Select(item => item + ".jpg").ToArray();
-
 			// ...для всех потоков...
 			for(int i = 0; i < _bitStreams.Length; i++)
 			{
 				//...готовим их к работе...
-				_bitStreams[i] = Utilities.PrepareOutputStream(ProgressChanged, _bitStreamsNames[i], BufferSizePerStream, ZeroOut, WorkInMemory, RndSeed);
+				_bitStreams[i] = CryforceUtilities.PrepareOutputStream(ProgressChanged, BitStreamsNames[i], BufferSizePerStream, ZeroOut, WorkInMemory, RndSeed);
 			}
 
 			// Указываем, что инициализация прошла успешно
@@ -149,6 +151,11 @@ namespace CRYFORCE.Engine
 		/// <param name="outputStream">Выходной поток.</param>
 		public void SplitToBitstream(Stream inputStream, Stream outputStream)
 		{
+			if(!IsInitialized)
+			{
+				throw new Exception("BitSplitter::SplitToBitstream() ==> BitSplitter is not initialized!");
+			}
+		
 			// Исходный,...
 			inputStream.Seek(0, SeekOrigin.Begin);
 
@@ -250,6 +257,11 @@ namespace CRYFORCE.Engine
 		/// <param name="outputStream">Выходной поток.</param>
 		public void UnsplitFromBitstream(Stream inputStream, Stream outputStream)
 		{
+			if(!IsInitialized)
+			{
+				throw new Exception("BitSplitter::UnsplitFromBitstream() ==> BitSplitter is not initialized!");
+			}
+
 			// Исходный,...
 			inputStream.Seek(0, SeekOrigin.Begin);
 
@@ -383,7 +395,7 @@ namespace CRYFORCE.Engine
 		/// <param name="bytesIn">Исходный набор байт.</param>
 		/// <param name="bytesOut">Массив "битовых" байт.</param>
 		/// <returns>Массив "битовых" байт.</returns>
-		public void Split8Bytes(byte[] bytesIn, byte[] bytesOut)
+		public static void Split8Bytes(byte[] bytesIn, byte[] bytesOut)
 		{
 			// Каждый i-ый байт выходного потока формируется из i-ых бит
 			for(int i = 0; i < NBITS; i++)
@@ -412,13 +424,37 @@ namespace CRYFORCE.Engine
 		/// <param name="zeroOut">Затирать выходной поток нулями?</param>
 		public void Clear(int rndSeed, bool zeroOut)
 		{
+			// Производим стирание данных потоков, чтобы было невозможным восстановление) при помощи программных средств
+			foreach(Stream bitStream in _bitStreams)
+			{
+				CryforceUtilities.WipeStream(ProgressChanged, bitStream, BufferSizePerStream, 0, bitStream.Length, zeroOut, rndSeed);
+			}		
+		}
+
+		/// <summary>
+		/// Очистка конфиденциальных данных (с закрытием потоков и удалением временных файлов)
+		/// </summary>
+		public void ClearAndClose()
+		{
 			// Указываем на деинициализацию
 			IsInitialized = false;
 
 			// Производим стирание данных потоков, чтобы было невозможным восстановление) при помощи программных средств
 			foreach(Stream bitStream in _bitStreams)
 			{
-				Utilities.WipeStream(ProgressChanged, bitStream, BufferSizePerStream, 0, bitStream.Length, zeroOut, rndSeed);
+				CryforceUtilities.WipeStream(ProgressChanged, bitStream, BufferSizePerStream, 0, bitStream.Length, ZeroOut, RndSeed);
+				bitStream.Flush();
+				bitStream.Close();
+			}
+
+			// Производим удаление носителей
+			foreach(string bitStreamsName in BitStreamsNames)
+			{
+				if(File.Exists(bitStreamsName))
+				{
+					File.SetAttributes(bitStreamsName, FileAttributes.Normal);
+					File.Delete(bitStreamsName);
+				}
 			}
 		}
 

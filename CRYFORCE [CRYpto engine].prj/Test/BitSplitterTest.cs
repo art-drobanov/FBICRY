@@ -34,9 +34,6 @@ namespace CRYFORCE.Engine.Test
 
 			try
 			{
-				// Создаем экземпляр класса для тестирования
-				var bitSplitter = new BitSplitter();
-
 				// Метод тестирования - даем 255 в очередной позиции, и после разбиения на биты
 				// должны получить в выходном массиве степень двойки, соотв. позиции 255 в массиве
 				for(int i = 0; i < 8; i++)
@@ -47,7 +44,7 @@ namespace CRYFORCE.Engine.Test
 
 					b1[i] = 0xFF;
 
-					bitSplitter.Split8Bytes(b1, b2);
+					BitSplitter.Split8Bytes(b1, b2);
 					
 					// Вычисляем ожидаемое значение в позициях байт после разбиения...
 					var expectedValue = (byte)(1 << i);
@@ -60,7 +57,7 @@ namespace CRYFORCE.Engine.Test
 						}
 					}
 
-					bitSplitter.Split8Bytes(b2, b3);
+					BitSplitter.Split8Bytes(b2, b3);
 
 					if(!b1.SequenceEqual(b3))
 					{

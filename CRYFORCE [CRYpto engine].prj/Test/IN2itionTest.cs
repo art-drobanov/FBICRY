@@ -48,7 +48,7 @@ namespace CRYFORCE.Engine.Test
 						if(nBitMaskItem == bitIdx)
 						{
 							//...должны получать единицу только там, где она есть...
-							if(Utilities.GetBit(bitMaskItem, nBitMaskItem) != 0x01)
+							if(CryforceUtilities.GetBit(bitMaskItem, nBitMaskItem) != 0x01)
 							{
 								throw new InvalidDataException("IN2itionBitTest: Wrong GetBit()!");
 							}
@@ -56,7 +56,7 @@ namespace CRYFORCE.Engine.Test
 						else
 						{
 							//...и нули только там, где они есть
-							if(Utilities.GetBit(bitMaskItem, nBitMaskItem) != 0x00)
+							if(CryforceUtilities.GetBit(bitMaskItem, nBitMaskItem) != 0x00)
 							{
 								throw new InvalidDataException("IN2itionBitTest: Wrong GetBit()!");
 							}
@@ -64,7 +64,7 @@ namespace CRYFORCE.Engine.Test
 					}
 					
 					// Накапливаем биты в приемнике
-					Utilities.SetBit(ref target, bitIdx, 0x01);
+					CryforceUtilities.SetBit(ref target, bitIdx, 0x01);
 
 					bitIdx++;
 				}

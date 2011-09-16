@@ -5,8 +5,39 @@ using EventArgsUtilities;
 
 namespace CRYFORCE.Engine
 {
-	public static class Utilities
+	public static class CryforceUtilities
 	{
+		/// <summary>
+		/// Метод копирования одного потока в другой (идентичен коду MS)
+		/// </summary>
+		/// <param name="source">Исходный поток.</param>
+		/// <param name="destination">Целевой поток.</param>
+		public static void StreamCopy(Stream source, Stream destination)
+		{
+			byte[] buffer = new byte[4096];
+			int count;
+			while((count = source.Read(buffer, 0, buffer.Length)) != 0)
+			{
+				destination.Write(buffer, 0, count);
+			}
+		}
+
+		/// <summary>
+		/// Безопасная установка начальной позиции в потоке
+		/// </summary>
+		/// <param name="stream">Входной поток</param>
+		/// <returns>Булевский флаг операции.</returns>
+		public static bool SafeSeekBegin(Stream stream)
+		{
+			if(stream.CanSeek)
+			{
+				stream.Seek(0, SeekOrigin.Begin);
+				return true;
+			}
+
+			return false;
+		}
+		
 		/// <summary>
 		/// Заполнение потока данными из переданного массива
 		/// </summary>
@@ -14,8 +45,14 @@ namespace CRYFORCE.Engine
 		/// <param name="offset">Смещение от начала.</param>
 		/// <param name="pattern">Массив для заполнения потока.</param>
 		/// <param name="patternCount">Количество требуемых записей паттерна.</param>
-		public static void WipeStream(Stream stream, long offset, byte[] pattern, long patternCount = long.MaxValue)
+		public static void WipeStreamByPattern(Stream stream, long offset, byte[] pattern, long patternCount = long.MaxValue)
 		{
+			// Проверка на нулевой размер паттерна
+			if(pattern.Length == 0)
+			{
+				throw new Exception("CryforceUtilities::WipeStreamByPattern() ==> Pattern to wipe can't be empty!");
+			}
+
 			// Перемещаемся на заданную позицию от начала
 			stream.Seek(offset, SeekOrigin.Begin);
 
@@ -55,6 +92,12 @@ namespace CRYFORCE.Engine
 		public static void WipeStream(EventHandler<EventArgs_Generic<ProgressChangedArg>> progressChanged, Stream stream,
 		                              int bufferSizePerStream, long offset, long count, bool zeroOut, int rndSeed = int.MinValue)
 		{
+			// Проверка на нулевой размер буфера
+			if(bufferSizePerStream == 0)
+			{
+				throw new Exception("CryforceUtilities::WipeStream() ==> bufferSizePerStream can't be \"0\"!");
+			}
+
 			// Перемещаемся на заданную позицию от начала
 			stream.Seek(offset, SeekOrigin.Begin);
 
@@ -84,7 +127,7 @@ namespace CRYFORCE.Engine
 
 					// PASS 1
 					rnd.NextBytes(rndPattern);
-					WipeStream(stream, offset, rndPattern);
+					WipeStreamByPattern(stream, offset, rndPattern);
 					// PASS 1
 
 					// PASS 2
@@ -92,14 +135,14 @@ namespace CRYFORCE.Engine
 					{
 						rndPattern[i] = (byte)(rndPattern[i] ^ 0xFF);
 					}
-					WipeStream(stream, offset, rndPattern);
+					WipeStreamByPattern(stream, offset, rndPattern);
 					// PASS 2
 
 					// PASS 3
 					rndSeed ^= DateTime.Now.Ticks.GetHashCode();
 					rnd = new Random(rndSeed);
 					rnd.NextBytes(rndPattern);
-					WipeStream(stream, offset, rndPattern);
+					WipeStreamByPattern(stream, offset, rndPattern);
 					// PASS 3
 				}
 				else
@@ -109,7 +152,7 @@ namespace CRYFORCE.Engine
 					{
 						rndPattern[i] = 0x00;
 					}
-					WipeStream(stream, offset, rndPattern);
+					WipeStreamByPattern(stream, offset, rndPattern);
 					// PASS ZERO
 				}
 

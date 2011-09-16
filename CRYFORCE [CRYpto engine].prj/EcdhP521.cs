@@ -340,7 +340,7 @@ namespace CRYFORCE.Engine
 		{
 			if(!IsInitialized)
 			{
-				throw new Exception("EcdhP521 is not initialized!");
+				throw new Exception("EcdhP521::CreateSymmetricKey() ==> EcdhP521 is not initialized!");
 			}
 
 			// Если не задан открытый ключ от другой стороны - выполнение метода невозможно!
@@ -372,7 +372,7 @@ namespace CRYFORCE.Engine
 		{
 			if(!IsInitialized)
 			{
-				throw new Exception("EcdhP521 is not initialized!");
+				throw new Exception("EcdhP521::SignData() ==> EcdhP521 is not initialized!");
 			}
 
 			return Convert.ToBase64String(_ECDsaCng.SignData(data, offset, count));
@@ -388,7 +388,7 @@ namespace CRYFORCE.Engine
 		{
 			if(!IsInitialized)
 			{
-				throw new Exception("EcdhP521 is not initialized!");
+				throw new Exception("EcdhP521::SignData() ==> EcdhP521 is not initialized!");
 			}
 
 			return Convert.ToBase64String(_ECDsaCng.SignData(data, offset, (data.Length - offset)));
@@ -403,7 +403,7 @@ namespace CRYFORCE.Engine
 		{
 			if(!IsInitialized)
 			{
-				throw new Exception("EcdhP521 is not initialized!");
+				throw new Exception("EcdhP521::SignData() ==> EcdhP521 is not initialized!");
 			}
 
 			return Convert.ToBase64String(_ECDsaCng.SignData(data));
@@ -418,7 +418,7 @@ namespace CRYFORCE.Engine
 		{
 			if(!IsInitialized)
 			{
-				throw new Exception("EcdhP521 is not initialized!");
+				throw new Exception("EcdhP521::SignData() ==> EcdhP521 is not initialized!");
 			}
 
 			return Convert.ToBase64String(_ECDsaCng.SignData(data));
@@ -433,7 +433,7 @@ namespace CRYFORCE.Engine
 		{
 			if(!IsInitialized)
 			{
-				throw new Exception("EcdhP521 is not initialized!");
+				throw new Exception("EcdhP521::SignData() ==> EcdhP521 is not initialized!");
 			}
 
 			return Convert.ToBase64String(_ECDsaCng.SignData(Encoding.Unicode.GetBytes(data)));
@@ -448,7 +448,7 @@ namespace CRYFORCE.Engine
 		{
 			if(!IsInitialized)
 			{
-				throw new Exception("EcdhP521 is not initialized!");
+				throw new Exception("EcdhP521::SignHash() ==> EcdhP521 is not initialized!");
 			}
 
 			return Convert.ToBase64String(_ECDsaCng.SignHash(data));
@@ -467,7 +467,7 @@ namespace CRYFORCE.Engine
 		{
 			if(!IsInitialized)
 			{
-				throw new Exception("EcdhP521 is not initialized!");
+				throw new Exception("EcdhP521::VerifyData() ==> EcdhP521 is not initialized!");
 			}
 
 			using(var eECDsaCng = new ECDsaCng(ImportKeyBinData(Convert.FromBase64String(publicKey), true, true))) // public, DS
@@ -489,7 +489,7 @@ namespace CRYFORCE.Engine
 		{
 			if(!IsInitialized)
 			{
-				throw new Exception("EcdhP521 is not initialized!");
+				throw new Exception("EcdhP521::VerifyData() ==> EcdhP521 is not initialized!");
 			}
 
 			using(var eECDsaCng = new ECDsaCng(ImportKeyBinData(Convert.FromBase64String(publicKey), true, true))) // public, DS
@@ -510,7 +510,7 @@ namespace CRYFORCE.Engine
 		{
 			if(!IsInitialized)
 			{
-				throw new Exception("EcdhP521 is not initialized!");
+				throw new Exception("EcdhP521::VerifyData() ==> EcdhP521 is not initialized!");
 			}
 
 			using(var eECDsaCng = new ECDsaCng(ImportKeyBinData(Convert.FromBase64String(publicKey), true, true))) // public, DS
@@ -531,7 +531,7 @@ namespace CRYFORCE.Engine
 		{
 			if(!IsInitialized)
 			{
-				throw new Exception("EcdhP521 is not initialized!");
+				throw new Exception("EcdhP521::VerifyData() ==> EcdhP521 is not initialized!");
 			}
 
 			using(var eECDsaCng = new ECDsaCng(ImportKeyBinData(Convert.FromBase64String(publicKey), true, true))) // public, DS
@@ -552,7 +552,7 @@ namespace CRYFORCE.Engine
 		{
 			if(!IsInitialized)
 			{
-				throw new Exception("EcdhP521 is not initialized!");
+				throw new Exception("EcdhP521::VerifyData() ==> EcdhP521 is not initialized!");
 			}
 
 			using(var eECDsaCng = new ECDsaCng(ImportKeyBinData(Convert.FromBase64String(publicKey), true, true))) // public, DS
@@ -573,7 +573,7 @@ namespace CRYFORCE.Engine
 		{
 			if(!IsInitialized)
 			{
-				throw new Exception("EcdhP521 is not initialized!");
+				throw new Exception("EcdhP521::VerifyHash() ==> EcdhP521 is not initialized!");
 			}
 
 			using(var eECDsaCng = new ECDsaCng(ImportKeyBinData(Convert.FromBase64String(publicKey), true, true))) // public, DS

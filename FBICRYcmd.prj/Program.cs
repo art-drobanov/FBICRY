@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Text;
+using System.Linq;
 
 using CRYFORCE.Engine;
 
@@ -20,6 +21,8 @@ namespace FBICRYcmd
 
 		private static void Main(string[] args)
 		{
+			bool workInMemory = false;
+
 			//var ecdhP521 = new EcdhP521();
 			//int maxIters = 100000;
 
@@ -43,54 +46,48 @@ namespace FBICRYcmd
 
 			//
 
-			bool workInMemory = true;
-			var bitSplitter = new BitSplitter(workInMemory);
-			bitSplitter.ProgressChanged += OnProgressChanged;
+			//var bitSplitter = new BitSplitter(workInMemory);
+			//bitSplitter.ProgressChanged += OnProgressChanged;
 
-			//// Метод тестирования - даем 255 в очередной позиции, и после разбиения должны получить в выходном массиве
-			//// степень двойки, соотв. позиции 255 в массиве
-			//var b1 = new byte[8] {0, 0, 255, 0, 0, 0, 0, 0}; //Encoding.Unicode.GetBytes("DrAF");
-			//var b2 = new byte[8];
-			//var b3 = new byte[8];
+			//Stream inputStream = new FileStream("input.txt", FileMode.Open, FileAccess.Read);
+			//Stream outputStream = new FileStream("output.txt", FileMode.Create, FileAccess.Write);
+			//bitSplitter.SplitToBitstream(inputStream, outputStream);
+			//bitSplitter.Clear();
+			//inputStream.Close();
+			//outputStream.Close();
 
-			//if(!bitSplitter.Split8Bytes(b1, b2))
-			//{
-			//    throw new Exception("bitSplitter.Split8Bytes() failed!");
-			//}
+			//Stream inputStream2 = new FileStream("output.txt", FileMode.Open, FileAccess.Read);
+			//Stream outputStream2 = new FileStream("input2.txt", FileMode.Create, FileAccess.Write);
+			//bitSplitter.UnsplitFromBitstream(inputStream2, outputStream2);
+			//bitSplitter.Clear();
+			//inputStream2.Close();
+			//outputStream2.Close();
 
-			//if(!bitSplitter.Split8Bytes(b2, b3))
-			//{
-			//    throw new Exception("bitSplitter.Glue8Bytes() failed!");
-			//}
-
-			//string s1 = Encoding.Unicode.GetString(b1);
-			//string s2 = Encoding.Unicode.GetString(b2);
-			//string s3 = Encoding.Unicode.GetString(b3);
-
-			//Utilities.DoD_5220_22_E(OnProgressChanged, "storage.rar");
+			//bitSplitter.ClearAndClose();
 
 			//
 
-			//StreamCryptoWrapperTest streamCryptoWrapperTest =  new StreamCryptoWrapperTest();
-			//streamCryptoWrapperTest.SetUp();
-			//streamCryptoWrapperTest.StreamCryptoWrapperBaseTest();
-
-			//int z = 5;
-
-			//
+			var cryforce = new Cryforce(workInMemory);
+			cryforce.ProgressChanged += OnProgressChanged;
 
 			Stream inputStream = new FileStream("input.txt", FileMode.Open, FileAccess.Read);
 			Stream outputStream = new FileStream("output.txt", FileMode.Create, FileAccess.Write);
-			bitSplitter.SplitToBitstream(inputStream, outputStream);
-			bitSplitter.Dispose();
+
+			cryforce.DoubleRijndael(inputStream, Encoding.Unicode.GetBytes("password1"), Encoding.Unicode.GetBytes("password2"), outputStream, true);
+
 			inputStream.Close();
+			outputStream.Flush();
 			outputStream.Close();
+
+
 
 			Stream inputStream2 = new FileStream("output.txt", FileMode.Open, FileAccess.Read);
 			Stream outputStream2 = new FileStream("input2.txt", FileMode.Create, FileAccess.Write);
-			bitSplitter.UnsplitFromBitstream(inputStream2, outputStream2);
-			bitSplitter.Dispose();
+
+			cryforce.DoubleRijndael(inputStream2, Encoding.Unicode.GetBytes("password1"), Encoding.Unicode.GetBytes("password2"), outputStream2, false);
+
 			inputStream2.Close();
+			outputStream2.Flush();
 			outputStream2.Close();
 		}
 	}

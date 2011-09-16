@@ -1,12 +1,13 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 
 using EventArgsUtilities;
 
 namespace CRYFORCE.Engine
 {
-	public class CRYFORCE
+	public class Cryforce
 	{
 		#region Static
 
@@ -18,14 +19,8 @@ namespace CRYFORCE.Engine
 
 		#region Data
 
-		/// <summary>Сущность для разбиения файла на битовые потоки и обратного склеивания.</summary>
-		private BitSplitter _bitSplitter;
-
 		/// <summary>Сущность для обеспечения обмена ключами на основе шифрования на основе эллиптических кривых.</summary>
 		private EcdhP521 _ecdhP521;
-
-		/// <summary>Сущность для шифрования данных по алгоритму Rijndael (256 bit).</summary>
-		private StreamCryptoWrapper _streamCryptoWrapper;
 
 		#endregion Data
 
@@ -40,27 +35,32 @@ namespace CRYFORCE.Engine
 
 		#region .ctor
 
+		/// <summary>
+		/// Конструктор с параметрами
+		/// </summary>
+		/// <param name="workInMemory">Работать в ОЗУ?</param>
+		public Cryforce(bool workInMemory = false)
+		{
+			WorkInMemory = workInMemory;
+			BufferSizePerStream = 16 * 1024 * 1024; // 16 мегабайт
+			RndSeed = DateTime.Now.Ticks.GetHashCode();
+		}
+
 		#endregion .ctor
 
 		#region Properties
 
-		/// <summary>Используется прямое направление преобразования?</summary>
-		public bool DirectMode { get; private set; }
-
 		/// <summary>Работаем в ОЗУ?</summary>
-		public bool WorkInMemory { get; private set; }
+		public bool WorkInMemory { get; set; }
 
 		/// <summary>Размер буфера в ОЗУ под каждый поток.</summary>
-		public int BufferSizePerStream { get; private set; }
+		public int BufferSizePerStream { get; set; }
 
 		/// <summary>Инициализирующее значение генератора случайных чисел.</summary>
 		public int RndSeed { get; set; }
 
 		/// <summary>Затирать выходной поток нулями?</summary>
 		public bool ZeroOut { get; set; }
-
-		/// <summary>Экземпляр класса инициализирован?</summary>
-		public bool IsInitialized { get; private set; }
 
 		#endregion Properties
 
@@ -78,19 +78,30 @@ namespace CRYFORCE.Engine
 		/// Двойное шифрование по алгоритму Rijndael-256
 		/// </summary>
 		/// <param name="inputStream">Входной поток.</param>
-		/// <param name="password1">Пароль для первого прохода шифрования.</param>
-		/// <param name="password2">Пароль для второго прохода шифрования.</param>
+		/// <param name="key1">Пароль для первого прохода шифрования.</param>
+		/// <param name="key2">Пароль для второго прохода шифрования.</param>
 		/// <param name="outputStream">Выходной поток.</param>
 		/// <param name="encryptionMode">Используется шифрование?.</param>
-		public void DoubleRijndael(Stream inputStream, byte[] password1, byte[] password2, Stream outputStream, bool encryptionMode)
+		public void DoubleRijndael(Stream inputStream, byte[] key1, byte[] key2, Stream outputStream, bool encryptionMode)
 		{
+			if(!inputStream.CanSeek)
+			{
+				throw new Exception("Cryforce::DoubleRijndael() ==> Input stream can't seek!");
+			}
+			
 			var streamCryptoWrappers = new[] {new StreamCryptoWrapper(), new StreamCryptoWrapper()};
-			streamCryptoWrappers[0].Initialize(encryptionMode ? password1 : password2); // При шифровании прямой порядок паролей...
-			streamCryptoWrappers[1].Initialize(encryptionMode ? password2 : password1); // ...а при расшифровке - обратный
+			streamCryptoWrappers[0].Initialize(encryptionMode ? key1 : key2); // При шифровании прямой порядок паролей...
+			streamCryptoWrappers[1].Initialize(encryptionMode ? key2 : key1); // ...а при расшифровке - обратный
 
-			// Генерируем два случайных имени файлов, для последующего использования в качестве временных и готовим потоки на их основе
-			string[] randomFilenames = Utilities.GetRandomFilenames(2, 8, RndSeed).Select(item => item + ".jpg").ToArray();
-			Stream[] randomFilenameStreams = randomFilenames.Select(item => Utilities.PrepareOutputStream(ProgressChanged, item, BufferSizePerStream, ZeroOut, WorkInMemory, RndSeed)).ToArray();
+			// Генерируем 10 случайных имен файлов: два для целей временного хранения данных в пределах данного метода
+			// и 8 штук для битсплиттера (генерируем их совместно, чтобы избежать конфликтов)
+			string[] randomFilenamesAll = CryforceUtilities.GetRandomFilenames(10, 8, RndSeed).Select(item => item + ".jpg").ToArray();
+			string[] randomFilenames = new string[2];
+			string[] randomFilenamesToBitSplitter = new string[8];
+			Array.Copy(randomFilenamesAll, 0, randomFilenames, 0, 2);
+			Array.Copy(randomFilenamesAll, 2, randomFilenamesToBitSplitter, 0, 8);
+
+			Stream[] randomFilenameStreams = randomFilenames.Select(item => CryforceUtilities.PrepareOutputStream(ProgressChanged, item, BufferSizePerStream, ZeroOut, WorkInMemory, RndSeed)).ToArray();
 
 			//////////////////////////////////////
 			// Шифрование первого уровня (Level0)
@@ -103,14 +114,26 @@ namespace CRYFORCE.Engine
 				ProgressChanged(null, new EventArgs_Generic<ProgressChangedArg>(new ProgressChangedArg("Rijndael-256 (1/2)", 0)));
 			}
 
-			inputStreamAtLevel0.Seek(0, SeekOrigin.Begin);
-			outputStreamAtLevel0.Seek(0, SeekOrigin.Begin);
+			CryforceUtilities.SafeSeekBegin(inputStreamAtLevel0);
+			CryforceUtilities.SafeSeekBegin(outputStreamAtLevel0);
 
+			// Процесс шифрования/расшифровки происходит прозрачно, во время чтения из зашифрованного потока или записи в зашифрованный
 			inputStreamAtLevel0.CopyTo(outputStreamAtLevel0);
+			if(outputStreamAtLevel0 is CryptoStream)
+			{
+				((CryptoStream)outputStreamAtLevel0).FlushFinalBlock();
+			}
 			outputStreamAtLevel0.Flush();
 
-			inputStreamAtLevel0.Seek(0, SeekOrigin.Begin);
-			outputStreamAtLevel0.Seek(0, SeekOrigin.Begin);
+			// Если выходной поток первого уровня является криптографической оберткой над другим потоком -
+			// нужно получить базовый поток для дальнейшей работы
+			if(outputStreamAtLevel0 is CryptoStream)
+			{
+				outputStreamAtLevel0 = randomFilenameStreams[0];
+			}
+
+			CryforceUtilities.SafeSeekBegin(inputStreamAtLevel0);
+			CryforceUtilities.SafeSeekBegin(outputStreamAtLevel0);
 
 			if(ProgressChanged != null)
 			{
@@ -120,14 +143,31 @@ namespace CRYFORCE.Engine
 			////////////////////////////////////////////////////////
 			// Перестановка битов посредством битсплиттера (Level1)
 			////////////////////////////////////////////////////////
+			
+			// Выходной поток первого уровня обработки является входным потоком для второго
 			Stream inputStreamAtLevel1 = outputStreamAtLevel0;
+			
+			// Т.к. результат работы битсплиттера не является конечным - работаем с временным потоком
 			Stream outputStreamAtLevel1 = randomFilenameStreams[1];
 
-			var bitSplitter = new BitSplitter(WorkInMemory);
+			CryforceUtilities.SafeSeekBegin(inputStreamAtLevel1);
+			CryforceUtilities.SafeSeekBegin(outputStreamAtLevel1);
+
+			var bitSplitter = new BitSplitter(randomFilenamesToBitSplitter, WorkInMemory);
 			bitSplitter.RndSeed = RndSeed; // Некритичный параметр, но проброска значения желательна
 			bitSplitter.ProgressChanged += ProgressChanged;
-			bitSplitter.SplitToBitstream(outputStreamAtLevel1, outputStreamAtLevel1);
-			bitSplitter.Dispose();
+			if(encryptionMode)
+			{
+				bitSplitter.SplitToBitstream(inputStreamAtLevel1, outputStreamAtLevel1);
+			}
+			else
+			{
+				bitSplitter.UnsplitFromBitstream(inputStreamAtLevel1, outputStreamAtLevel1);
+			}
+			bitSplitter.ClearAndClose();
+
+			CryforceUtilities.SafeSeekBegin(inputStreamAtLevel1);
+			CryforceUtilities.SafeSeekBegin(outputStreamAtLevel1);
 
 			//////////////////////////////////////
 			// Шифрование второго уровня (Level2)
@@ -140,26 +180,49 @@ namespace CRYFORCE.Engine
 				ProgressChanged(null, new EventArgs_Generic<ProgressChangedArg>(new ProgressChangedArg("Rijndael-256 (2/2)", 0)));
 			}
 
-			inputStreamAtLevel2.Seek(0, SeekOrigin.Begin);
-			outputStreamAtLevel2.Seek(0, SeekOrigin.Begin);
+			CryforceUtilities.SafeSeekBegin(inputStreamAtLevel2);
+			CryforceUtilities.SafeSeekBegin(outputStreamAtLevel2);
 
+			// Процесс шифрования/расшифровки происходит прозрачно, во время чтения из зашифрованного потока или записи в зашифрованный
 			inputStreamAtLevel2.CopyTo(outputStreamAtLevel2);
+			if(outputStreamAtLevel2 is CryptoStream)
+			{
+				((CryptoStream)outputStreamAtLevel2).FlushFinalBlock();
+			}
 			outputStreamAtLevel2.Flush();
 
-			inputStreamAtLevel2.Seek(0, SeekOrigin.Begin);
-			outputStreamAtLevel2.Seek(0, SeekOrigin.Begin);
+			CryforceUtilities.SafeSeekBegin(inputStreamAtLevel2);
+			CryforceUtilities.SafeSeekBegin(outputStreamAtLevel2);
 
 			if(ProgressChanged != null)
 			{
 				ProgressChanged(null, new EventArgs_Generic<ProgressChangedArg>(new ProgressChangedArg("Rijndael-256 (2/2)", 100)));
 			}
 
-			// Закрываем все потоки, которые не являлись снинонимами входа или выхода			
+			// Уничтожаем данные временных потоков
+			foreach(var randomFilenameStream in randomFilenameStreams)
+			{
+				CryforceUtilities.WipeStream(ProgressChanged, randomFilenameStream, BufferSizePerStream, 0, randomFilenameStream.Length, ZeroOut, RndSeed);
+				randomFilenameStream.Flush();
+				randomFilenameStream.Close();
+			}
+
+			// Производим удаление носителей
+			foreach(string randomFilename in randomFilenames)
+			{
+				if(File.Exists(randomFilename))
+				{
+					File.SetAttributes(randomFilename, FileAttributes.Normal);
+					File.Delete(randomFilename);
+				}
+			}
+			
+			// Закрываем все потоки, которые не являлись снинонимами входа или выхода
 			inputStreamAtLevel1.Close();
 			inputStreamAtLevel2.Close();
 
 			outputStreamAtLevel0.Close();
-			outputStreamAtLevel1.Close();			
+			outputStreamAtLevel1.Close();
 		}
 
 		#endregion Public

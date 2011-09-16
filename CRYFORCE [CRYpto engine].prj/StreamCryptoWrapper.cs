@@ -235,7 +235,7 @@ namespace CRYFORCE.Engine
 		{
 			if(!IsInitialized)
 			{
-				throw new Exception("StreamCryptoWrapper is not initialized!");
+				throw new Exception("StreamCryptoWrapper::WrapStream() ==> StreamCryptoWrapper is not initialized!");
 			}
 
 			return encryptionMode

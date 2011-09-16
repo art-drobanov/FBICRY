@@ -58,7 +58,7 @@
     <Compile Include="StreamCryptoWrapper.cs" />
     <Compile Include="Test\IN2itionTest.cs" />
     <Compile Include="Test\StreamCryptoWrapperTest.cs" />
-    <Compile Include="Utilities.cs" />
+    <Compile Include="CryforceUtilities.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Resources\CRYFORCE.ico" />
