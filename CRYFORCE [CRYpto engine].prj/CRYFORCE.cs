@@ -38,12 +38,54 @@ namespace CRYFORCE.Engine
 		/// <summary>
 		/// Конструктор с параметрами
 		/// </summary>
-		/// <param name="workInMemory">Работать в ОЗУ?</param>
-		public Cryforce(bool workInMemory = false)
+		public Cryforce()
 		{
-			WorkInMemory = workInMemory;
+			WorkInMemory = true;
+			WorkInTempDir = true;
 			BufferSizePerStream = 16 * 1024 * 1024; // 16 мегабайт
 			RndSeed = DateTime.Now.Ticks.GetHashCode();
+		}
+
+		/// <summary>
+		/// Конструктор с параметрами
+		/// </summary>
+		/// <param name="workInMemory">Работать в ОЗУ?</param>
+		/// <param name="workInTempDir">Работать в директории для временных файлов?</param>
+		public Cryforce(bool workInMemory, bool workInTempDir)
+		{
+			WorkInMemory = workInMemory;
+			WorkInTempDir = workInTempDir;
+			BufferSizePerStream = 16 * 1024 * 1024; // 16 мегабайт
+			RndSeed = DateTime.Now.Ticks.GetHashCode();
+		}
+
+		/// <summary>
+		/// Конструктор с параметрами
+		/// </summary>
+		/// <param name="workInMemory">Работать в ОЗУ?</param>
+		/// <param name="workInTempDir">Работать в директории для временных файлов?</param>
+		/// <param name="bufferSizePerStream">Размер буфера на файловый поток.</param>
+		public Cryforce(bool workInMemory, bool workInTempDir, int bufferSizePerStream)
+		{
+			WorkInMemory = workInMemory;
+			WorkInTempDir = workInTempDir;
+			BufferSizePerStream = bufferSizePerStream;
+			RndSeed = DateTime.Now.Ticks.GetHashCode();
+		}
+
+		/// <summary>
+		/// Конструктор с параметрами
+		/// </summary>
+		/// <param name="workInMemory">Работать в ОЗУ?</param>
+		/// <param name="workInTempDir">Работать в директории для временных файлов?</param>
+		/// <param name="bufferSizePerStream">Размер буфера на файловый поток.</param>
+		/// <param name="rndSeed">Инициализирующее значение генератора случайных чисел.</param>
+		public Cryforce(bool workInMemory, bool workInTempDir, int bufferSizePerStream, int rndSeed)
+		{
+			WorkInMemory = workInMemory;
+			WorkInTempDir = workInTempDir;
+			BufferSizePerStream = bufferSizePerStream;
+			RndSeed = rndSeed;
 		}
 
 		#endregion .ctor
@@ -52,6 +94,9 @@ namespace CRYFORCE.Engine
 
 		/// <summary>Работаем в ОЗУ?</summary>
 		public bool WorkInMemory { get; set; }
+
+		/// <summary>Работаем в директории для временных файлов?</summary>
+		public bool WorkInTempDir { get; set; }
 
 		/// <summary>Размер буфера в ОЗУ под каждый поток.</summary>
 		public int BufferSizePerStream { get; set; }
@@ -88,20 +133,20 @@ namespace CRYFORCE.Engine
 			{
 				throw new Exception("Cryforce::DoubleRijndael() ==> Input stream can't seek!");
 			}
-			
+
 			var streamCryptoWrappers = new[] {new StreamCryptoWrapper(), new StreamCryptoWrapper()};
 			streamCryptoWrappers[0].Initialize(encryptionMode ? key1 : key2); // При шифровании прямой порядок паролей...
 			streamCryptoWrappers[1].Initialize(encryptionMode ? key2 : key1); // ...а при расшифровке - обратный
 
 			// Генерируем 10 случайных имен файлов: два для целей временного хранения данных в пределах данного метода
-			// и 8 штук для битсплиттера (генерируем их совместно, чтобы избежать конфликтов)
-			string[] randomFilenamesAll = CryforceUtilities.GetRandomFilenames(10, 8, RndSeed).Select(item => item + ".jpg").ToArray();
-			string[] randomFilenames = new string[2];
-			string[] randomFilenamesToBitSplitter = new string[8];
-			Array.Copy(randomFilenamesAll, 0, randomFilenames, 0, 2);
-			Array.Copy(randomFilenamesAll, 2, randomFilenamesToBitSplitter, 0, 8);
+			// и 8 штук для битсплиттера (генерируем их совместно, чтобы избежать конфликтов)			
+			string[] tempFilenamesAll = WorkInTempDir ? CryforceUtilities.GetTempFilenames(10) : CryforceUtilities.GetRandomFilenames(10, 8, RndSeed).Select(item => item + ".jpg").ToArray();
+			var tempFilenames = new string[2];
+			var tempFilenamesToBitSplitter = new string[8];
+			Array.Copy(tempFilenamesAll, 0, tempFilenames, 0, 2);
+			Array.Copy(tempFilenamesAll, 2, tempFilenamesToBitSplitter, 0, 8);
 
-			Stream[] randomFilenameStreams = randomFilenames.Select(item => CryforceUtilities.PrepareOutputStream(ProgressChanged, item, BufferSizePerStream, ZeroOut, WorkInMemory, RndSeed)).ToArray();
+			Stream[] randomFilenameStreams = tempFilenames.Select(item => CryforceUtilities.PrepareOutputStream(ProgressChanged, item, BufferSizePerStream, ZeroOut, WorkInMemory, RndSeed)).ToArray();
 
 			//////////////////////////////////////
 			// Шифрование первого уровня (Level0)
@@ -143,17 +188,17 @@ namespace CRYFORCE.Engine
 			////////////////////////////////////////////////////////
 			// Перестановка битов посредством битсплиттера (Level1)
 			////////////////////////////////////////////////////////
-			
+
 			// Выходной поток первого уровня обработки является входным потоком для второго
 			Stream inputStreamAtLevel1 = outputStreamAtLevel0;
-			
+
 			// Т.к. результат работы битсплиттера не является конечным - работаем с временным потоком
 			Stream outputStreamAtLevel1 = randomFilenameStreams[1];
 
 			CryforceUtilities.SafeSeekBegin(inputStreamAtLevel1);
 			CryforceUtilities.SafeSeekBegin(outputStreamAtLevel1);
 
-			var bitSplitter = new BitSplitter(randomFilenamesToBitSplitter, WorkInMemory);
+			var bitSplitter = new BitSplitter(tempFilenamesToBitSplitter, WorkInMemory);
 			bitSplitter.RndSeed = RndSeed; // Некритичный параметр, но проброска значения желательна
 			bitSplitter.ProgressChanged += ProgressChanged;
 			if(encryptionMode)
@@ -200,7 +245,7 @@ namespace CRYFORCE.Engine
 			}
 
 			// Уничтожаем данные временных потоков
-			foreach(var randomFilenameStream in randomFilenameStreams)
+			foreach(Stream randomFilenameStream in randomFilenameStreams)
 			{
 				CryforceUtilities.WipeStream(ProgressChanged, randomFilenameStream, BufferSizePerStream, 0, randomFilenameStream.Length, ZeroOut, RndSeed);
 				randomFilenameStream.Flush();
@@ -208,15 +253,15 @@ namespace CRYFORCE.Engine
 			}
 
 			// Производим удаление носителей
-			foreach(string randomFilename in randomFilenames)
+			foreach(string tempFilename in tempFilenames)
 			{
-				if(File.Exists(randomFilename))
+				if(File.Exists(tempFilename))
 				{
-					File.SetAttributes(randomFilename, FileAttributes.Normal);
-					File.Delete(randomFilename);
+					File.SetAttributes(tempFilename, FileAttributes.Normal);
+					File.Delete(tempFilename);
 				}
 			}
-			
+
 			// Закрываем все потоки, которые не являлись снинонимами входа или выхода
 			inputStreamAtLevel1.Close();
 			inputStreamAtLevel2.Close();

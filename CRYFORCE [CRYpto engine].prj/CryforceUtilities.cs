@@ -14,7 +14,7 @@ namespace CRYFORCE.Engine
 		/// <param name="destination">Целевой поток.</param>
 		public static void StreamCopy(Stream source, Stream destination)
 		{
-			byte[] buffer = new byte[4096];
+			var buffer = new byte[4096];
 			int count;
 			while((count = source.Read(buffer, 0, buffer.Length)) != 0)
 			{
@@ -37,7 +37,7 @@ namespace CRYFORCE.Engine
 
 			return false;
 		}
-		
+
 		/// <summary>
 		/// Заполнение потока данными из переданного массива
 		/// </summary>
@@ -240,6 +240,44 @@ namespace CRYFORCE.Engine
 		}
 
 		/// <summary>
+		/// Генерирование временных имен файлов
+		/// </summary>
+		/// <param name="count">Количество имен файлов.</param>
+		/// <returns>Массив имен файлов.</returns>
+		public static string[] GetTempFilenames(int count)
+		{
+			// Создаем набор имен файлов
+			var fileNames = new string[count];
+
+			for(int i = 0; i < count; i++)
+			{
+				fileNames[i] = Path.GetTempFileName();
+			}
+
+			// Возвращаем результат
+			return fileNames;
+		}
+
+		/// <summary>
+		/// Устранение символов, запрещенных в именах файлов
+		/// </summary>
+		/// <param name="inputString">Входная строка.</param>
+		/// <returns>Результат элиминации.</returns>
+		public static string EliminateInvalidFileNameChars(string inputString)
+		{
+			// Получаем список символов, запрещенных к использованию в именах файлов
+			char[] invalidFileNameChars = Path.GetInvalidFileNameChars();
+
+			foreach(char invalidFileNameChar in invalidFileNameChars)
+			{
+				inputString = inputString.Replace(invalidFileNameChar, ' ');
+			}
+
+			// Возвращаем результат
+			return inputString.Replace(" ", "");
+		}
+
+		/// <summary>
 		/// Генерирование случайных имен файлов
 		/// </summary>
 		/// <param name="count">Количество имен файлов.</param>
@@ -253,9 +291,6 @@ namespace CRYFORCE.Engine
 
 			// Защищаем rndSeed значение через ^ DateTime.Now.Ticks.GetHashCode()
 			var rnd = new Random(rndSeed ^ DateTime.Now.Ticks.GetHashCode());
-
-			// Получаем список символов, запрещенных к использованию в именах файлов
-			char[] charInvalidFileChars = Path.GetInvalidFileNameChars();
 
 			bool failed = false;
 			for(int i = 0; i < count; i++)
@@ -276,11 +311,7 @@ namespace CRYFORCE.Engine
 
 				//...устраняем запрещенные символы в имени файла
 				fileNames[i] = Convert.ToBase64String(fileNameBuffer).Replace("=", "\0");
-				foreach(char charInvalid in charInvalidFileChars)
-				{
-					fileNames[i] = fileNames[i].Replace(charInvalid, ' ');
-				}
-				fileNames[i] = fileNames[i].Replace(" ", "");
+				fileNames[i] = EliminateInvalidFileNameChars(fileNames[i]);
 
 				// Если получили пустую строку в результате элиминирования пробелов, то требуется начать генерацию сначала.
 				// Т.к. процесс будет начать снова, это вносит большую неопределенность в общий процесс и имена получаются

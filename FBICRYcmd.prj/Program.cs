@@ -67,11 +67,11 @@ namespace FBICRYcmd
 
 			//
 
-			var cryforce = new Cryforce(workInMemory);
+			var cryforce = new Cryforce();
 			cryforce.ProgressChanged += OnProgressChanged;
 
 			Stream inputStream = new FileStream("input.txt", FileMode.Open, FileAccess.Read);
-			Stream outputStream = new FileStream("output.txt", FileMode.Create, FileAccess.Write);
+			Stream outputStream = new FileStream("input.txt.fbicry", FileMode.Create, FileAccess.Write);
 
 			cryforce.DoubleRijndael(inputStream, Encoding.Unicode.GetBytes("password1"), Encoding.Unicode.GetBytes("password2"), outputStream, true);
 
@@ -79,9 +79,7 @@ namespace FBICRYcmd
 			outputStream.Flush();
 			outputStream.Close();
 
-
-
-			Stream inputStream2 = new FileStream("output.txt", FileMode.Open, FileAccess.Read);
+			Stream inputStream2 = new FileStream("input.txt.fbicry", FileMode.Open, FileAccess.Read);
 			Stream outputStream2 = new FileStream("input2.txt", FileMode.Create, FileAccess.Write);
 
 			cryforce.DoubleRijndael(inputStream2, Encoding.Unicode.GetBytes("password1"), Encoding.Unicode.GetBytes("password2"), outputStream2, false);

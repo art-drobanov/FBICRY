@@ -217,7 +217,7 @@ namespace CRYFORCE.Engine
 			{
 				_rijndael.Clear();
 			}
-			
+
 			// Инициализируем криптографические сущности...
 			_hash256 = new SHA256Cng();
 			_hash512 = new SHA512Cng();

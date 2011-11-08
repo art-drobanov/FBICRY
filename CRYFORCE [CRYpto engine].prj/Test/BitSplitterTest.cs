@@ -45,7 +45,7 @@ namespace CRYFORCE.Engine.Test
 					b1[i] = 0xFF;
 
 					BitSplitter.Split8Bytes(b1, b2);
-					
+
 					// Вычисляем ожидаемое значение в позициях байт после разбиения...
 					var expectedValue = (byte)(1 << i);
 

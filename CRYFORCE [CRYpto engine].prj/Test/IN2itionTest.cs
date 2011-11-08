@@ -34,13 +34,13 @@ namespace CRYFORCE.Engine.Test
 
 			try
 			{
-				IN2ition eIN2ition = new IN2ition();
+				var eIN2ition = new IN2ition();
 
-				byte[] BitMask = new byte[] {0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80};
-				
+				var BitMask = new byte[] {0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80};
+
 				int bitIdx = 0;
 				byte target = 0x00;
-				foreach(var bitMaskItem in BitMask)
+				foreach(byte bitMaskItem in BitMask)
 				{
 					// Пробегаясь по всем битам текущего значения битовой маски...
 					for(int nBitMaskItem = 0; nBitMaskItem < 8; nBitMaskItem++)
@@ -62,7 +62,7 @@ namespace CRYFORCE.Engine.Test
 							}
 						}
 					}
-					
+
 					// Накапливаем биты в приемнике
 					CryforceUtilities.SetBit(ref target, bitIdx, 0x01);
 

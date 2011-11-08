@@ -101,11 +101,11 @@ namespace CRYFORCE.Engine
 
 		/// <summary>Имена битовых потоков.</summary>
 		public string[] BitStreamsNames { get; private set; }
-		
+
 		#endregion Properties
 
 		#region Private
-	
+
 		#endregion Private
 
 		#region Protected
@@ -129,9 +129,9 @@ namespace CRYFORCE.Engine
 			BitStreamsNames = bitStreamsNames.ToArray();
 
 			WorkInMemory = workInMemory;
-			
+
 			// Выделяем память под массив битовых потоков
-			_bitStreams = WorkInMemory ? (Stream[])new MemoryStream[NBITS] : (Stream[])new BufferedStream[NBITS];
+			_bitStreams = WorkInMemory ? new MemoryStream[NBITS] : (Stream[])new BufferedStream[NBITS];
 
 			// ...для всех потоков...
 			for(int i = 0; i < _bitStreams.Length; i++)
@@ -155,7 +155,7 @@ namespace CRYFORCE.Engine
 			{
 				throw new Exception("BitSplitter::SplitToBitstream() ==> BitSplitter is not initialized!");
 			}
-		
+
 			// Исходный,...
 			inputStream.Seek(0, SeekOrigin.Begin);
 
@@ -428,7 +428,7 @@ namespace CRYFORCE.Engine
 			foreach(Stream bitStream in _bitStreams)
 			{
 				CryforceUtilities.WipeStream(ProgressChanged, bitStream, BufferSizePerStream, 0, bitStream.Length, zeroOut, rndSeed);
-			}		
+			}
 		}
 
 		/// <summary>

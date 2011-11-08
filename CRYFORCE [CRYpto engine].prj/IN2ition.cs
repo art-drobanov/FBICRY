@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace CRYFORCE.Engine
 {
@@ -19,30 +16,39 @@ namespace CRYFORCE.Engine
 	class IN2ition
 	{
 		#region Static
+
 		#endregion Static
 
 		#region Constants
+
 		#endregion Constants
 
 		#region Data
+
 		#endregion Data
 
 		#region Events
+
 		#endregion Events
 
 		#region .ctor
+
 		#endregion .ctor
 
 		#region Properties
+
 		#endregion Properties
 
 		#region Private
+
 		#endregion Private
 
 		#region Protected
+
 		#endregion Protected
 
 		#region Public
+
 		#endregion Public
 	}
 }
