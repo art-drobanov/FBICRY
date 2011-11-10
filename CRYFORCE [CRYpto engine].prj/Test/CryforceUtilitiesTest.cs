@@ -6,7 +6,7 @@ using NUnit.Framework;
 namespace CRYFORCE.Engine.Test
 {
 	[TestFixture]
-	class IN2itionTest
+	class CryforceUtilitiesTest
 	{
 		#region Setup/Teardown
 
@@ -25,7 +25,7 @@ namespace CRYFORCE.Engine.Test
 		/// Тест корректности работы методов установки/считывания бит
 		/// </summary>
 		[Test]
-		public void IN2itionBitTest()
+		public void CryforceUtilitiesBitTest()
 		{
 			if(!SetUpIsOK)
 			{
@@ -34,8 +34,6 @@ namespace CRYFORCE.Engine.Test
 
 			try
 			{
-				var eIN2ition = new IN2ition();
-
 				var BitMask = new byte[] {0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80};
 
 				int bitIdx = 0;
