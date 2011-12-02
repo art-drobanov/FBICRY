@@ -7,6 +7,9 @@ using EventArgsUtilities;
 
 namespace CRYFORCE.Engine
 {
+	/// <summary>
+	/// Основной класс ядра шифрования
+	/// </summary>
 	public class Cryforce
 	{
 		#region Static
@@ -127,7 +130,8 @@ namespace CRYFORCE.Engine
 		/// <param name="key2">Пароль для второго прохода шифрования.</param>
 		/// <param name="outputStream">Выходной поток.</param>
 		/// <param name="encryptionMode">Используется шифрование?.</param>
-		public void DoubleRijndael(Stream inputStream, byte[] key1, byte[] key2, Stream outputStream, bool encryptionMode)
+		/// <param name="iterations">Количество итераций хеширования пароля.</param>
+		public void DoubleRijndael(Stream inputStream, byte[] key1, byte[] key2, Stream outputStream, bool encryptionMode, int iterations = 1)
 		{
 			if(!inputStream.CanSeek)
 			{
@@ -135,8 +139,8 @@ namespace CRYFORCE.Engine
 			}
 
 			var streamCryptoWrappers = new[] {new StreamCryptoWrapper(), new StreamCryptoWrapper()};
-			streamCryptoWrappers[0].Initialize(encryptionMode ? key1 : key2); // При шифровании прямой порядок паролей...
-			streamCryptoWrappers[1].Initialize(encryptionMode ? key2 : key1); // ...а при расшифровке - обратный
+			streamCryptoWrappers[0].Initialize(encryptionMode ? key1 : key2, iterations); // При шифровании прямой порядок паролей...
+			streamCryptoWrappers[1].Initialize(encryptionMode ? key2 : key1, iterations); // ...а при расшифровке - обратный
 
 			// Генерируем 10 случайных имен файлов: два для целей временного хранения данных в пределах данного метода
 			// и 8 штук для битсплиттера (генерируем их совместно, чтобы избежать конфликтов)			

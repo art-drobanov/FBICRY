@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography;
-using System.Text;
 
 namespace CRYFORCE.Engine
 {
@@ -51,31 +49,11 @@ namespace CRYFORCE.Engine
 		/// <summary>
 		/// Конструктор
 		/// </summary>
-		/// <param name="password">Пароль в виде массива байт.</param>
+		/// <param name="password">Пароль в форме строки.</param>
 		/// <param name="iterations">Количество итераций при хешировании пароля.</param>
 		public StreamCryptoWrapper(byte[] password, int iterations = 1)
 		{
 			Initialize(password, iterations);
-		}
-
-		/// <summary>
-		/// Конструктор
-		/// </summary>
-		/// <param name="password">Пароль в форме строки.</param>
-		/// <param name="iterations">Количество итераций при хешировании пароля.</param>
-		public StreamCryptoWrapper(String password, int iterations = 1)
-		{
-			Initialize(password, iterations);
-		}
-
-		/// <summary>
-		/// Конструктор
-		/// </summary>
-		/// <param name="passwords">Список паролей.</param>
-		/// <param name="iterations">Количество итераций при хешировании пароля.</param>
-		public StreamCryptoWrapper(IEnumerable<String> passwords, int iterations = 1)
-		{
-			Initialize(passwords, iterations);
 		}
 
 		/// <summary>
@@ -135,43 +113,15 @@ namespace CRYFORCE.Engine
 		/// <summary>
 		/// Инициализация экземпляра класса
 		/// </summary>
-		/// <param name="password">Пароль в виде массива байт.</param>
-		/// <param name="iterations">Количество итераций при хешировании пароля.</param>
-		public void Initialize(byte[] password, int iterations = 1)
-		{
-			Initialize(new[] {Encoding.Unicode.GetString(password)}, iterations);
-		}
-
-		/// <summary>
-		/// Инициализация экземпляра класса
-		/// </summary>
 		/// <param name="password">Пароль в форме строки.</param>
 		/// <param name="iterations">Количество итераций при хешировании пароля.</param>
-		public void Initialize(String password, int iterations = 1)
-		{
-			Initialize(new[] {password}, iterations);
-		}
-
-		/// <summary>
-		/// Инициализация экземпляра класса
-		/// </summary>
-		/// <param name="passwords">Список паролей.</param>
-		/// <param name="iterations">Количество итераций при хешировании пароля.</param>
-		public void Initialize(IEnumerable<String> passwords, int iterations = 1)
+		public void Initialize(byte[] password, int iterations = 1)
 		{
 			// Очистка конфиденциальных данных
 			Clear();
 
-			// Строим результирующий пароль
-			var stringBuilder = new StringBuilder();
-			foreach(string password in passwords)
-			{
-				stringBuilder.Append(password);
-			}
-
 			// Хешируем результирующий пароль...
-			Hash(Encoding.Unicode.GetBytes(stringBuilder.ToString()), iterations, out _key, out _IV);
-			stringBuilder.Clear();
+			Hash(password, iterations, out _key, out _IV);
 
 			// Устанавливаем параметры алгоритма шифрования...
 			_rijndael.Mode = CipherMode.CBC;

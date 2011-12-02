@@ -1,10 +1,14 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 
 using EventArgsUtilities;
 
 namespace CRYFORCE.Engine
 {
+	/// <summary>
+	/// Класс утилитарного назначения для Cryforce
+	/// </summary>
 	public static class CryforceUtilities
 	{
 		/// <summary>
@@ -205,6 +209,21 @@ namespace CRYFORCE.Engine
 
 				//...закрывая затем файловый поток
 				bs.Close();
+			}
+		}
+
+		/// <summary>
+		/// Стирание строки в ОЗУ
+		/// </summary>
+		/// <param name="str">Строка для стирания.</param>
+		public static unsafe void WipeString(ref string str)
+		{
+			fixed(char* ch = str)
+			{
+				for(Int32 i = 0; i < str.Length; i++)
+				{
+					ch[i] = '*';
+				}
 			}
 		}
 

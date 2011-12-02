@@ -55,7 +55,7 @@ namespace CRYFORCE.Engine.Test
 
 				// Шифрование
 				var streamCryptoWrapper = new StreamCryptoWrapper();
-				streamCryptoWrapper.Initialize(Encoding.Unicode.GetString(password), iterations);
+				streamCryptoWrapper.Initialize(password, iterations);
 				var inputStream = new MemoryStream(inputData);
 				Stream outputStream = streamCryptoWrapper.WrapStream(new MemoryStream(outputData), true); // Шифрование
 				inputStream.CopyTo(outputStream);
@@ -65,7 +65,7 @@ namespace CRYFORCE.Engine.Test
 
 				// Расшифровка
 				streamCryptoWrapper = new StreamCryptoWrapper();
-				streamCryptoWrapper.Initialize(Encoding.Unicode.GetString(password), iterations);
+				streamCryptoWrapper.Initialize(password, iterations);
 				Stream inputStream2 = streamCryptoWrapper.WrapStream(new MemoryStream(outputData), false); // Расшифровка
 				var outputStream2 = new MemoryStream(inputData2);
 				inputStream2.CopyTo(outputStream2);
