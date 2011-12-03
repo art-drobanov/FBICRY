@@ -24,20 +24,22 @@ namespace FBICRYcmd
 			// Работаем в ОЗУ
 			bool workInMemory = true;
 
-			Console.WriteLine("");
+			Console.WriteLine();
 			Console.WriteLine("* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *");
 			Console.WriteLine("*                                                                                                 *");
-			Console.WriteLine("* FBICRY Double Rijndael-256 (with bit transpose) File Encryptor 0.01 (c) 2011 DrAF, г. Череповец *");
+			Console.WriteLine("* FBICRYcmd 0.01 (c) 2011 DrAF, г. Череповец                                                      *");
+			Console.WriteLine("*                                                                                                 *");
+			Console.WriteLine("* Утилита для шифрования файлов двойным Rijndael-256 с битовым транспонированием между слоями.    *");
 			Console.WriteLine("*                                                                                                 *");
 			Console.WriteLine("* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *");
-			Console.WriteLine("");
+			Console.WriteLine();
 
 			if(args.Count() < 3)
 			{
 				Console.WriteLine("Использование: FBICRYcmd <команда> <входной файл> <выходной файл> [файл-пароль] [количество итераций хеширования пароля]\n");
 				Console.WriteLine("Команды: e - шифровать");
 				Console.WriteLine("         d - расшифровать\n");
-				Console.WriteLine("");
+				Console.WriteLine();
 
 				return;
 			}
@@ -59,7 +61,7 @@ namespace FBICRYcmd
 				return;
 			}
 
-			Console.WriteLine("");
+			Console.WriteLine();
 
 			if(!File.Exists(args[1]))
 			{
@@ -92,27 +94,13 @@ namespace FBICRYcmd
 				passwordDataForKey2 = new byte[passwordData.Length - passwordDataForKey1.Length];
 			}
 			else
-			{								
+			{										
 				Console.WriteLine("Введите пароль №1:");
-				string password1;				
-				while((password1 = Console.ReadLine()) == null)
-				{
-					Console.WriteLine("Введите пароль №1:");
-				}
-				passwordDataForKey1 = Encoding.Unicode.GetBytes(password1);
-				CryforceUtilities.WipeString(ref password1);
-				Console.WriteLine("Пароль №1 использован и очищен:{0};", password1);
+				passwordDataForKey1 = CryforceUtilities.GetPasswordBytesSafely();
 				Console.WriteLine();
 				
 				Console.WriteLine("Введите пароль №2:");
-				string password2;
-				while((password2 = Console.ReadLine()) == null)
-				{
-					Console.WriteLine("Введите пароль №2:");
-				}
-				passwordDataForKey2 = Encoding.Unicode.GetBytes(password2);
-				CryforceUtilities.WipeString(ref password2);
-				Console.WriteLine("Пароль №2 использован и очищен:{0};", password2);
+				passwordDataForKey2 = CryforceUtilities.GetPasswordBytesSafely();
 				Console.WriteLine();
 			}
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
@@ -225,6 +226,92 @@ namespace CRYFORCE.Engine
 					ch[i] = '*';
 				}
 			}
+		}
+
+		/// <summary>
+		/// Безопасное считывание пароля с клавиатуры с учетом нажатия клавиш "Alt", "Shift", "Control"
+		/// </summary>
+		/// <returns>Набор байт в кодировке Unicode для введенной строки.</returns>
+		public static byte[] GetPasswordBytesSafely()
+		{
+			// Целевой список для накопления символов вводимого пароля
+			var passCharsInBytes = new List<byte>();
+
+			ConsoleKeyInfo keypress;
+			do
+			{
+				// Считываем Scan-код...
+				keypress = Console.ReadKey(true);
+
+				//...проверяем его на модификаторы...
+				if((ConsoleModifiers.Alt & keypress.Modifiers) != 0)
+				{
+					passCharsInBytes.Add(Encoding.Unicode.GetBytes("A")[0]);
+					passCharsInBytes.Add(Encoding.Unicode.GetBytes("l")[0]);
+					passCharsInBytes.Add(Encoding.Unicode.GetBytes("t")[0]);
+				}
+
+				if((ConsoleModifiers.Shift & keypress.Modifiers) != 0)
+				{
+					passCharsInBytes.Add(Encoding.Unicode.GetBytes("S")[0]);
+					passCharsInBytes.Add(Encoding.Unicode.GetBytes("h")[0]);
+					passCharsInBytes.Add(Encoding.Unicode.GetBytes("i")[0]);
+					passCharsInBytes.Add(Encoding.Unicode.GetBytes("f")[0]);
+					passCharsInBytes.Add(Encoding.Unicode.GetBytes("t")[0]);
+				}
+
+				if((ConsoleModifiers.Control & keypress.Modifiers) != 0)
+				{
+					passCharsInBytes.Add(Encoding.Unicode.GetBytes("C")[0]);
+					passCharsInBytes.Add(Encoding.Unicode.GetBytes("o")[0]);
+					passCharsInBytes.Add(Encoding.Unicode.GetBytes("n")[0]);
+					passCharsInBytes.Add(Encoding.Unicode.GetBytes("t")[0]);
+					passCharsInBytes.Add(Encoding.Unicode.GetBytes("r")[0]);
+					passCharsInBytes.Add(Encoding.Unicode.GetBytes("o")[0]);
+					passCharsInBytes.Add(Encoding.Unicode.GetBytes("l")[0]);
+				}
+
+				//...затем читаем сам символ...
+				var chArr = new char[1] {keypress.KeyChar};
+				var keypressKeyCharStr = new string(chArr);
+				chArr[0] = '*';
+				passCharsInBytes.Add(Encoding.Unicode.GetBytes(keypressKeyCharStr)[0]);
+				WipeString(ref keypressKeyCharStr);
+
+				// Ввод пароля завершается по нажатию "Enter"
+				if(keypress.Key == ConsoleKey.Enter)
+				{
+					break;
+				}
+
+				Console.Write("*");
+			} while(true);
+
+			// Если массив байт пароля пуст - создаем пароль по-умолчанию...
+			if(passCharsInBytes.Count == 0)
+			{
+				passCharsInBytes.Add(Encoding.Unicode.GetBytes("p")[0]);
+				passCharsInBytes.Add(Encoding.Unicode.GetBytes("a")[0]);
+				passCharsInBytes.Add(Encoding.Unicode.GetBytes("s")[0]);
+				passCharsInBytes.Add(Encoding.Unicode.GetBytes("s")[0]);
+				passCharsInBytes.Add(Encoding.Unicode.GetBytes("w")[0]);
+				passCharsInBytes.Add(Encoding.Unicode.GetBytes("o")[0]);
+				passCharsInBytes.Add(Encoding.Unicode.GetBytes("r")[0]);
+				passCharsInBytes.Add(Encoding.Unicode.GetBytes("d")[0]);
+			}
+
+			// Перенос результатов ввода пароля из списка в целевой массив
+			var result = new byte[passCharsInBytes.Count];
+			for(int i = 0; i < passCharsInBytes.Count; i++)
+			{
+				result[i] = passCharsInBytes[i];
+				passCharsInBytes[i] = 0x00;
+			}
+
+			// После окончания ввода переводим каретку на новую строку
+			Console.WriteLine();
+
+			return result;
 		}
 
 		/// <summary>

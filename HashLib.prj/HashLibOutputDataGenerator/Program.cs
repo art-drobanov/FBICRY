@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using HashLibTest;
 using HashLib;
 using System.Diagnostics;
 using System.IO;
