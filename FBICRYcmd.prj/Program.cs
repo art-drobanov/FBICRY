@@ -16,7 +16,7 @@ namespace FBICRYcmd
 		/// </summary>
 		private static void OnProgressChanged(object sender, EventArgs_Generic<ProgressChangedArg> e)
 		{
-			Console.WriteLine("Process {0}, Progress: {1}", e.TargetObject.ProcessDescription, (int)e.TargetObject.ProcessProgress);
+			Console.WriteLine("процесс {0} / прогресс: {1}", e.TargetObject.ProcessDescription, (int)e.TargetObject.ProcessProgress);
 		}
 
 		private static void Main(string[] args)
@@ -25,20 +25,24 @@ namespace FBICRYcmd
 			bool workInMemory = true;
 
 			Console.WriteLine();
-			Console.WriteLine("* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *");
-			Console.WriteLine("*                                                                                                 *");
-			Console.WriteLine("* FBICRYcmd 0.01 (c) 2011 DrAF, г. Череповец                                                      *");
-			Console.WriteLine("*                                                                                                 *");
-			Console.WriteLine("* Утилита для шифрования файлов двойным Rijndael-256 с битовым транспонированием между слоями.    *");
-			Console.WriteLine("*                                                                                                 *");
-			Console.WriteLine("* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *");
+			Console.WriteLine("\t* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *");
+			Console.WriteLine("\t*                                                                                                 *");
+			Console.WriteLine("\t*   FBICRYcmd 0.01 (c) 2011 DrAF, г. Череповец                                                    *");
+			Console.WriteLine("\t*                                                                                                 *");
+			Console.WriteLine("\t*   Утилита для шифрования файлов двойным Rijndael-256 с битовым транспонированием между слоями.  *");
+			Console.WriteLine("\t*                                                                                                 *");
+			Console.WriteLine("\t* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *");
 			Console.WriteLine();
 
 			if(args.Count() < 3)
 			{
-				Console.WriteLine("Использование: FBICRYcmd <команда> <входной файл> <выходной файл> [файл-пароль] [количество итераций хеширования пароля]\n");
-				Console.WriteLine("Команды: e - шифровать");
-				Console.WriteLine("         d - расшифровать\n");
+				Console.WriteLine("\tИспользование: FBICRYcmd <команда> <входной файл> <выходной файл> [файл-пароль] [итераций хеша]\n");
+				Console.WriteLine("\tКоманды: e - шифровать");
+				Console.WriteLine("\t         d - расшифровать\n");
+				Console.WriteLine();
+				Console.WriteLine("\tДля шифрования с паролем, вводимым с клавиатуры, укажите несуществующий файл-пароль,");
+				Console.WriteLine("\tлибо не указывайте его вообще. Приложение запросит ввод.");
+				Console.WriteLine("\tПри нажатии каждой клавиши можно использовать модификаторы \"Alt\", \"Shift\", \"Control\"...");
 				Console.WriteLine();
 
 				return;
@@ -123,7 +127,17 @@ namespace FBICRYcmd
 			}
 
 			Console.WriteLine("Обработка...");
-			cryforce.DoubleRijndael(inputStream, passwordDataForKey1, passwordDataForKey2, outputStream, args[0].ToLower() == "e", iterations);
+
+			try
+			{
+				cryforce.DoubleRijndael(inputStream, passwordDataForKey1, passwordDataForKey2, outputStream, args[0].ToLower() == "e", iterations);
+			}
+			catch
+			{
+				Console.WriteLine();
+				Console.WriteLine("Ошибка в ходе криптографического преобразования!");
+				return;
+			}
 
 			Console.WriteLine("Сброс буферов...");
 			inputStream.Close();
@@ -150,7 +164,7 @@ namespace FBICRYcmd
 				passwordDataForKey2[i] = 0x00;
 			}
 		
-			Console.WriteLine("Завершено.");
+			Console.WriteLine("Завершено!");
 		}
 	}
 }
