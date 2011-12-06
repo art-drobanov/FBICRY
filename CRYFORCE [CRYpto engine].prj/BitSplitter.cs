@@ -169,15 +169,14 @@ namespace CRYFORCE.Engine
 			outputStream.Seek(0, SeekOrigin.Begin);
 
 			// Устанавливаем начальные параметры для успешного проведения итераций
-			long offset = 0;
 			long remaining = inputStream.Length;
 
 			// Создаем буфер для работы блоками по 8 байт
 			var bytesIn = new byte[NBITS];
 			var bytesOut = new byte[NBITS];
 
-			int read = 0; // Счетчик количества считанных байт
-			int toRead = 0; // Счетчик количества байт, которые нужно считать
+			int read; // Счетчик количества считанных байт
+			int toRead; // Счетчик количества байт, которые нужно считать
 
 			// Вычисляем выравнивание до 8 байт
 			var align8 = (byte)(inputStream.Length % NBITS);
