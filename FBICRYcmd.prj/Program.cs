@@ -24,37 +24,40 @@ namespace FBICRYcmd
 			// Работаем в ОЗУ
 			bool workInMemory = true;
 
+			Console.Clear();
 			Console.ForegroundColor = ConsoleColor.DarkGreen;
+			Console.BackgroundColor = ConsoleColor.Black;
+	
 			Console.WriteLine();
-			Console.WriteLine("\t***************************************************************************************************");
-			Console.WriteLine("\t*                                                                                                 *");
-			Console.Write("\t*");
-			Console.ForegroundColor = ConsoleColor.Green;
-			Console.Write("   FBICRYcmd 0.01 (c) 2011 DrAF, г. Череповец                                                    ");
-			Console.ForegroundColor = ConsoleColor.DarkGreen;
-			Console.WriteLine("*");			
-			Console.WriteLine("\t*                                                                                                 *");			
-			Console.Write("\t*");
-			Console.ForegroundColor = ConsoleColor.Green;
-			Console.Write("   Утилита для шифрования файлов двойным Rijndael-256 с битовым транспонированием между слоями.  ");
-			Console.ForegroundColor = ConsoleColor.DarkGreen;
-			Console.WriteLine("*");
-			Console.WriteLine("\t*                                                                                                 *");			
-			Console.WriteLine("\t***************************************************************************************************");
+			Console.WriteLine("\t////////   //////////   ///   /////////    /////////    ///    ///");
+			Console.WriteLine("\t//         ///    ///   ///   ///    ///   //     ///    ///  //  ");
+			Console.WriteLine("\t////////   /////////    ///   //           ///    //      /////   ");
+			Console.WriteLine("\t////////   ///    ///   ///   //           /////////       ///    ");
+			Console.WriteLine("\t//         ///    ///   ///   ///    ///   //     ///      ///    ");
+			Console.WriteLine("\t///        //////////   ///   /////////    ///    ///      ///    ");
 			Console.WriteLine();
-			Console.ResetColor();
+
+			Console.Write("\t");
+			Console.BackgroundColor = ConsoleColor.DarkGreen;
+			Console.ForegroundColor = ConsoleColor.Black;
+			Console.Write("Версия 1.00 (c) 2012 Дробанов Артём Федорович (DrAF), г. Череповец");
+			Console.BackgroundColor = ConsoleColor.Black;
+			Console.WriteLine();
+			Console.WriteLine();
+
+			Console.ForegroundColor = ConsoleColor.DarkGray;
 
 			if(args.Count() < 3)
 			{
 				Console.WriteLine("\tИспользование: FBICRYcmd <команда> <входной файл> <выходной файл> [файл-пароль] [итераций хеша]\n");
 				Console.WriteLine("\tКоманды: e - шифровать");
 				Console.WriteLine("\t         d - расшифровать\n");
-				Console.WriteLine();
 				Console.WriteLine("\tДля шифрования с паролем, вводимым с клавиатуры, укажите несуществующий файл-пароль,");
 				Console.WriteLine("\tлибо не указывайте его вообще. Приложение запросит ввод.");
 				Console.WriteLine("\tПри нажатии каждой клавиши можно использовать модификаторы \"Alt\", \"Shift\", \"Control\"...");
 				Console.WriteLine();
 
+				Console.ResetColor();
 				return;
 			}
 		
@@ -72,6 +75,8 @@ namespace FBICRYcmd
 			else
 			{
 				Console.WriteLine("Неизвестный режим обработки!");
+				
+				Console.ResetColor();
 				return;
 			}
 
@@ -80,6 +85,8 @@ namespace FBICRYcmd
 			if(!File.Exists(args[1]))
 			{
 				Console.WriteLine("Входной файл {0} не существует!", args[1]);
+
+				Console.ResetColor();
 				return;
 			}
 
@@ -101,6 +108,8 @@ namespace FBICRYcmd
 				catch
 				{
 					Console.WriteLine("Ошибка чтения данных файла-пароля {0}!", args[3]);
+
+					Console.ResetColor();
 					return;
 				}
 
@@ -146,6 +155,8 @@ namespace FBICRYcmd
 			{
 				Console.WriteLine();
 				Console.WriteLine("Ошибка в ходе криптографического преобразования!");
+
+				Console.ResetColor();
 				return;
 			}
 
@@ -175,6 +186,7 @@ namespace FBICRYcmd
 			}
 		
 			Console.WriteLine("Завершено!");
+			Console.ResetColor();
 		}
 	}
 }
