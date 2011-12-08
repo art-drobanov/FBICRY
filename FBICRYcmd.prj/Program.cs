@@ -24,15 +24,25 @@ namespace FBICRYcmd
 			// Работаем в ОЗУ
 			bool workInMemory = true;
 
+			Console.ForegroundColor = ConsoleColor.DarkGreen;
 			Console.WriteLine();
-			Console.WriteLine("\t* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *");
+			Console.WriteLine("\t***************************************************************************************************");
 			Console.WriteLine("\t*                                                                                                 *");
-			Console.WriteLine("\t*   FBICRYcmd 0.01 (c) 2011 DrAF, г. Череповец                                                    *");
-			Console.WriteLine("\t*                                                                                                 *");
-			Console.WriteLine("\t*   Утилита для шифрования файлов двойным Rijndael-256 с битовым транспонированием между слоями.  *");
-			Console.WriteLine("\t*                                                                                                 *");
-			Console.WriteLine("\t* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *");
+			Console.Write("\t*");
+			Console.ForegroundColor = ConsoleColor.Green;
+			Console.Write("   FBICRYcmd 0.01 (c) 2011 DrAF, г. Череповец                                                    ");
+			Console.ForegroundColor = ConsoleColor.DarkGreen;
+			Console.WriteLine("*");			
+			Console.WriteLine("\t*                                                                                                 *");			
+			Console.Write("\t*");
+			Console.ForegroundColor = ConsoleColor.Green;
+			Console.Write("   Утилита для шифрования файлов двойным Rijndael-256 с битовым транспонированием между слоями.  ");
+			Console.ForegroundColor = ConsoleColor.DarkGreen;
+			Console.WriteLine("*");
+			Console.WriteLine("\t*                                                                                                 *");			
+			Console.WriteLine("\t***************************************************************************************************");
 			Console.WriteLine();
+			Console.ResetColor();
 
 			if(args.Count() < 3)
 			{
