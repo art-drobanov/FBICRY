@@ -126,12 +126,14 @@ namespace CRYFORCE.Engine
 		/// Двойное шифрование по алгоритму Rijndael-256
 		/// </summary>
 		/// <param name="inputStream">Входной поток.</param>
-		/// <param name="key1">Пароль для первого прохода шифрования.</param>
-		/// <param name="key2">Пароль для второго прохода шифрования.</param>
+		/// <param name="key1">Ключ для первого прохода шифрования.</param>
+		/// <param name="key2">Ключ для второго прохода шифрования.</param>
 		/// <param name="outputStream">Выходной поток.</param>
 		/// <param name="encryptionMode">Используется шифрование?.</param>
+		/// <param name="paranoidMode">Параноидальный режим?</param>
 		/// <param name="iterations">Количество итераций хеширования пароля.</param>
-		public void DoubleRijndael(Stream inputStream, byte[] key1, byte[] key2, Stream outputStream, bool encryptionMode, int iterations = 1)
+		public void DoubleRijndael(Stream inputStream, byte[] key1, byte[] key2, Stream outputStream, bool encryptionMode, bool paranoidMode,
+		                           int iterations = 1)
 		{
 			if(!inputStream.CanSeek)
 			{
@@ -158,11 +160,6 @@ namespace CRYFORCE.Engine
 			Stream inputStreamAtLevel0 = encryptionMode ? inputStream : streamCryptoWrappers[0].WrapStream(inputStream, false);
 			Stream outputStreamAtLevel0 = encryptionMode ? streamCryptoWrappers[0].WrapStream(randomFilenameStreams[0], true) : randomFilenameStreams[0];
 
-			if(ProgressChanged != null)
-			{
-				ProgressChanged(null, new EventArgs_Generic<ProgressChangedArg>(new ProgressChangedArg("Rijndael-256 (1/2)", 0)));
-			}
-
 			CryforceUtilities.SafeSeekBegin(inputStreamAtLevel0);
 			CryforceUtilities.SafeSeekBegin(outputStreamAtLevel0);
 
@@ -186,7 +183,7 @@ namespace CRYFORCE.Engine
 
 			if(ProgressChanged != null)
 			{
-				ProgressChanged(null, new EventArgs_Generic<ProgressChangedArg>(new ProgressChangedArg("Rijndael-256 (1/2)", 100)));
+				ProgressChanged(null, new EventArgs_Generic<ProgressChangedArg>(new ProgressChangedArg("Rijndael-256 (1)", 100)));
 			}
 
 			////////////////////////////////////////////////////////
@@ -202,7 +199,7 @@ namespace CRYFORCE.Engine
 			CryforceUtilities.SafeSeekBegin(inputStreamAtLevel1);
 			CryforceUtilities.SafeSeekBegin(outputStreamAtLevel1);
 
-			var bitSplitter = new BitSplitter(tempFilenamesToBitSplitter, WorkInMemory);
+			var bitSplitter = new BitSplitter(tempFilenamesToBitSplitter, key1, key2, paranoidMode, WorkInMemory);
 			bitSplitter.RndSeed = RndSeed; // Некритичный параметр, но проброска значения желательна
 			bitSplitter.ProgressChanged += ProgressChanged;
 			if(encryptionMode)
@@ -213,6 +210,12 @@ namespace CRYFORCE.Engine
 			{
 				bitSplitter.UnsplitFromBitstream(inputStreamAtLevel1, outputStreamAtLevel1);
 			}
+
+			if(ProgressChanged != null)
+			{
+				ProgressChanged(null, new EventArgs_Generic<ProgressChangedArg>(new ProgressChangedArg("BitSplitter", 100)));
+			}
+
 			bitSplitter.ClearAndClose();
 
 			CryforceUtilities.SafeSeekBegin(inputStreamAtLevel1);
@@ -223,11 +226,6 @@ namespace CRYFORCE.Engine
 			//////////////////////////////////////
 			Stream inputStreamAtLevel2 = encryptionMode ? outputStreamAtLevel1 : streamCryptoWrappers[1].WrapStream(outputStreamAtLevel1, false);
 			Stream outputStreamAtLevel2 = encryptionMode ? streamCryptoWrappers[1].WrapStream(outputStream, true) : outputStream;
-
-			if(ProgressChanged != null)
-			{
-				ProgressChanged(null, new EventArgs_Generic<ProgressChangedArg>(new ProgressChangedArg("Rijndael-256 (2/2)", 0)));
-			}
 
 			CryforceUtilities.SafeSeekBegin(inputStreamAtLevel2);
 			CryforceUtilities.SafeSeekBegin(outputStreamAtLevel2);
@@ -245,7 +243,7 @@ namespace CRYFORCE.Engine
 
 			if(ProgressChanged != null)
 			{
-				ProgressChanged(null, new EventArgs_Generic<ProgressChangedArg>(new ProgressChangedArg("Rijndael-256 (2/2)", 100)));
+				ProgressChanged(null, new EventArgs_Generic<ProgressChangedArg>(new ProgressChangedArg("Rijndael-256 (2)", 100)));
 			}
 
 			// Уничтожаем данные временных потоков

@@ -50,9 +50,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BitMaps.cs" />
     <Compile Include="BitSplitter.cs" />
     <Compile Include="Cryforce.cs" />
     <Compile Include="EcdhP521.cs" />
+    <Compile Include="Permutations.cs" />
     <Compile Include="ProgressChangedArg.cs" />
     <Compile Include="Test\BitSplitterTest.cs" />
     <Compile Include="Test\EcdhP521Test.cs" />

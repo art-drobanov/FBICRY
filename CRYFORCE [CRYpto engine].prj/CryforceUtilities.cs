@@ -30,7 +30,7 @@ namespace CRYFORCE.Engine
 		/// <summary>
 		/// Безопасная установка начальной позиции в потоке
 		/// </summary>
-		/// <param name="stream">Входной поток</param>
+		/// <param name="stream">Входной поток.</param>
 		/// <returns>Булевский флаг операции.</returns>
 		public static bool SafeSeekBegin(Stream stream)
 		{
@@ -119,7 +119,12 @@ namespace CRYFORCE.Engine
 			endPosition = (endPosition > (stream.Length - 1)) ? (stream.Length - 1) : endPosition;
 
 			// Параметры, необходимые для работы с итерациями
-			long nIters = (int)Math.Ceiling((double)(endPosition + 1) / bufferSizePerStream);
+			long nIters = (int)Math.Ceiling((double)(count) / bufferSizePerStream);
+
+			// Общее количество итераций не может быть равно нулю, минимум - одна
+			nIters = (nIters == 0) ? 1 : nIters;
+
+			// Устанавливаем текущую итерацию
 			long nIter = 1;
 
 			// До тех пор, пока не обработаны все данные...
@@ -132,7 +137,8 @@ namespace CRYFORCE.Engine
 
 					// PASS 1
 					rnd.NextBytes(rndPattern);
-					WipeStreamByPattern(stream, offset, rndPattern);
+					// Прописываем паттерн в поток ОДИН РАЗ по указанному смещению...
+					WipeStreamByPattern(stream, offset, rndPattern, 1);
 					// PASS 1
 
 					// PASS 2
@@ -140,14 +146,16 @@ namespace CRYFORCE.Engine
 					{
 						rndPattern[i] = (byte)(rndPattern[i] ^ 0xFF);
 					}
-					WipeStreamByPattern(stream, offset, rndPattern);
+					// Прописываем паттерн в поток ОДИН РАЗ по указанному смещению...
+					WipeStreamByPattern(stream, offset, rndPattern, 1);
 					// PASS 2
 
 					// PASS 3
 					rndSeed ^= DateTime.Now.Ticks.GetHashCode();
 					rnd = new Random(rndSeed);
 					rnd.NextBytes(rndPattern);
-					WipeStreamByPattern(stream, offset, rndPattern);
+					// Прописываем паттерн в поток ОДИН РАЗ по указанному смещению...
+					WipeStreamByPattern(stream, offset, rndPattern, 1);
 					// PASS 3
 				}
 				else
@@ -157,18 +165,13 @@ namespace CRYFORCE.Engine
 					{
 						rndPattern[i] = 0x00;
 					}
-					WipeStreamByPattern(stream, offset, rndPattern);
+					// Прописываем паттерн в поток ОДИН РАЗ по указанному смещению...
+					WipeStreamByPattern(stream, offset, rndPattern, 1);
 					// PASS ZERO
 				}
 
 				//...шагаем по потоку...
 				offset += bufferSizePerStream;
-
-				//...и обновляем прогресс...
-				if(progressChanged != null)
-				{
-					progressChanged(null, new EventArgs_Generic<ProgressChangedArg>(new ProgressChangedArg("WipeStream", (nIter / (double)nIters) * 100)));
-				}
 
 				// Учитываем произведенную итерацию
 				nIter++;
@@ -182,6 +185,12 @@ namespace CRYFORCE.Engine
 				{
 					rndPattern[i] = 0x00;
 				}
+			}
+
+			// Сообщаем о прогрессе
+			if(progressChanged != null)
+			{
+				progressChanged(null, new EventArgs_Generic<ProgressChangedArg>(new ProgressChangedArg("WipeStream", 100)));
 			}
 		}
 
@@ -211,6 +220,56 @@ namespace CRYFORCE.Engine
 				//...закрывая затем файловый поток
 				bs.Close();
 			}
+		}
+
+		/// <summary>
+		/// Подготовка выходного потока к работе
+		/// </summary>
+		/// <param name="progressChanged">Событие обновления прогресса обработки.</param>
+		/// <param name="fileName">Имя файла.</param>
+		/// <param name="bufferSizePerStream">Размер буфера на файловый поток.</param>
+		/// <param name="zeroOut">Затирать выходной поток нулями?</param>
+		/// <param name="workInMemory"></param>
+		/// <param name="rndSeed">Инициализирующее значение генератора случайных чисел.</param>
+		public static Stream PrepareOutputStream(EventHandler<EventArgs_Generic<ProgressChangedArg>> progressChanged,
+		                                         string fileName, int bufferSizePerStream, bool zeroOut, bool workInMemory, int rndSeed = int.MinValue)
+		{
+			// Если работаем не в ОЗУ...
+			if(!workInMemory)
+			{
+				//...если указанный временный файл уже существует...
+				if(File.Exists(fileName))
+				{
+					//...затираем файл, с которым планируется работать...
+					WipeFile(progressChanged, fileName, bufferSizePerStream, zeroOut, rndSeed);
+				}
+
+				//...и создаем файловый поток с требуемым именем
+				return new BufferedStream(new FileStream(fileName, FileMode.Create, FileAccess.ReadWrite, FileShare.None), bufferSizePerStream);
+			}
+			else
+			{
+				return new MemoryStream();
+			}
+		}
+
+		/// <summary>
+		/// Генерирование временных имен файлов
+		/// </summary>
+		/// <param name="count">Количество имен файлов.</param>
+		/// <returns>Массив имен файлов.</returns>
+		public static string[] GetTempFilenames(int count)
+		{
+			// Создаем набор имен файлов
+			var fileNames = new string[count];
+
+			for(int i = 0; i < count; i++)
+			{
+				fileNames[i] = Path.GetTempFileName();
+			}
+
+			// Возвращаем результат
+			return fileNames;
 		}
 
 		/// <summary>
@@ -312,56 +371,6 @@ namespace CRYFORCE.Engine
 			Console.WriteLine();
 
 			return result;
-		}
-
-		/// <summary>
-		/// Подготовка выходного потока к работе
-		/// </summary>
-		/// <param name="progressChanged">Событие обновления прогресса обработки.</param>
-		/// <param name="fileName">Имя файла.</param>
-		/// <param name="bufferSizePerStream">Размер буфера на файловый поток.</param>
-		/// <param name="zeroOut">Затирать выходной поток нулями?</param>
-		/// <param name="workInMemory"></param>
-		/// <param name="rndSeed">Инициализирующее значение генератора случайных чисел.</param>
-		public static Stream PrepareOutputStream(EventHandler<EventArgs_Generic<ProgressChangedArg>> progressChanged,
-		                                         string fileName, int bufferSizePerStream, bool zeroOut, bool workInMemory, int rndSeed = int.MinValue)
-		{
-			// Если работаем не в ОЗУ...
-			if(!workInMemory)
-			{
-				//...если указанный временный файл уже существует...
-				if(File.Exists(fileName))
-				{
-					//...затираем файл, с которым планируется работать...
-					WipeFile(progressChanged, fileName, bufferSizePerStream, zeroOut, rndSeed);
-				}
-
-				//...и создаем файловый поток с требуемым именем
-				return new BufferedStream(new FileStream(fileName, FileMode.Create, FileAccess.ReadWrite, FileShare.None), bufferSizePerStream);
-			}
-			else
-			{
-				return new MemoryStream();
-			}
-		}
-
-		/// <summary>
-		/// Генерирование временных имен файлов
-		/// </summary>
-		/// <param name="count">Количество имен файлов.</param>
-		/// <returns>Массив имен файлов.</returns>
-		public static string[] GetTempFilenames(int count)
-		{
-			// Создаем набор имен файлов
-			var fileNames = new string[count];
-
-			for(int i = 0; i < count; i++)
-			{
-				fileNames[i] = Path.GetTempFileName();
-			}
-
-			// Возвращаем результат
-			return fileNames;
 		}
 
 		/// <summary>

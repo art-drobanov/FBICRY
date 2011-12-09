@@ -14,6 +14,26 @@ namespace CRYFORCE.Engine
 	{
 		#region Static
 
+		/// <summary>
+		/// Метод разбиения группы из 8 байт на набор "битовых" байт
+		/// </summary>
+		/// <param name="bytesIn">Исходный набор байт.</param>
+		/// <param name="bytesOut">Массив "битовых" байт.</param>
+		/// <returns>Массив "битовых" байт.</returns>
+		public static void Split8Bytes(byte[] bytesIn, byte[] bytesOut)
+		{
+			// Каждый i-ый байт выходного потока формируется из i-ых бит
+			for(int i = 0; i < NBITS; i++)
+			{
+				int b = 0x00;
+				for(int j = 0; j < NBITS; j++)
+				{
+					b |= ((bytesIn[j] >> i) & 0x01) << j;
+				}
+				bytesOut[i] = (byte)b;
+			}
+		}
+
 		#endregion Static
 
 		#region Constants
@@ -24,6 +44,9 @@ namespace CRYFORCE.Engine
 		#endregion Constants
 
 		#region Data
+
+		/// <summary>Сущность для работы с перестановками битовой карты (для перемешивания битов).</summary>
+		private readonly BitMaps _bitMaps;
 
 		/// <summary>Битовые потоки.</summary>
 		private Stream[] _bitStreams;
@@ -44,11 +67,15 @@ namespace CRYFORCE.Engine
 		/// <summary>
 		/// Конструктор с параметрами
 		/// </summary>
+		/// <param name="key1">Ключ для первого прохода шифрования.</param>
+		/// <param name="key2">Ключ для второго прохода шифрования.</param>
+		/// <param name="paranoidMode">Параноидальный режим?</param>
 		/// <param name="workInMemory">Работать в ОЗУ?</param>
-		public BitSplitter(bool workInMemory = false)
+		public BitSplitter(byte[] key1, byte[] key2, bool paranoidMode, bool workInMemory)
 		{
 			BufferSizePerStream = 16 * 1024 * 1024; // 16 мегабайт
 			RndSeed = DateTime.Now.Ticks.GetHashCode();
+			_bitMaps = new BitMaps(key1, key2, paranoidMode);
 
 			// Работаем так, как желает пользователь
 			Initialize(CryforceUtilities.GetRandomFilenames(NBITS, NBITS, RndSeed).Select(item => item + ".jpg").ToArray(), workInMemory);
@@ -58,11 +85,15 @@ namespace CRYFORCE.Engine
 		/// Конструктор с параметрами
 		/// </summary>
 		/// <param name="bitStreamsNames">Имена битовых потоков.</param>
+		/// <param name="key1">Ключ для первого прохода шифрования.</param>
+		/// <param name="key2">Ключ для второго прохода шифрования.</param>
+		/// <param name="paranoidMode">Параноидальный режим?</param>
 		/// <param name="workInMemory">Работать в ОЗУ?</param>
-		public BitSplitter(IEnumerable<string> bitStreamsNames, bool workInMemory = false)
+		public BitSplitter(IEnumerable<string> bitStreamsNames, byte[] key1, byte[] key2, bool paranoidMode, bool workInMemory)
 		{
 			BufferSizePerStream = 16 * 1024 * 1024; // 16 мегабайт
 			RndSeed = DateTime.Now.Ticks.GetHashCode();
+			_bitMaps = new BitMaps(key1, key2, paranoidMode);
 
 			// Работаем так, как желает пользователь
 			Initialize(bitStreamsNames, workInMemory);
@@ -201,9 +232,10 @@ namespace CRYFORCE.Engine
 				Split8Bytes(bytesIn, bytesOut); // Bit-splitting...
 
 				// Запись соответствующих бит на свои места в битовые потоки
+				int[] bitmap = _bitMaps.GetNextBitmap();
 				for(int i = 0; i < NBITS; i++)
 				{
-					_bitStreams[i].WriteByte(bytesOut[i]);
+					_bitStreams[i].WriteByte(bytesOut[bitmap[i]]);
 				}
 
 				// Учитываем обработанный объем
@@ -219,9 +251,10 @@ namespace CRYFORCE.Engine
 				Split8Bytes(bytesIn, bytesOut); // Bit-splitting...
 
 				// Запись соответствующих бит на свои места в битовые потоки
+				int[] bitmap = _bitMaps.GetNextBitmap();
 				for(int i = 0; i < NBITS; i++)
 				{
-					_bitStreams[i].WriteByte(bytesOut[i]);
+					_bitStreams[i].WriteByte(bytesOut[bitmap[i]]);
 				}
 
 				// Учитываем обработанный объем
@@ -341,9 +374,10 @@ namespace CRYFORCE.Engine
 			if(inputStream.Length % NBITS != 0)
 			{
 				// Читаем данные из битовых потоков...
+				int[] bitmap = _bitMaps.GetNextBitmap();
 				for(int i = 0; i < NBITS; i++)
 				{
-					bytesIn[i] = (byte)_bitStreams[i].ReadByte();
+					bytesIn[bitmap[i]] = (byte)_bitStreams[i].ReadByte();
 				}
 				//...восстанавливаем порядок бит...
 				Split8Bytes(bytesIn, bytesOut); // Bit-splitting...
@@ -360,9 +394,10 @@ namespace CRYFORCE.Engine
 			while(remaining > 0)
 			{
 				// Читаем данные из битовых потоков...
+				int[] bitmap = _bitMaps.GetNextBitmap();
 				for(int i = 0; i < NBITS; i++)
 				{
-					bytesIn[i] = (byte)_bitStreams[i].ReadByte();
+					bytesIn[bitmap[i]] = (byte)_bitStreams[i].ReadByte();
 				}
 				//...восстанавливаем порядок бит...
 				Split8Bytes(bytesIn, bytesOut); // Bit-splitting...
@@ -386,26 +421,6 @@ namespace CRYFORCE.Engine
 
 			// Синхронизируем буфер с физическим носителем...
 			outputStream.Flush();
-		}
-
-		/// <summary>
-		/// Метод разбиения группы из 8 байт на набор "битовых" байт
-		/// </summary>
-		/// <param name="bytesIn">Исходный набор байт.</param>
-		/// <param name="bytesOut">Массив "битовых" байт.</param>
-		/// <returns>Массив "битовых" байт.</returns>
-		public static void Split8Bytes(byte[] bytesIn, byte[] bytesOut)
-		{
-			// Каждый i-ый байт выходного потока формируется из i-ых бит
-			for(int i = 0; i < NBITS; i++)
-			{
-				int b = 0x00;
-				for(int j = 0; j < NBITS; j++)
-				{
-					b |= ((bytesIn[j] >> i) & 0x01) << j;
-				}
-				bytesOut[i] = (byte)b;
-			}
 		}
 
 		/// <summary>
@@ -455,6 +470,8 @@ namespace CRYFORCE.Engine
 					File.Delete(bitStreamsName);
 				}
 			}
+
+			_bitMaps.ClearKey();
 		}
 
 		#endregion Public
