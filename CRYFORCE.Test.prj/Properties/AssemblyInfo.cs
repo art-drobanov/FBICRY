@@ -6,12 +6,12 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 
-[assembly: AssemblyTitle("FBICRYcmd.prj")]
-[assembly: AssemblyDescription("FBICRY Console Version")]
+[assembly: AssemblyTitle("CRYFORCE.Test")]
+[assembly: AssemblyDescription("Tests...")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("DrAF")]
-[assembly: AssemblyProduct("FBICRYcmd")]
-[assembly: AssemblyCopyright("Copyright © DrAF 2012")]
+[assembly: AssemblyProduct("CRYFORCE.Test")]
+[assembly: AssemblyCopyright("Copyright ©  DrAF 2012")]
 [assembly: AssemblyTrademark("FBICRY")]
 [assembly: AssemblyCulture("")]
 
@@ -23,7 +23,7 @@ using System.Runtime.InteropServices;
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
 
-[assembly: Guid("fefb4401-bd92-4c0b-a896-cb10dd2e1097")]
+[assembly: Guid("2b45a38b-012c-48ec-8b0e-a44f15beadeb")]
 
 // Version information for an assembly consists of the following four values:
 //

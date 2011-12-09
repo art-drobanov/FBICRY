@@ -2,9 +2,9 @@
 
 namespace EventArgsUtilities
 {
-	public class EventArgs_Generic<t> : EventArgs
+	public class EventArgsGeneric<t> : EventArgs
 	{
-		public EventArgs_Generic(t Target)
+		public EventArgsGeneric(t Target)
 		{
 			TargetObject = Target;
 		}

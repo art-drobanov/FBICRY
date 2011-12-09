@@ -94,7 +94,7 @@ namespace CRYFORCE.Engine
 		/// <param name="count">Количество байт, подлежащих стиранию.</param>
 		/// <param name="zeroOut">Затирать выходной поток нулями?</param>
 		/// <param name="rndSeed">Инициализирующее значение генератора случайных чисел.</param>
-		public static void WipeStream(EventHandler<EventArgs_Generic<ProgressChangedArg>> progressChanged, Stream stream,
+		public static void WipeStream(EventHandler<EventArgsGeneric<ProgressChangedArg>> progressChanged, Stream stream,
 		                              int bufferSizePerStream, long offset, long count, bool zeroOut, int rndSeed = int.MinValue)
 		{
 			// Проверка на нулевой размер буфера
@@ -165,6 +165,7 @@ namespace CRYFORCE.Engine
 					{
 						rndPattern[i] = 0x00;
 					}
+
 					// Прописываем паттерн в поток ОДИН РАЗ по указанному смещению...
 					WipeStreamByPattern(stream, offset, rndPattern, 1);
 					// PASS ZERO
@@ -181,16 +182,13 @@ namespace CRYFORCE.Engine
 			if(!zeroOut)
 			{
 				//...нужно очистить паттерн в ОЗУ
-				for(int i = 0; i < bufferSizePerStream; i++)
-				{
-					rndPattern[i] = 0x00;
-				}
+				Array.Clear(rndPattern, 0, rndPattern.Length);
 			}
 
 			// Сообщаем о прогрессе
 			if(progressChanged != null)
 			{
-				progressChanged(null, new EventArgs_Generic<ProgressChangedArg>(new ProgressChangedArg("WipeStream", 100)));
+				progressChanged(null, new EventArgsGeneric<ProgressChangedArg>(new ProgressChangedArg("WipeStream", 100)));
 			}
 		}
 
@@ -202,7 +200,7 @@ namespace CRYFORCE.Engine
 		/// <param name="bufferSizePerStream">Размер буфера на файловый поток.</param>
 		/// <param name="zeroOut">Затирать выходной поток нулями?</param>
 		/// <param name="rndSeed">Инициализирующее значение генератора случайных чисел.</param>
-		public static void WipeFile(EventHandler<EventArgs_Generic<ProgressChangedArg>> progressChanged, string fileName,
+		public static void WipeFile(EventHandler<EventArgsGeneric<ProgressChangedArg>> progressChanged, string fileName,
 		                            int bufferSizePerStream, bool zeroOut, int rndSeed = int.MinValue)
 		{
 			// Если указанный временный файл уже существует...
@@ -231,7 +229,7 @@ namespace CRYFORCE.Engine
 		/// <param name="zeroOut">Затирать выходной поток нулями?</param>
 		/// <param name="workInMemory"></param>
 		/// <param name="rndSeed">Инициализирующее значение генератора случайных чисел.</param>
-		public static Stream PrepareOutputStream(EventHandler<EventArgs_Generic<ProgressChangedArg>> progressChanged,
+		public static Stream PrepareOutputStream(EventHandler<EventArgsGeneric<ProgressChangedArg>> progressChanged,
 		                                         string fileName, int bufferSizePerStream, bool zeroOut, bool workInMemory, int rndSeed = int.MinValue)
 		{
 			// Если работаем не в ОЗУ...
@@ -247,10 +245,8 @@ namespace CRYFORCE.Engine
 				//...и создаем файловый поток с требуемым именем
 				return new BufferedStream(new FileStream(fileName, FileMode.Create, FileAccess.ReadWrite, FileShare.None), bufferSizePerStream);
 			}
-			else
-			{
-				return new MemoryStream();
-			}
+
+			return new MemoryStream();
 		}
 
 		/// <summary>

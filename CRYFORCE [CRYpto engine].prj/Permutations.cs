@@ -30,10 +30,7 @@ namespace CRYFORCE.Engine
 		private void Reset()
 		{
 			_st = new int[_seed.Length];
-			for(int i = 0; i < _st.Length; i++)
-			{
-				_st[i] = 0;
-			}
+			Array.Clear(_st, 0, _st.Length);
 		}
 
 		/// <summary>
@@ -46,19 +43,6 @@ namespace CRYFORCE.Engine
 			T t = a;
 			a = b;
 			b = t;
-		}
-
-		/// <summary>
-		/// Изменение порядка следования элементов в подвекторе на обратный, начиная с указанного индекса.
-		/// </summary>
-		/// <param name="v">Входной вектор.</param>
-		/// <param name="start">Стартовый индекс.</param>
-		private static void Reverse(T[] v, int start)
-		{
-			for(int i = 0; i < (v.Length - start) / 2; i++)
-			{
-				Swap(ref v[start + i], ref v[v.Length - 1 - i]);
-			}
 		}
 
 		/// <summary>
@@ -94,12 +78,8 @@ namespace CRYFORCE.Engine
 			{
 				if(_st[p] < _st.Length - 1 - p)
 				{
-					Reverse(_seed, p + 1);
-
-					for(int i = p + 1; i < _seed.Length; i++)
-					{
-						_st[i] = 0;
-					}
+					Array.Reverse(_seed, (p + 1), (_seed.Length - (p + 1)));
+					Array.Clear(_st, (p + 1), (_seed.Length - (p + 1)));
 
 					_st[p]++;
 

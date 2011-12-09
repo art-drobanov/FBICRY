@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Text;
 using System.Linq;
 
 using CRYFORCE.Engine;
@@ -14,9 +13,9 @@ namespace FBICRYcmd
 		/// <summary>
 		/// Обработчик события "Изменился прогресс обработки"
 		/// </summary>
-		private static void OnProgressChanged(object sender, EventArgs_Generic<ProgressChangedArg> e)
+		private static void OnProgressChanged(object sender, EventArgsGeneric<ProgressChangedArg> e)
 		{
-			int processProgress = (int)e.TargetObject.ProcessProgress;
+			var processProgress = (int)e.TargetObject.ProcessProgress;
 
 			if(processProgress != 100)
 			{
@@ -28,11 +27,11 @@ namespace FBICRYcmd
 			}
 		}
 
-		private static void Main(string[] args)
+		/// <summary>
+		/// Вывод логотипа
+		/// </summary>
+		private static void LogoOut()
 		{
-			// Работаем в ОЗУ
-			bool workInMemory = true;
-
 			Console.Clear();
 			Console.ForegroundColor = ConsoleColor.Green;
 			Console.BackgroundColor = ConsoleColor.Black;
@@ -48,64 +47,102 @@ namespace FBICRYcmd
 			Console.WriteLine("\t░░        ░░░░░░░░    ░░     ░▒▒▒▒░    ░░     ░░░     ░░░    ");
 			Console.WriteLine();
 			Console.Write("\t");
+		}
+
+		/// <summary>
+		/// Вывод версии
+		/// </summary>
+		private static void VersionOut()
+		{
 			Console.BackgroundColor = ConsoleColor.DarkGreen;
 			Console.ForegroundColor = ConsoleColor.Black;
 			Console.Write(" FBICRYcmd 1.00 (c) 2012 Дробанов Артём Федорович (DrAF)     ");
 			Console.BackgroundColor = ConsoleColor.Black;
 			Console.WriteLine();
 			Console.WriteLine();
+			Console.WriteLine();
+			Console.WriteLine();
+		}
+
+		/// <summary>
+		/// Вывод справки
+		/// </summary>
+		private static void HelpOut()
+		{
+			Console.WriteLine("\tFBICRYcmd <команда> <входной файл> <выходной файл> [файл-пароль] [итераций хеша]");
+			Console.WriteLine();
+			Console.WriteLine("\tКоманды: e - шифровать (ep - параноидальный режим);");
+			Console.WriteLine("\t         d - расшифровать (dp - параноидальный режим);");
+			Console.WriteLine();
+			Console.WriteLine();
+			Console.WriteLine("\tДля шифрования с паролем, вводимым с клавиатуры, укажите несуществующий");
+			Console.WriteLine("\tфайл-пароль, либо не указывайте его вообще (приложение запросит ввод).");
+			Console.WriteLine("\tПри вводе пароля, при нажатии каждой клавиши можно использовать");
+			Console.WriteLine("\tмодификаторы \"Alt\", \"Shift\", \"Control\"...");
+			Console.WriteLine();
+			Console.ResetColor();
+		}
+
+		private static void Main(string[] args)
+		{
+			// Работаем в ОЗУ
+			bool workInMemory = true;
+
+			LogoOut();
+			VersionOut();
 
 			Console.ForegroundColor = ConsoleColor.DarkGray;
 
 			if(args.Count() < 3)
 			{
-				Console.WriteLine("\tFBICRYcmd <команда> <входной файл> <выходной файл> [файл-пароль] [итераций хеша]\n");
-				Console.WriteLine("\tКоманды: e - шифровать (ep - параноидальный режим)");
-				Console.WriteLine("\t         d - расшифровать (dp - параноидальный режим)\n");
-				Console.WriteLine("\tДля шифрования с паролем, вводимым с клавиатуры, укажите несуществующий файл-пароль,");
-				Console.WriteLine("\tлибо не указывайте его вообще (приложение запросит ввод). При вводе пароля, при нажатии");
-				Console.WriteLine("\tкаждой клавиши можно использовать модификаторы \"Alt\", \"Shift\", \"Control\"...");
-				Console.WriteLine();
-				Console.ResetColor();
+				HelpOut();
+
 				return;
 			}
-		
+
 			var cryforce = new Cryforce();
 			cryforce.ProgressChanged += OnProgressChanged;
 
-			bool encryption;
-			bool paranoid;
+			bool encryption = false;
+			bool paranoid = false;
 
-			if(args[0].ToLower() == "e")
+			switch(args[0].ToLower())
 			{
-				encryption = true;
-				paranoid = false;
-				Console.WriteLine("Режим шифрования...");
-			}
-			else if(args[0].ToLower() == "d")
-			{
-				encryption = false;
-				paranoid = false;
-				Console.WriteLine("Режим расшифровки...");
-			}
-			else if(args[0].ToLower() == "ep")
-			{
-				encryption = true;
-				paranoid = true;
-				Console.WriteLine("Параноидальный режим шифрования...");
-			}
-			else if(args[0].ToLower() == "dp")
-			{
-				encryption = false;
-				paranoid = true;
-				Console.WriteLine("Параноидальный режим расшифровки...");
-			}
-			else
-			{
-				Console.WriteLine("Неизвестный режим обработки!");
-				
-				Console.ResetColor();
-				return;
+				case "e":
+					{
+						encryption = true;
+						paranoid = false;
+						Console.WriteLine("Режим шифрования...");
+						break;
+					}
+				case "d":
+					{
+						encryption = false;
+						paranoid = false;
+						Console.WriteLine("Режим расшифровки...");
+						break;
+					}
+				case "ep":
+					{
+						encryption = true;
+						paranoid = true;
+						Console.WriteLine("Параноидальный режим шифрования...");
+						break;
+					}
+				case "dp":
+					{
+						encryption = false;
+						paranoid = true;
+						Console.WriteLine("Параноидальный режим расшифровки...");
+						break;
+					}
+				default:
+					{
+						Console.WriteLine("Неизвестный режим обработки!");
+
+						Console.ResetColor();
+						break;
+					}
 			}
 
 			Console.WriteLine();
@@ -119,8 +156,8 @@ namespace FBICRYcmd
 			}
 
 			byte[] passwordData = null;
-			byte[] passwordDataForKey1 = null;
-			byte[] passwordDataForKey2 = null;
+			byte[] passwordDataForKey1;
+			byte[] passwordDataForKey2;
 
 			if((args.Count() >= 4) && File.Exists(args[3]))
 			{
@@ -145,11 +182,11 @@ namespace FBICRYcmd
 				passwordDataForKey2 = new byte[passwordData.Length - passwordDataForKey1.Length];
 			}
 			else
-			{										
+			{
 				Console.WriteLine("Введите пароль №1:");
 				passwordDataForKey1 = CryforceUtilities.GetPasswordBytesSafely();
 				Console.WriteLine();
-				
+
 				Console.WriteLine("Введите пароль №2:");
 				passwordDataForKey2 = CryforceUtilities.GetPasswordBytesSafely();
 				Console.WriteLine();
@@ -164,13 +201,10 @@ namespace FBICRYcmd
 			Stream outputStream = new FileStream(args[2], FileMode.Create, FileAccess.Write);
 
 			int iterations;
-			try
+
+			if((args.Length < 5) || (!int.TryParse(args[4], out iterations)))
 			{
-				iterations = int.Parse(args[4]);
-			}
-			catch
-			{
-				iterations = 1;//666 * 999;
+				iterations = 666 * 999;
 			}
 
 			Console.WriteLine("Обработка...");
@@ -197,20 +231,17 @@ namespace FBICRYcmd
 
 			if(passwordData != null)
 			{
-				for(int i = 0; i < passwordData.Length; i++)
-				{
-					passwordData[i] = 0x00;
-				}
+				Array.Clear(passwordData, 0, passwordData.Length);
 			}
 
 			for(int i = 0; i < passwordDataForKey1.Length; i++)
 			{
-				passwordDataForKey1[i] = 0x00;
+				Array.Clear(passwordDataForKey1, 0, passwordDataForKey1.Length);
 			}
 
 			for(int i = 0; i < passwordDataForKey2.Length; i++)
 			{
-				passwordDataForKey2[i] = 0x00;
+				Array.Clear(passwordDataForKey2, 0, passwordDataForKey2.Length);
 			}
 
 			Console.WriteLine();

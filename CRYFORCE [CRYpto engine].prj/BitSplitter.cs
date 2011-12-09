@@ -58,7 +58,7 @@ namespace CRYFORCE.Engine
 		/// <summary>
 		/// Событие обновления прогресса обработки
 		/// </summary>
-		public event EventHandler<EventArgs_Generic<ProgressChangedArg>> ProgressChanged;
+		public event EventHandler<EventArgsGeneric<ProgressChangedArg>> ProgressChanged;
 
 		#endregion Events
 
@@ -150,7 +150,7 @@ namespace CRYFORCE.Engine
 		/// </summary>
 		/// <param name="bitStreamsNames">Имена битовых потоков.</param>
 		/// <param name="workInMemory">Работать в ОЗУ?</param>
-		public void Initialize(IEnumerable<string> bitStreamsNames, bool workInMemory = false)
+		public void Initialize(IEnumerable<string> bitStreamsNames, bool workInMemory)
 		{
 			if(bitStreamsNames.Count() < NBITS)
 			{

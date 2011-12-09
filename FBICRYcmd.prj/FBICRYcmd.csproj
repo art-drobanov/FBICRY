@@ -51,9 +51,9 @@
       <Project>{B20C4D6F-2E75-4E09-9348-2B7070FBB470}</Project>
       <Name>CRYFORCE [CRYpto engine]</Name>
     </ProjectReference>
-    <ProjectReference Include="..\EventArgs_Generic.prj\EventArgs_Generic.csproj">
+    <ProjectReference Include="..\EventArgsGeneric.prj\EventArgsGeneric.csproj">
       <Project>{2ABEBDF1-99FE-43C7-8B07-F9F685FF010C}</Project>
-      <Name>EventArgs_Generic</Name>
+      <Name>EventArgsGeneric</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

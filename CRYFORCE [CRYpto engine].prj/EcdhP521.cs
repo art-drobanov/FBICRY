@@ -611,10 +611,7 @@ namespace CRYFORCE.Engine
 
 			if(Key512 != null)
 			{
-				for(int i = 0; i < Key512.Length; i++)
-				{
-					Key512[i] = 0x00;
-				}
+				Array.Clear(Key512, 0, Key512.Length);
 			}
 		}
 

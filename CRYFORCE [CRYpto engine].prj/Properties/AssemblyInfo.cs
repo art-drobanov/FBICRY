@@ -11,8 +11,8 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("DrAF")]
 [assembly: AssemblyProduct("CRYFORCE [CRYpto engine]")]
-[assembly: AssemblyCopyright("Copyright ©  DrAF 2011")]
-[assembly: AssemblyTrademark("CRYFORCE")]
+[assembly: AssemblyCopyright("Copyright ©  DrAF 2012")]
+[assembly: AssemblyTrademark("FBICRY")]
 [assembly: AssemblyCulture("")]
 
 // Setting ComVisible to false makes the types in this assembly not visible 

@@ -5,7 +5,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FBICRYcmd", "FBICRYcmd.prj\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CRYFORCE [CRYpto engine]", "CRYFORCE [CRYpto engine].prj\CRYFORCE [CRYpto engine].csproj", "{B20C4D6F-2E75-4E09-9348-2B7070FBB470}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventArgs_Generic", "EventArgs_Generic.prj\EventArgs_Generic.csproj", "{2ABEBDF1-99FE-43C7-8B07-F9F685FF010C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CRYFORCE.Test", "CRYFORCE.Test.prj\CRYFORCE.Test.csproj", "{E0BF7B65-F163-45CE-B94C-2C4CD03D5D1F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventArgsGeneric", "EventArgsGeneric.prj\EventArgsGeneric.csproj", "{2ABEBDF1-99FE-43C7-8B07-F9F685FF010C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -37,6 +39,16 @@ Global
 		{B20C4D6F-2E75-4E09-9348-2B7070FBB470}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{B20C4D6F-2E75-4E09-9348-2B7070FBB470}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{B20C4D6F-2E75-4E09-9348-2B7070FBB470}.Release|x86.ActiveCfg = Release|Any CPU
+		{E0BF7B65-F163-45CE-B94C-2C4CD03D5D1F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E0BF7B65-F163-45CE-B94C-2C4CD03D5D1F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E0BF7B65-F163-45CE-B94C-2C4CD03D5D1F}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{E0BF7B65-F163-45CE-B94C-2C4CD03D5D1F}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{E0BF7B65-F163-45CE-B94C-2C4CD03D5D1F}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{E0BF7B65-F163-45CE-B94C-2C4CD03D5D1F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E0BF7B65-F163-45CE-B94C-2C4CD03D5D1F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E0BF7B65-F163-45CE-B94C-2C4CD03D5D1F}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{E0BF7B65-F163-45CE-B94C-2C4CD03D5D1F}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{E0BF7B65-F163-45CE-B94C-2C4CD03D5D1F}.Release|x86.ActiveCfg = Release|Any CPU
 		{2ABEBDF1-99FE-43C7-8B07-F9F685FF010C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{2ABEBDF1-99FE-43C7-8B07-F9F685FF010C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2ABEBDF1-99FE-43C7-8B07-F9F685FF010C}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU

@@ -32,7 +32,7 @@ namespace CRYFORCE.Engine
 		/// <summary>
 		/// Событие обновления прогресса обработки
 		/// </summary>
-		public event EventHandler<EventArgs_Generic<ProgressChangedArg>> ProgressChanged;
+		public event EventHandler<EventArgsGeneric<ProgressChangedArg>> ProgressChanged;
 
 		#endregion Events
 
@@ -183,7 +183,7 @@ namespace CRYFORCE.Engine
 
 			if(ProgressChanged != null)
 			{
-				ProgressChanged(null, new EventArgs_Generic<ProgressChangedArg>(new ProgressChangedArg("Rijndael-256 (1)", 100)));
+				ProgressChanged(null, new EventArgsGeneric<ProgressChangedArg>(new ProgressChangedArg("Rijndael-256 (1)", 100)));
 			}
 
 			////////////////////////////////////////////////////////
@@ -213,7 +213,7 @@ namespace CRYFORCE.Engine
 
 			if(ProgressChanged != null)
 			{
-				ProgressChanged(null, new EventArgs_Generic<ProgressChangedArg>(new ProgressChangedArg("BitSplitter", 100)));
+				ProgressChanged(null, new EventArgsGeneric<ProgressChangedArg>(new ProgressChangedArg("BitSplitter", 100)));
 			}
 
 			bitSplitter.ClearAndClose();
@@ -243,7 +243,7 @@ namespace CRYFORCE.Engine
 
 			if(ProgressChanged != null)
 			{
-				ProgressChanged(null, new EventArgs_Generic<ProgressChangedArg>(new ProgressChangedArg("Rijndael-256 (2)", 100)));
+				ProgressChanged(null, new EventArgsGeneric<ProgressChangedArg>(new ProgressChangedArg("Rijndael-256 (2)", 100)));
 			}
 
 			// Уничтожаем данные временных потоков

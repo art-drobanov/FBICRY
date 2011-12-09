@@ -5,11 +5,11 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{B20C4D6F-2E75-4E09-9348-2B7070FBB470}</ProjectGuid>
+    <ProjectGuid>{2ABEBDF1-99FE-43C7-8B07-F9F685FF010C}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>CRYFORCE.Engine</RootNamespace>
-    <AssemblyName>CRYFORCE [CRYpto engine]</AssemblyName>
+    <RootNamespace>EventArgsUtilities</RootNamespace>
+    <AssemblyName>EventArgsGeneric</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile>Client</TargetFrameworkProfile>
@@ -22,7 +22,6 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -31,10 +30,6 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-  </PropertyGroup>
-  <PropertyGroup>
-    <ApplicationIcon>Resources\CRYFORCE.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -46,24 +41,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BitMaps.cs" />
-    <Compile Include="BitSplitter.cs" />
-    <Compile Include="Cryforce.cs" />
-    <Compile Include="EcdhP521.cs" />
-    <Compile Include="Permutations.cs" />
-    <Compile Include="ProgressChangedArg.cs" />
+    <Compile Include="EventArgsGeneric.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="StreamCryptoWrapper.cs" />
-    <Compile Include="CryforceUtilities.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Resources\CRYFORCE.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\EventArgsGeneric.prj\EventArgsGeneric.csproj">
-      <Project>{2ABEBDF1-99FE-43C7-8B07-F9F685FF010C}</Project>
-      <Name>EventArgsGeneric</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

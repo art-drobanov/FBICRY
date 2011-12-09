@@ -5,7 +5,8 @@
 @del *.cache
 rem @del /A:H *.suo
 @rmdir /S/Q "_ReSharper.CRYFORCE [CRYpto engine]"
-@rmdir /S/Q "_ReSharper.EventArgs_Generic"
+@rmdir /S/Q "_ReSharper.CRYFORCE.Test"
+@rmdir /S/Q "_ReSharper.EventArgsGeneric"
 @rmdir /S/Q "_ReSharper.FBICRYcmd"
 @rmdir /S/Q "_ReSharper.HashLib"
 @rmdir /S/Q "_ReSharper.HashLibQualityTest"
@@ -13,7 +14,7 @@ rem @del /A:H *.suo
 @del *.xml
 @del *.user
 
-@for /D %%i in ("CRYFORCE [CRYpto engine].prj" EventArgs_Generic.prj FBICRYcmd.prj) do @(
+@for /D %%i in ("CRYFORCE [CRYpto engine].prj" CRYFORCE.Test.prj EventArgsGeneric.prj FBICRYcmd.prj) do @(
 	@echo Project: %%i
 	@cd %%i
 	@del *.xml
