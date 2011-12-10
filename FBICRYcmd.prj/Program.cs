@@ -234,12 +234,12 @@ namespace FBICRYcmd
 				Array.Clear(passwordData, 0, passwordData.Length);
 			}
 
-			for(int i = 0; i < passwordDataForKey1.Length; i++)
+			if(passwordDataForKey1 != null)
 			{
 				Array.Clear(passwordDataForKey1, 0, passwordDataForKey1.Length);
 			}
 
-			for(int i = 0; i < passwordDataForKey2.Length; i++)
+			if(passwordDataForKey2 != null)
 			{
 				Array.Clear(passwordDataForKey2, 0, passwordDataForKey2.Length);
 			}
