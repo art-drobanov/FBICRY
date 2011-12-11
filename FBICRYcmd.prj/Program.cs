@@ -80,7 +80,36 @@ namespace FBICRYcmd
 			Console.WriteLine("\tПри вводе пароля, при нажатии каждой клавиши можно использовать");
 			Console.WriteLine("\tмодификаторы \"Alt\", \"Shift\", \"Control\"...");
 			Console.WriteLine();
-			Console.ResetColor();
+		}
+
+		/// <summary>
+		/// Проверка версии операционной системы
+		/// </summary>
+		private static bool OSVersionCheck()
+		{
+			OperatingSystem osInfo = Environment.OSVersion;
+
+			if(osInfo.Platform != PlatformID.Win32NT)
+			{
+				return false;
+			}
+
+			if(osInfo.Version.Major < 6)
+			{
+				return false;
+			}
+
+			// Vista...
+			if((osInfo.Version.Major == 6) && (osInfo.Version.Minor == 0))
+			{
+				//...должна иметь хотя бы SP1
+				if((osInfo.ServicePack == "") || (!osInfo.ServicePack.StartsWith("Service Pack")))
+				{
+					return false;
+				}
+			}
+
+			return true;
 		}
 
 		private static void Main(string[] args)
@@ -93,10 +122,26 @@ namespace FBICRYcmd
 
 			Console.ForegroundColor = ConsoleColor.DarkGray;
 
+			// Если задано слишком малое количество аргументов - выводим справку...
 			if(args.Count() < 3)
 			{
 				HelpOut();
+			}
 
+			// Проверка версии ОС
+			if(!OSVersionCheck())
+			{
+				Console.ForegroundColor = ConsoleColor.DarkRed;
+				Console.WriteLine();
+				Console.WriteLine("Внимание: текущая версия операционной системы не поддерживается - требуется Vista SP1 или выше!");
+
+				Console.ResetColor();
+				return;
+			}
+
+			if(args.Count() < 3)
+			{
+				Console.ResetColor();
 				return;
 			}
 
@@ -215,8 +260,9 @@ namespace FBICRYcmd
 			}
 			catch
 			{
+				Console.ForegroundColor = ConsoleColor.Red;
 				Console.WriteLine();
-				Console.WriteLine("Ошибка в ходе криптографического преобразования!");
+				Console.WriteLine("Ошибка в ходе криптографического преобразования! Неверный ключ?");
 
 				Console.ResetColor();
 				return;
@@ -246,6 +292,7 @@ namespace FBICRYcmd
 
 			Console.WriteLine();
 			Console.WriteLine("Завершено!");
+
 			Console.ResetColor();
 		}
 	}
