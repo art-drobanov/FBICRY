@@ -129,7 +129,7 @@ namespace CRYFORCE.Engine
 		/// <param name="key1">Ключ для первого прохода шифрования.</param>
 		/// <param name="key2">Ключ для второго прохода шифрования.</param>
 		/// <param name="outputStream">Выходной поток.</param>
-		/// <param name="encryptionMode">Используется шифрование?.</param>
+		/// <param name="encryptionMode">Используется шифрование?</param>
 		/// <param name="paranoidMode">Параноидальный режим?</param>
 		/// <param name="iterations">Количество итераций хеширования пароля.</param>
 		public void DoubleRijndael(Stream inputStream, byte[] key1, byte[] key2, Stream outputStream, bool encryptionMode, bool paranoidMode,
@@ -264,12 +264,63 @@ namespace CRYFORCE.Engine
 				}
 			}
 
-			// Закрываем все потоки, которые не являлись снинонимами входа или выхода
+			// Закрываем все потоки, которые не являлись синонимами входа или выхода
 			inputStreamAtLevel1.Close();
 			inputStreamAtLevel2.Close();
 
 			outputStreamAtLevel0.Close();
 			outputStreamAtLevel1.Close();
+		}
+
+		/// <summary>
+		/// Шифрование по алгоритму Rijndael-256
+		/// </summary>
+		/// <param name="inputStream">Входной поток.</param>
+		/// <param name="key">Ключ для первого прохода шифрования.</param>
+		/// <param name="outputStream">Выходной поток.</param>
+		/// <param name="encryptionMode">Используется шифрование?</param>
+		/// <param name="iterations">Количество итераций хеширования пароля.</param>
+		public void SingleRijndael(Stream inputStream, byte[] key, Stream outputStream, bool encryptionMode, int iterations = 1)
+		{
+			if(!inputStream.CanSeek)
+			{
+				throw new Exception("Cryforce::SingleRijndael() ==> Input stream can't seek!");
+			}
+
+			var streamCryptoWrapper = new StreamCryptoWrapper();
+			streamCryptoWrapper.Initialize(key, iterations);
+
+			Stream inputStreamAtLevel0 = encryptionMode ? inputStream : streamCryptoWrapper.WrapStream(inputStream, false);
+			Stream outputStreamAtLevel0 = encryptionMode ? streamCryptoWrapper.WrapStream(outputStream, true) : outputStream;
+
+			CryforceUtilities.SafeSeekBegin(inputStreamAtLevel0);
+			CryforceUtilities.SafeSeekBegin(outputStreamAtLevel0);
+
+			// Процесс шифрования/расшифровки происходит прозрачно, во время чтения из зашифрованного потока или записи в зашифрованный
+			inputStreamAtLevel0.CopyTo(outputStreamAtLevel0);
+			if(outputStreamAtLevel0 is CryptoStream)
+			{
+				((CryptoStream)outputStreamAtLevel0).FlushFinalBlock();
+			}
+			outputStreamAtLevel0.Flush();
+
+			// Если выходной поток первого уровня является криптографической оберткой над другим потоком -
+			// нужно получить базовый поток для дальнейшей работы
+			if(outputStreamAtLevel0 is CryptoStream)
+			{
+				outputStreamAtLevel0 = outputStream;
+			}
+
+			CryforceUtilities.SafeSeekBegin(inputStreamAtLevel0);
+			CryforceUtilities.SafeSeekBegin(outputStreamAtLevel0);
+
+			//...и как завершение шифрования - деинициализируем криптовраппер
+			streamCryptoWrapper.Clear();
+
+			if(ProgressChanged != null)
+			{
+				ProgressChanged(null, new EventArgsGeneric<ProgressChangedArg>(new ProgressChangedArg("Rijndael-256", 100)));
+			}
 		}
 
 		#endregion Public

@@ -71,8 +71,13 @@ namespace FBICRYcmd
 		{
 			Console.WriteLine("\tFBICRYcmd <команда> <входной файл> <выходной файл> [файл-пароль] [итераций хеша]");
 			Console.WriteLine();
-			Console.WriteLine("\tКоманды: e - шифровать (ep - параноидальный режим);");
-			Console.WriteLine("\t         d - расшифровать (dp - параноидальный режим);");
+			Console.WriteLine("\tКоманды: e1 - шифровать (Rijndael-256);");
+			Console.WriteLine("\t         e2 - шифровать (двойной Rijndael-256 с перестановкой битов между слоями);");
+			Console.WriteLine("\t         e3 - шифровать (e2, параноидальный режим, медленный!);");
+			Console.WriteLine();
+			Console.WriteLine("\tКоманды: d1 - дешифровать (Rijndael-256);");
+			Console.WriteLine("\t         d2 - дешифровать (двойной Rijndael-256 с перестановкой битов между слоями);");
+			Console.WriteLine("\t         d3 - дешифровать (d2, параноидальный режим, медленный!);");
 			Console.WriteLine();
 			Console.WriteLine();
 			Console.WriteLine("\tДля шифрования с паролем, вводимым с клавиатуры, укажите несуществующий");
@@ -148,37 +153,59 @@ namespace FBICRYcmd
 			var cryforce = new Cryforce();
 			cryforce.ProgressChanged += OnProgressChanged;
 
+			// Атрибуты процесса обработки
+			bool single = false;
 			bool encryption = false;
 			bool paranoid = false;
 
 			switch(args[0].ToLower())
 			{
-				case "e":
+				case "e1":
 					{
+						single = true;
 						encryption = true;
 						paranoid = false;
-						Console.WriteLine("Режим шифрования...");
+						Console.WriteLine("Режим шифрования (Rijndael-256)...");
 						break;
 					}
-				case "d":
+				case "e2":
 					{
-						encryption = false;
+						single = false;
+						encryption = true;
 						paranoid = false;
-						Console.WriteLine("Режим расшифровки...");
+						Console.WriteLine("Режим шифрования (двойной Rijndael-256 с перестановкой битов между слоями)...");
 						break;
 					}
-				case "ep":
+				case "e3":
 					{
+						single = false;
 						encryption = true;
 						paranoid = true;
-						Console.WriteLine("Параноидальный режим шифрования...");
+						Console.WriteLine("Режим шифрования (двойной Rijndael-256 с перестановкой битов между слоями, параноидальный режим, медленный!)...");
 						break;
 					}
-				case "dp":
+				case "d1":
 					{
+						single = true;
+						encryption = false;
+						paranoid = false;
+						Console.WriteLine("Режим дешифрования (Rijndael-256)...");
+						break;
+					}
+				case "d2":
+					{
+						single = false;
+						encryption = false;
+						paranoid = false;
+						Console.WriteLine("Режим дешифрования (двойной Rijndael-256 с перестановкой битов между слоями)...");
+						break;
+					}
+				case "d3":
+					{
+						single = false;
 						encryption = false;
 						paranoid = true;
-						Console.WriteLine("Параноидальный режим расшифровки...");
+						Console.WriteLine("Режим дешифрования (двойной Rijndael-256 с перестановкой битов между слоями, параноидальный режим, медленный!)...");
 						break;
 					}
 				default:
@@ -201,8 +228,8 @@ namespace FBICRYcmd
 			}
 
 			byte[] passwordData = null;
-			byte[] passwordDataForKey1;
-			byte[] passwordDataForKey2;
+			byte[] passwordDataForKey1 = null;
+			byte[] passwordDataForKey2 = null;
 
 			if((args.Count() >= 4) && File.Exists(args[3]))
 			{
@@ -228,13 +255,22 @@ namespace FBICRYcmd
 			}
 			else
 			{
-				Console.WriteLine("Введите пароль №1:");
-				passwordDataForKey1 = CryforceUtilities.GetPasswordBytesSafely();
-				Console.WriteLine();
+				if(single)
+				{
+					Console.WriteLine("Введите пароль:");
+					passwordDataForKey1 = CryforceUtilities.GetPasswordBytesSafely();
+					Console.WriteLine();
+				}
+				else
+				{
+					Console.WriteLine("Введите пароль №1:");
+					passwordDataForKey1 = CryforceUtilities.GetPasswordBytesSafely();
+					Console.WriteLine();
 
-				Console.WriteLine("Введите пароль №2:");
-				passwordDataForKey2 = CryforceUtilities.GetPasswordBytesSafely();
-				Console.WriteLine();
+					Console.WriteLine("Введите пароль №2:");
+					passwordDataForKey2 = CryforceUtilities.GetPasswordBytesSafely();
+					Console.WriteLine();
+				}
 			}
 
 			if(File.Exists(args[2]))
@@ -256,7 +292,14 @@ namespace FBICRYcmd
 
 			try
 			{
-				cryforce.DoubleRijndael(inputStream, passwordDataForKey1, passwordDataForKey2, outputStream, encryption, paranoid, iterations);
+				if(single)
+				{
+					cryforce.SingleRijndael(inputStream, passwordDataForKey1, outputStream, encryption, iterations);
+				}
+				else
+				{
+					cryforce.DoubleRijndael(inputStream, passwordDataForKey1, passwordDataForKey2, outputStream, encryption, paranoid, iterations);
+				}
 			}
 			catch
 			{
