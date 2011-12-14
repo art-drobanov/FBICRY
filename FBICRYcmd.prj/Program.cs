@@ -16,14 +16,32 @@ namespace FBICRYcmd
 		private static void OnProgressChanged(object sender, EventArgsGeneric<ProgressChangedArg> e)
 		{
 			var processProgress = (int)e.TargetObject.ProcessProgress;
+			string messagePostfix = e.TargetObject.MessagePostfix;
 
 			if(processProgress != 100)
 			{
-				Console.WriteLine("процесс \"{0}\" / прогресс: {1}", e.TargetObject.ProcessDescription, processProgress);
+				Console.Write("процесс \"{0}\" / прогресс: {1}", e.TargetObject.ProcessDescription, processProgress);
 			}
 			else
 			{
-				Console.WriteLine("процесс \"{0}\" завершен...", e.TargetObject.ProcessDescription, processProgress);
+				// Очистка строки
+				Console.Write("\r");
+				for(int i = 0; i < 80; i++)
+				{
+					Console.Write(" ");
+				}
+				Console.Write("\r");
+
+				Console.Write("процесс \"{0}\" завершен...", e.TargetObject.ProcessDescription);
+			}
+
+			if(messagePostfix == "")
+			{
+				Console.WriteLine();
+			}
+			else
+			{
+				Console.Write(messagePostfix);
 			}
 		}
 
@@ -285,7 +303,7 @@ namespace FBICRYcmd
 
 			if((args.Length < 5) || (!int.TryParse(args[4], out iterations)))
 			{
-				iterations = 666 * 999;
+				iterations = 666 * 999; // Итерации хеширования нужны для того, чтобы усложнить brute-force attack
 			}
 
 			Console.WriteLine("Обработка...");

@@ -13,17 +13,43 @@ namespace CRYFORCE.Engine
 	public static class CryforceUtilities
 	{
 		/// <summary>
-		/// Метод копирования одного потока в другой (идентичен коду MS)
+		/// Метод копирования одного потока в другой
 		/// </summary>
 		/// <param name="source">Исходный поток.</param>
 		/// <param name="destination">Целевой поток.</param>
-		public static void StreamCopy(Stream source, Stream destination)
+		/// <param name="dataSize">Размер данных, подлежащих копированию.</param>
+		/// <param name="bufferSize">Размер буфера для копирования.</param>
+		public static void StreamCopy(Stream source, Stream destination, long dataSize, int bufferSize = 4096)
 		{
-			var buffer = new byte[4096];
+			StreamCopy(null, source, destination, dataSize, bufferSize);
+		}
+
+		/// <summary>
+		/// Метод копирования одного потока в другой
+		/// </summary>
+		/// <param name="source">Исходный поток.</param>
+		/// <param name="destination">Целевой поток.</param>
+		/// <param name="dataSize">Размер данных, подлежащих копированию.</param>
+		/// <param name="bufferSize">Размер буфера для копирования.</param>
+		public static void StreamCopy(EventHandler<EventArgsGeneric<ProgressChangedArg>> progressChanged,
+		                              Stream source, Stream destination, long dataSize, int bufferSize)
+		{
+			var buffer = new byte[bufferSize];
 			int count;
+			long totalCount = 0;
+
+			// Пытаемся читать из потока фрагментами по bufferSize, а сколько было прочитано по-факту узнаем из count
 			while((count = source.Read(buffer, 0, buffer.Length)) != 0)
 			{
 				destination.Write(buffer, 0, count);
+				totalCount += count;
+
+				// Сообщаем о прогрессе
+				if(progressChanged != null)
+				{
+					double progress = (totalCount / (double)dataSize) * 100;
+					progressChanged(null, new EventArgsGeneric<ProgressChangedArg>(new ProgressChangedArg("StreamCopy", progress, "\r")));
+				}
 			}
 		}
 

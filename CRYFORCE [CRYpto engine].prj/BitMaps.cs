@@ -19,7 +19,7 @@ namespace CRYFORCE.Engine
 
 		/// <summary>Текущий индекс в перестановках битовой карты.</summary>
 		private int _bitmapsIdx;
-		
+
 		#endregion Data
 
 		#region .ctor
