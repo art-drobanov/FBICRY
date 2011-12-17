@@ -144,15 +144,8 @@ namespace CRYFORCE.Engine
 			IsInitialized = false;
 
 			// Чистим массивы...
-			if(_key != null)
-			{
-				Array.Clear(_key, 0, _key.Length);
-			}
-
-			if(_IV != null)
-			{
-				Array.Clear(_IV, 0, _IV.Length);
-			}
+			CryforceUtilities.ClearArray(_key);
+			CryforceUtilities.ClearArray(_IV);
 
 			// Чистим криптографические сущности...
 			if(_hash256 != null)

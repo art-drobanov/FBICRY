@@ -609,10 +609,7 @@ namespace CRYFORCE.Engine
 			}
 			_hash512 = new SHA512Cng();
 
-			if(Key512 != null)
-			{
-				Array.Clear(Key512, 0, Key512.Length);
-			}
+			CryforceUtilities.ClearArray(Key512);
 		}
 
 		#endregion Public

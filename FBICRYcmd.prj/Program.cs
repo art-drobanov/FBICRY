@@ -46,13 +46,20 @@ namespace FBICRYcmd
 		}
 
 		/// <summary>
-		/// Вывод логотипа
+		/// Сброс режима консоли
 		/// </summary>
-		private static void LogoOut()
+		private static void ConsoleClear()
 		{
 			Console.Clear();
 			Console.ForegroundColor = ConsoleColor.Green;
 			Console.BackgroundColor = ConsoleColor.Black;
+		}
+
+		/// <summary>
+		/// Вывод логотипа
+		/// </summary>
+		private static void LogoOut()
+		{
 			Console.WriteLine();
 			Console.WriteLine();
 			Console.WriteLine("\t▒▒▒▒▒▒▒▒  ░▒▒▒▒▒▒▒    ▒▒░    ░▒▒▒▒     ▒▒▒▒▒▒▒░   ▒▒▒     ░▒▒");
@@ -140,6 +147,7 @@ namespace FBICRYcmd
 			// Работаем в ОЗУ
 			bool workInMemory = true;
 
+			ConsoleClear();
 			LogoOut();
 			VersionOut();
 
@@ -162,6 +170,7 @@ namespace FBICRYcmd
 				return;
 			}
 
+			// Если количество аргументов слишком мало - обработка невозможна
 			if(args.Count() < 3)
 			{
 				Console.ResetColor();
@@ -245,16 +254,28 @@ namespace FBICRYcmd
 				return;
 			}
 
-			byte[] passwordData = null;
+			// Парольные данные, получаемые из файла
+			byte[] passwordDataForKeyFromFile = null;
+			byte[] passwordDataForKeyFromFile1 = null;
+			byte[] passwordDataForKeyFromFile2 = null;
+
+			// Парольные данные, вводимые с клавиатуры
+			byte[] passwordDataForKeyFromKeyboard = null;
+			byte[] passwordDataForKeyFromKeyboard1 = null;
+			byte[] passwordDataForKeyFromKeyboard2 = null;
+
+			// Результирующие блоки парольных данных
+			byte[] passwordDataForKey = null;
 			byte[] passwordDataForKey1 = null;
 			byte[] passwordDataForKey2 = null;
 
+			// Читаем файл-пароль...
 			if((args.Count() >= 4) && File.Exists(args[3]))
 			{
 				try
 				{
-					passwordData = File.ReadAllBytes(args[3]);
-					if(passwordData.Length < 2)
+					passwordDataForKeyFromFile = File.ReadAllBytes(args[3]);
+					if(passwordDataForKeyFromFile.Length < 2)
 					{
 						Console.WriteLine("Файл-пароль не может быть меньше 2 байт!");
 						throw new Exception();
@@ -268,54 +289,69 @@ namespace FBICRYcmd
 					return;
 				}
 
-				passwordDataForKey1 = new byte[passwordData.Length / 2];
-				passwordDataForKey2 = new byte[passwordData.Length - passwordDataForKey1.Length];
+				// Если выбран режим шифрования с двумя ключами...
+				if(!single)
+				{
+					//...разбиваем основной блок парольных данных на две компоненты
+					passwordDataForKeyFromFile1 = new byte[passwordDataForKeyFromFile.Length / 2];
+					passwordDataForKeyFromFile2 = new byte[passwordDataForKeyFromFile.Length - passwordDataForKeyFromFile1.Length];
+
+					// Каждый подмассив берет свой блок
+					Array.Copy(passwordDataForKeyFromFile, 0, passwordDataForKeyFromFile1, 0, passwordDataForKeyFromFile1.Length);
+					Array.Copy(passwordDataForKeyFromFile, passwordDataForKeyFromFile1.Length, passwordDataForKeyFromFile2, 0, passwordDataForKeyFromFile2.Length);
+				}
+			}
+
+			// Пароль с клавиатуры считываем в любом случае...
+			if(single)
+			{
+				Console.WriteLine("Введите пароль:");
+				passwordDataForKeyFromKeyboard = CryforceUtilities.GetPasswordBytesSafely();
+				Console.WriteLine();
 			}
 			else
 			{
-				if(single)
-				{
-					Console.WriteLine("Введите пароль:");
-					passwordDataForKey1 = CryforceUtilities.GetPasswordBytesSafely();
-					Console.WriteLine();
-				}
-				else
-				{
-					Console.WriteLine("Введите пароль №1:");
-					passwordDataForKey1 = CryforceUtilities.GetPasswordBytesSafely();
-					Console.WriteLine();
+				Console.WriteLine("Введите пароль №1:");
+				passwordDataForKeyFromKeyboard1 = CryforceUtilities.GetPasswordBytesSafely();
+				Console.WriteLine();
 
-					Console.WriteLine("Введите пароль №2:");
-					passwordDataForKey2 = CryforceUtilities.GetPasswordBytesSafely();
-					Console.WriteLine();
-				}
+				Console.WriteLine("Введите пароль №2:");
+				passwordDataForKeyFromKeyboard2 = CryforceUtilities.GetPasswordBytesSafely();
+				Console.WriteLine();
 			}
 
+
+			// Удаляем выходной файл, если такой имеется (невосстановимое удаление)
 			if(File.Exists(args[2]))
 			{
+				Console.WriteLine("Уничтожение данных выходного файла, который будет перезаписан...");
+				CryforceUtilities.WipeFile(OnProgressChanged, args[2], cryforce.BufferSizePerStream, true);
 				File.Delete(args[2]);
 			}
 
+			// Формируем входные и выходные потоки...
 			Stream inputStream = new FileStream(args[1], FileMode.Open, FileAccess.Read);
 			Stream outputStream = new FileStream(args[2], FileMode.Create, FileAccess.Write);
 
-			int iterations;
-
+			int iterations; // Количество итераций хеширования пароля
 			if((args.Length < 5) || (!int.TryParse(args[4], out iterations)))
 			{
 				iterations = 666 * 999; // Итерации хеширования нужны для того, чтобы усложнить brute-force attack
 			}
 
-			Console.WriteLine("Обработка...");
-
+			// Подготовка ключей для шифрования...
+			Console.WriteLine("Подготовка ключей для шифрования, {0} итер.", iterations.ToString());
 			try
 			{
 				if(single)
 				{
-					cryforce.SingleRijndael(inputStream, passwordDataForKey1, outputStream, encryption, iterations);
+					passwordDataForKey = CryforceUtilities.MergeArrays(passwordDataForKeyFromFile, passwordDataForKeyFromKeyboard);
+					cryforce.SingleRijndael(inputStream, passwordDataForKey, outputStream, encryption, iterations);
 				}
 				else
 				{
+					passwordDataForKey1 = CryforceUtilities.MergeArrays(passwordDataForKeyFromFile1, passwordDataForKeyFromKeyboard1);
+					passwordDataForKey2 = CryforceUtilities.MergeArrays(passwordDataForKeyFromFile2, passwordDataForKeyFromKeyboard2);
 					cryforce.DoubleRijndael(inputStream, passwordDataForKey1, passwordDataForKey2, outputStream, encryption, paranoid, iterations);
 				}
 			}
@@ -336,20 +372,20 @@ namespace FBICRYcmd
 
 			Console.WriteLine("Очистка ключей...");
 
-			if(passwordData != null)
-			{
-				Array.Clear(passwordData, 0, passwordData.Length);
-			}
+			// Парольные данные, получаемые из файла
+			CryforceUtilities.ClearArray(passwordDataForKeyFromFile);
+			CryforceUtilities.ClearArray(passwordDataForKeyFromFile1);
+			CryforceUtilities.ClearArray(passwordDataForKeyFromFile2);
 
-			if(passwordDataForKey1 != null)
-			{
-				Array.Clear(passwordDataForKey1, 0, passwordDataForKey1.Length);
-			}
+			// Парольные данные, вводимые с клавиатуры
+			CryforceUtilities.ClearArray(passwordDataForKeyFromKeyboard);
+			CryforceUtilities.ClearArray(passwordDataForKeyFromKeyboard1);
+			CryforceUtilities.ClearArray(passwordDataForKeyFromKeyboard2);
 
-			if(passwordDataForKey2 != null)
-			{
-				Array.Clear(passwordDataForKey2, 0, passwordDataForKey2.Length);
-			}
+			// Результирующие блоки парольных данных
+			CryforceUtilities.ClearArray(passwordDataForKey);
+			CryforceUtilities.ClearArray(passwordDataForKey1);
+			CryforceUtilities.ClearArray(passwordDataForKey2);
 
 			Console.WriteLine();
 			Console.WriteLine("Завершено!");

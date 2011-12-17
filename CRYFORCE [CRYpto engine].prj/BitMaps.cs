@@ -138,7 +138,7 @@ namespace CRYFORCE.Engine
 			BitmapsIdx = 0;
 			BitmapKeyIdx = 0;
 
-			Array.Clear(BitmapKey, 0, BitmapKey.Length);
+			CryforceUtilities.ClearArray(BitmapKey);
 		}
 
 		#endregion Public

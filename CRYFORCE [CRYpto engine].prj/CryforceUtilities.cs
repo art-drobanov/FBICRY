@@ -13,6 +13,48 @@ namespace CRYFORCE.Engine
 	public static class CryforceUtilities
 	{
 		/// <summary>
+		/// Очистка массива
+		/// </summary>
+		/// <typeparam name="T">Тип элементов массивов.</typeparam>
+		/// <param name="array">Массив для очистки.</param>
+		public static void ClearArray<T>(T[] array)
+		{
+			if(array == null)
+			{
+				return;
+			}
+
+			Array.Clear(array, 0, array.Length);
+		}
+
+		/// <summary>
+		/// Объединение двух массивов в результирующий
+		/// </summary>
+		/// <typeparam name="T">Тип элементов массивов.</typeparam>
+		/// <param name="array1">Массив №1.</param>
+		/// <param name="array2">Массив №2.</param>
+		/// <returns>Результирующий массив.</returns>
+		public static T[] MergeArrays<T>(T[] array1, T[] array2)
+		{
+			if(array1 == null)
+			{
+				return (T[])array2.Clone();
+			}
+
+			if(array2 == null)
+			{
+				return (T[])array1.Clone();
+			}
+
+			var result = new T[array1.Length + array2.Length];
+
+			Array.Copy(array1, 0, result, 0, array1.Length);
+			Array.Copy(array2, 0, result, array1.Length, array2.Length);
+
+			return result;
+		}
+
+		/// <summary>
 		/// Метод копирования одного потока в другой
 		/// </summary>
 		/// <param name="source">Исходный поток.</param>
@@ -207,8 +249,8 @@ namespace CRYFORCE.Engine
 			// Если не работали с нулями...
 			if(!zeroOut)
 			{
-				//...нужно очистить паттерн в ОЗУ
-				Array.Clear(rndPattern, 0, rndPattern.Length);
+				//...нужно очистить паттерн в ОЗУ				
+				ClearArray(rndPattern);
 			}
 
 			// Сообщаем о прогрессе

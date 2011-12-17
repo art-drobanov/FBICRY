@@ -30,7 +30,7 @@ namespace CRYFORCE.Engine
 		private void Reset()
 		{
 			_st = new int[_seed.Length];
-			Array.Clear(_st, 0, _st.Length);
+			CryforceUtilities.ClearArray(_st);
 		}
 
 		/// <summary>
