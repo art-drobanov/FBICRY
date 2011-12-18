@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HashLib", "HashLib.prj\Hash
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HashLibTest", "HashLib.prj\HashLibTest\HashLibTest.csproj", "{F38139F9-CCB4-4A02-A752-B4FC3D1A81D3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventArgs_Generic", "EventArgs_Generic.prj\EventArgs_Generic.csproj", "{2ABEBDF1-99FE-43C7-8B07-F9F685FF010C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventArgsGeneric", "EventArgsGeneric.prj\EventArgsGeneric.csproj", "{2ABEBDF1-99FE-43C7-8B07-F9F685FF010C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

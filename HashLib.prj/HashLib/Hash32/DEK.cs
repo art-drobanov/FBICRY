@@ -3,23 +3,23 @@ using System.Diagnostics;
 
 namespace HashLib.Hash32
 {
-    internal class DEK : MultipleTransformNonBlock, IHash32, INonBlockHash
-    {
-        public DEK()
-            : base(4, 1)
-        {
-        }
+	class DEK : MultipleTransformNonBlock, IHash32, INonBlockHash
+	{
+		public DEK()
+			: base(4, 1)
+		{
+		}
 
-        public override HashResult ComputeBytes(byte[] a_data)
-        {
-            Debug.Assert(a_data != null);
+		public override HashResult ComputeBytes(byte[] a_data)
+		{
+			Debug.Assert(a_data != null);
 
-            uint hash = (uint)a_data.Length;
+			var hash = (uint)a_data.Length;
 
-            foreach (byte b in a_data)
-                hash = ((hash << 5) ^ (hash >> 27)) ^ b;
+			foreach(byte b in a_data)
+				hash = ((hash << 5) ^ (hash >> 27)) ^ b;
 
-            return new HashResult(hash);
-        }
-    }
+			return new HashResult(hash);
+		}
+	}
 }

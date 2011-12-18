@@ -24,7 +24,7 @@ namespace FBICRYcmd
 			}
 			else
 			{
-				// Очистка строки
+				// Очистка строки (при завершении процесса)
 				Console.Write("\r");
 				for(int i = 0; i < 80; i++)
 				{
@@ -98,15 +98,11 @@ namespace FBICRYcmd
 			Console.WriteLine();
 			Console.WriteLine("\tКоманды: e1 - шифровать (Rijndael-256);");
 			Console.WriteLine("\t         e2 - шифровать (двойной Rijndael-256 с перестановкой битов между слоями);");
-			Console.WriteLine("\t         e3 - шифровать (e2, параноидальный режим, медленный!);");
 			Console.WriteLine();
 			Console.WriteLine("\tКоманды: d1 - дешифровать (Rijndael-256);");
 			Console.WriteLine("\t         d2 - дешифровать (двойной Rijndael-256 с перестановкой битов между слоями);");
-			Console.WriteLine("\t         d3 - дешифровать (d2, параноидальный режим, медленный!);");
 			Console.WriteLine();
 			Console.WriteLine();
-			Console.WriteLine("\tДля шифрования с паролем, вводимым с клавиатуры, укажите несуществующий");
-			Console.WriteLine("\tфайл-пароль, либо не указывайте его вообще (приложение запросит ввод).");
 			Console.WriteLine("\tПри вводе пароля, при нажатии каждой клавиши можно использовать");
 			Console.WriteLine("\tмодификаторы \"Alt\", \"Shift\", \"Control\"...");
 			Console.WriteLine();
@@ -199,18 +195,10 @@ namespace FBICRYcmd
 					{
 						single = false;
 						encryption = true;
-						paranoid = false;
+						paranoid = true;
 						Console.WriteLine("Режим шифрования (двойной Rijndael-256 с перестановкой битов между слоями)...");
 						break;
-					}
-				case "e3":
-					{
-						single = false;
-						encryption = true;
-						paranoid = true;
-						Console.WriteLine("Режим шифрования (двойной Rijndael-256 с перестановкой битов между слоями, параноидальный режим, медленный!)...");
-						break;
-					}
+					}				
 				case "d1":
 					{
 						single = true;
@@ -223,24 +211,16 @@ namespace FBICRYcmd
 					{
 						single = false;
 						encryption = false;
-						paranoid = false;
+						paranoid = true;
 						Console.WriteLine("Режим дешифрования (двойной Rijndael-256 с перестановкой битов между слоями)...");
 						break;
-					}
-				case "d3":
-					{
-						single = false;
-						encryption = false;
-						paranoid = true;
-						Console.WriteLine("Режим дешифрования (двойной Rijndael-256 с перестановкой битов между слоями, параноидальный режим, медленный!)...");
-						break;
-					}
+					}			
 				default:
 					{
 						Console.WriteLine("Неизвестный режим обработки!");
 
 						Console.ResetColor();
-						break;
+						return;
 					}
 			}
 

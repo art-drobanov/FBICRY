@@ -239,8 +239,13 @@ namespace CRYFORCE.Engine
 				}
 
 				// Учитываем обработанный объем
-				remaining -= read;
+				remaining -= align8;
 			}
+
+			// Рассчитываем количество итераций на один процент
+			long nItersTotal = remaining / NBITS;
+			long itersForPercent = nItersTotal / 100;
+			long nIter = 0;
 
 			// Пока есть объем для обработки...
 			while(remaining > 0)
@@ -258,7 +263,18 @@ namespace CRYFORCE.Engine
 				}
 
 				// Учитываем обработанный объем
-				remaining -= read;
+				remaining -= NBITS;
+
+				// Выводим прогресс
+				if(++nIter % itersForPercent == 0)
+				{
+					// Сообщаем о прогрессе
+					if(ProgressChanged != null)
+					{
+						double progress = (nIter / (double)nItersTotal) * 100;
+						ProgressChanged(null, new EventArgsGeneric<ProgressChangedArg>(new ProgressChangedArg("SplitToBitstream (1/2)", progress, "\r")));
+					}
+				}
 			}
 
 			// Содержимое всех битовых потоков переносим в выходной поток
@@ -266,13 +282,18 @@ namespace CRYFORCE.Engine
 			{
 				_bitStreams[i].Seek(0, SeekOrigin.Begin);
 				_bitStreams[i].CopyTo(outputStream);
+
+				// Сообщаем о прогрессе
+				if(ProgressChanged != null)
+				{
+					double progress = (i / (double)NBITS) * 100;
+					ProgressChanged(null, new EventArgsGeneric<ProgressChangedArg>(new ProgressChangedArg("SplitToBitstream (2/2)", progress, "\r")));
+				}
 			}
 
 			// Чистим данные...
-			for(int i = 0; i < NBITS; i++)
-			{
-				bytesIn[i] = bytesOut[i] = 0x00;
-			}
+			CryforceUtilities.ClearArray(bytesIn);
+			CryforceUtilities.ClearArray(bytesOut);
 
 			// Устанавливаем потоки на начальные позиции...
 			inputStream.Seek(0, SeekOrigin.Begin);
@@ -354,13 +375,17 @@ namespace CRYFORCE.Engine
 
 				// Считали блок байт принадлежащий некоторому битстриму - помещаем его на свое место...
 				_bitStreams[i].Write(buffer, 0, (int)bitstreamSize);
+
+				// Сообщаем о прогрессе
+				if(ProgressChanged != null)
+				{
+					double progress = (i / (double)NBITS) * 100;
+					ProgressChanged(null, new EventArgsGeneric<ProgressChangedArg>(new ProgressChangedArg("UnsplitFromBitstream (1/2)", progress, "\r")));
+				}
 			}
 
 			// Чистим временный буфер
-			for(int i = 0; i < buffer.Length; i++)
-			{
-				buffer[i] = 0x00;
-			}
+			CryforceUtilities.ClearArray(buffer);
 
 			// После того, как в битовых потоках восстановлены все байты - можно производить их разбор...
 
@@ -390,6 +415,11 @@ namespace CRYFORCE.Engine
 				remaining -= NBITS;
 			}
 
+			// Рассчитываем количество итераций на один процент
+			long nItersTotal = remaining / NBITS;
+			long itersForPercent = nItersTotal / 100;
+			long nIter = 0;
+
 			// Пока есть объем для обработки...
 			while(remaining > 0)
 			{
@@ -407,13 +437,22 @@ namespace CRYFORCE.Engine
 
 				// Учитываем обработанный объем
 				remaining -= NBITS;
+
+				// Выводим прогресс
+				if(++nIter % itersForPercent == 0)
+				{
+					// Сообщаем о прогрессе
+					if(ProgressChanged != null)
+					{
+						double progress = (nIter / (double)nItersTotal) * 100;
+						ProgressChanged(null, new EventArgsGeneric<ProgressChangedArg>(new ProgressChangedArg("UnsplitFromBitstream (2/2)", progress, "\r")));
+					}
+				}
 			}
 
 			// Чистим данные...
-			for(int i = 0; i < NBITS; i++)
-			{
-				bytesIn[i] = bytesOut[i] = 0x00;
-			}
+			CryforceUtilities.ClearArray(bytesIn);
+			CryforceUtilities.ClearArray(bytesOut);
 
 			// Устанавливаем потоки на начальные позиции...
 			inputStream.Seek(0, SeekOrigin.Begin);

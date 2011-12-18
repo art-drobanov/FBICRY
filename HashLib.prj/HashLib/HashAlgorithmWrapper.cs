@@ -1,42 +1,40 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Diagnostics;
+using System.Security.Cryptography;
 
 namespace HashLib
 {
-    internal class HashAlgorithmWrapper : System.Security.Cryptography.HashAlgorithm
-    {
-        private IHash m_hash;
+	class HashAlgorithmWrapper : HashAlgorithm
+	{
+		private readonly IHash m_hash;
 
-        public HashAlgorithmWrapper(IHash a_hash)
-        {
-            Debug.Assert(a_hash != null);
+		public HashAlgorithmWrapper(IHash a_hash)
+		{
+			Debug.Assert(a_hash != null);
 
-            m_hash = a_hash;
-            HashSizeValue = a_hash.HashSize * 8;
-        }
+			m_hash = a_hash;
+			HashSizeValue = a_hash.HashSize * 8;
+		}
 
-        protected override void HashCore(byte[] array, int ibStart, int cbSize)
-        {
-            Debug.Assert(array != null);
-            Debug.Assert(cbSize >= 0);
-            Debug.Assert(ibStart >= 0);
-            Debug.Assert(ibStart + cbSize <= array.Length);
+		protected override void HashCore(byte[] array, int ibStart, int cbSize)
+		{
+			Debug.Assert(array != null);
+			Debug.Assert(cbSize >= 0);
+			Debug.Assert(ibStart >= 0);
+			Debug.Assert(ibStart + cbSize <= array.Length);
 
-            m_hash.TransformBytes(array, ibStart, cbSize);
-        }
+			m_hash.TransformBytes(array, ibStart, cbSize);
+		}
 
-        protected override byte[] HashFinal()
-        {
-            HashValue = m_hash.TransformFinal().GetBytes();
-            return HashValue;
-        }
+		protected override byte[] HashFinal()
+		{
+			HashValue = m_hash.TransformFinal().GetBytes();
+			return HashValue;
+		}
 
-        public override void Initialize()
-        {
-            m_hash.Initialize();
-        }
-    }
+		public override void Initialize()
+		{
+			m_hash.Initialize();
+		}
+	}
 }

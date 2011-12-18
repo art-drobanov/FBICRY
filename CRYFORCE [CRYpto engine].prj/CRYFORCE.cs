@@ -242,7 +242,7 @@ namespace CRYFORCE.Engine
 
 			if(ProgressChanged != null)
 			{
-				ProgressChanged(null, new EventArgsGeneric<ProgressChangedArg>(new ProgressChangedArg("Rijndael-256 (1)", 100)));
+				ProgressChanged(null, new EventArgsGeneric<ProgressChangedArg>(new ProgressChangedArg("Rijndael-256 (1/2)", 100)));
 			}
 
 			////////////////////////////////////////////////////////
@@ -306,7 +306,7 @@ namespace CRYFORCE.Engine
 
 			if(ProgressChanged != null)
 			{
-				ProgressChanged(null, new EventArgsGeneric<ProgressChangedArg>(new ProgressChangedArg("Rijndael-256 (2)", 100)));
+				ProgressChanged(null, new EventArgsGeneric<ProgressChangedArg>(new ProgressChangedArg("Rijndael-256 (2/2)", 100)));
 			}
 
 			// Уничтожаем данные временных потоков

@@ -11,9 +11,6 @@ namespace CRYFORCE.Engine
 	{
 		#region Data
 
-		/// <summary>Экземпляр класса "SHA256".</summary>
-		private readonly SHA256Cng _hash256;
-
 		/// <summary>Индекс в ключе для работы с битовой картой.</summary>
 		private int _bitmapKeyIdx;
 
@@ -36,14 +33,9 @@ namespace CRYFORCE.Engine
 			Bitmaps = new Permutations<int>(new[] {0, 1, 2, 3, 4, 5, 6, 7}).MakePermutationsSet(); // 40320 перестановок 8 бит
 			BitmapsIdx = 0;
 
-			BitmapKey = new byte[key1.Length + key2.Length]; // Создаем ключ на базе двух ключей
+			// Создаем ключ на базе двух ключей
+			BitmapKey = CryforceUtilities.MergeArrays(key1, key2);
 			BitmapKeyIdx = 0;
-
-			Array.Copy(key1, 0, BitmapKey, 0, key1.Length); // Сначала копируем первый ключ в результирующий массив...
-			Array.Copy(key2, 0, BitmapKey, key1.Length, key2.Length); //...затем к нему добавляем второй
-
-			// Инициализируем хеш-функцию
-			_hash256 = new SHA256Cng();
 
 			// Производим самообновление ключа
 			RefreshKey();
@@ -92,13 +84,17 @@ namespace CRYFORCE.Engine
 			get { return _bitmapKeyIdx; }
 			set
 			{
-				// Если будет переход за пределы последовательности -
-				// требуется обновление массива через шифрование
-				if((ParanoidMode) && (value >= BitmapKey.Length))
+				// Обеспечиваем допустимое значение индекса...
+				if(value >= BitmapKey.Length)
 				{
-					RefreshKey();
+					_bitmapKeyIdx = value % BitmapKey.Length;
+
+					// Если режим параноидальный - сразу после "перехода" за размер ключа - обновляем его
+					if(ParanoidMode)
+					{
+						RefreshKey();
+					}
 				}
-				_bitmapKeyIdx = value % BitmapKey.Length;
 			}
 		}
 
@@ -112,18 +108,8 @@ namespace CRYFORCE.Engine
 		/// <returns>Битовая перестановка.</returns>
 		public int[] GetNextBitmap()
 		{
-			// Два шага вперед - один шаг назад
 			byte b1 = BitmapKey[BitmapKeyIdx++];
 			byte b2 = BitmapKey[BitmapKeyIdx++];
-
-			// Если на ++ ключ не был обновлен, можно сделать шаг назад -
-			// так ключ будет расходоваться экономнее и получено
-			// будет больше комбинаций
-			if(BitmapKeyIdx != 0)
-			{
-				BitmapKeyIdx--;
-			}
-
 			BitmapsIdx = (b1 << 8) | b2;
 			return Bitmaps[BitmapsIdx];
 		}
@@ -133,8 +119,6 @@ namespace CRYFORCE.Engine
 		/// </summary>
 		public void ClearKey()
 		{
-			_hash256.Clear();
-
 			BitmapsIdx = 0;
 			BitmapKeyIdx = 0;
 
@@ -150,10 +134,12 @@ namespace CRYFORCE.Engine
 		/// </summary>
 		private void RefreshKey()
 		{
+			// Создаем сущность, позволяющую шифровать потоки
 			var streamCryptoWrapper = new StreamCryptoWrapper();
 
-			// Инициализируем сущность для шифрования хешем от текущего ключа
-			streamCryptoWrapper.Initialize(_hash256.ComputeHash(BitmapKey));
+			// Инициализируем сущность для шифрования хешем
+			// от текущего ключа (неявно - внутренняя механика)
+			streamCryptoWrapper.Initialize(BitmapKey);
 
 			// Входной поток формируем на основе массива ключа...
 			Stream msInput = new MemoryStream(BitmapKey);
@@ -177,9 +163,14 @@ namespace CRYFORCE.Engine
 			//...и как завершение шифрования - деинициализируем криптовраппер
 			streamCryptoWrapper.Clear();
 
-			// Теперь результаты шифрования нужно перенести в массив ключа
-			BitmapKey = new byte[msOutput.Length];
+			// Готовим ключ к обновлению (в смысле размера)
+			if(BitmapKey.Length != msOutput.Length)
+			{
+				CryforceUtilities.ClearArray(BitmapKey);
+				BitmapKey = new byte[msOutput.Length];
+			}
 
+			// Теперь результаты шифрования нужно перенести в массив ключа
 			msOutput.Seek(0, SeekOrigin.Begin);
 			msOutput.Read(BitmapKey, 0, BitmapKey.Length);
 			csOutput.Close();

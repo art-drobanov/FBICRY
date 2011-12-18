@@ -1,17 +1,18 @@
 ﻿using System;
+using System.Security.Cryptography;
 
 namespace HashLib.Crypto.BuildIn
 {
-    internal class MD5CryptoServiceProvider : HashCryptoBuildIn, IHasHMACBuildIn
-    {
-        public MD5CryptoServiceProvider() 
-            : base(new System.Security.Cryptography.MD5CryptoServiceProvider(), 64)
-        {
-        }
+	class MD5CryptoServiceProvider : HashCryptoBuildIn, IHasHMACBuildIn
+	{
+		public MD5CryptoServiceProvider()
+			: base(new System.Security.Cryptography.MD5CryptoServiceProvider(), 64)
+		{
+		}
 
-        public override System.Security.Cryptography.HMAC GetBuildHMAC()
-        {
-            return new System.Security.Cryptography.HMACMD5();
-        }
-    }
+		public override HMAC GetBuildHMAC()
+		{
+			return new HMACMD5();
+		}
+	}
 }

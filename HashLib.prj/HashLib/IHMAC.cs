@@ -2,8 +2,8 @@
 
 namespace HashLib
 {
-    public interface IHMAC : IHash
-    {
-        byte[] Key { get; set; }
-    }
+	public interface IHMAC : IHash
+	{
+		byte[] Key { get; set; }
+	}
 }

@@ -3,128 +3,116 @@ using System.Diagnostics;
 
 namespace HashLib
 {
-    internal class HashBuffer 
-    {
-        private byte[] m_data;
-        private int m_pos;
+	class HashBuffer
+	{
+		private readonly byte[] m_data;
+		private int m_pos;
 
-        public HashBuffer(int a_length)
-        {
-            Debug.Assert(a_length > 0);
+		public HashBuffer(int a_length)
+		{
+			Debug.Assert(a_length > 0);
 
-            m_data = new byte[a_length];
+			m_data = new byte[a_length];
 
-            Initialize();
-        }
+			Initialize();
+		}
 
-        public void Initialize()
-        {
-            m_pos = 0;
-        }
+		public bool IsEmpty
+		{
+			get { return m_pos == 0; }
+		}
 
-        public byte[] GetBytes()
-        {
-            Debug.Assert(IsFull);
+		public int Pos
+		{
+			get { return m_pos; }
+		}
 
-            m_pos = 0;
-            return m_data;
-        }
+		private int Length
+		{
+			get { return m_data.Length; }
+		}
 
-        public bool Feed(byte[] a_data, ref int a_startIndex, ref int a_length, ref ulong a_processedBytes)
-        {
-            Debug.Assert(a_data != null);
-            Debug.Assert(a_startIndex >= 0);
-            Debug.Assert(a_length >= 0);
-            Debug.Assert(a_startIndex + a_length <= a_data.Length);
-            Debug.Assert(!IsFull);
+		public bool IsFull
+		{
+			get { return (m_pos == m_data.Length); }
+		}
 
-            if (a_data.Length == 0)
-                return false;
+		public void Initialize()
+		{
+			m_pos = 0;
+		}
 
-            if (a_length == 0)
-                return false;
+		public byte[] GetBytes()
+		{
+			Debug.Assert(IsFull);
 
-            int length = m_data.Length - m_pos;
-            if (length > a_length)
-                length = a_length;
+			m_pos = 0;
+			return m_data;
+		}
 
-            Array.Copy(a_data, a_startIndex, m_data, m_pos, length);
+		public bool Feed(byte[] a_data, ref int a_startIndex, ref int a_length, ref ulong a_processedBytes)
+		{
+			Debug.Assert(a_data != null);
+			Debug.Assert(a_startIndex >= 0);
+			Debug.Assert(a_length >= 0);
+			Debug.Assert(a_startIndex + a_length <= a_data.Length);
+			Debug.Assert(!IsFull);
 
-            m_pos += length;
-            a_startIndex += length;
-            a_length -= length;
-            a_processedBytes += (ulong)length;
+			if(a_data.Length == 0)
+				return false;
 
-            return IsFull;
-        }
+			if(a_length == 0)
+				return false;
 
-        public bool Feed(byte[] a_data, ref int a_startIndex, ref int a_length)
-        {
-            Debug.Assert(a_data != null);
-            Debug.Assert(a_startIndex >= 0);
-            Debug.Assert(a_length >= 0);
-            Debug.Assert(a_startIndex + a_length <= a_data.Length);
-            Debug.Assert(!IsFull);
-            
-            if (a_data.Length == 0)
-                return false;
+			int length = m_data.Length - m_pos;
+			if(length > a_length)
+				length = a_length;
 
-            if (a_length == 0)
-                return false;
+			Array.Copy(a_data, a_startIndex, m_data, m_pos, length);
 
-            int length = m_data.Length - m_pos;
-            if (length > a_length)
-                length = a_length;
+			m_pos += length;
+			a_startIndex += length;
+			a_length -= length;
+			a_processedBytes += (ulong)length;
 
-            Array.Copy(a_data, a_startIndex, m_data, m_pos, length);
+			return IsFull;
+		}
 
-            m_pos += length;
-            a_startIndex += length;
-            a_length -= length;
+		public bool Feed(byte[] a_data, ref int a_startIndex, ref int a_length)
+		{
+			Debug.Assert(a_data != null);
+			Debug.Assert(a_startIndex >= 0);
+			Debug.Assert(a_length >= 0);
+			Debug.Assert(a_startIndex + a_length <= a_data.Length);
+			Debug.Assert(!IsFull);
 
-            return IsFull;
-        }
+			if(a_data.Length == 0)
+				return false;
 
-        public bool Feed(byte a_data)
-        {
-            Debug.Assert(!IsFull);
+			if(a_length == 0)
+				return false;
 
-            m_data[m_pos] = a_data;
-            m_pos++;
+			int length = m_data.Length - m_pos;
+			if(length > a_length)
+				length = a_length;
 
-            return IsFull;
-        }
+			Array.Copy(a_data, a_startIndex, m_data, m_pos, length);
 
-        public bool IsEmpty
-        {
-            get
-            {
-                return m_pos == 0;
-            }
-        }
+			m_pos += length;
+			a_startIndex += length;
+			a_length -= length;
 
-        public int Pos
-        {
-            get
-            {
-                return m_pos;
-            }
-        }
+			return IsFull;
+		}
 
-        int Length
-        {
-            get
-            {
-                return m_data.Length;
-            }
-        }
+		public bool Feed(byte a_data)
+		{
+			Debug.Assert(!IsFull);
 
-        public bool IsFull
-        {
-            get
-            {
-                return (m_pos == m_data.Length);
-            }
-        }
-    }
+			m_data[m_pos] = a_data;
+			m_pos++;
+
+			return IsFull;
+		}
+	}
 }
