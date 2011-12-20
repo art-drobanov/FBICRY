@@ -41,6 +41,9 @@ namespace CRYFORCE.Engine
 		/// <summary>Количество битов в байте.</summary>
 		private const int NBITS = 8;
 
+		/// <summary>Размер буфера в ОЗУ под каждый поток.</summary>
+		private const int DEFAULT_BUFFER_SIZE_PER_STREAM = 16 * 1024 * 1024; // 16 мегабайт
+
 		#endregion Constants
 
 		#region Data
@@ -73,7 +76,7 @@ namespace CRYFORCE.Engine
 		/// <param name="workInMemory">Работать в ОЗУ?</param>
 		public BitSplitter(byte[] key1, byte[] key2, bool paranoidMode, bool workInMemory)
 		{
-			BufferSizePerStream = 16 * 1024 * 1024; // 16 мегабайт
+			BufferSizePerStream = DEFAULT_BUFFER_SIZE_PER_STREAM;
 			RndSeed = DateTime.Now.Ticks.GetHashCode();
 			_bitMaps = new BitMaps(key1, key2, paranoidMode);
 
@@ -91,7 +94,7 @@ namespace CRYFORCE.Engine
 		/// <param name="workInMemory">Работать в ОЗУ?</param>
 		public BitSplitter(IEnumerable<string> bitStreamsNames, byte[] key1, byte[] key2, bool paranoidMode, bool workInMemory)
 		{
-			BufferSizePerStream = 16 * 1024 * 1024; // 16 мегабайт
+			BufferSizePerStream = DEFAULT_BUFFER_SIZE_PER_STREAM;
 			RndSeed = DateTime.Now.Ticks.GetHashCode();
 			_bitMaps = new BitMaps(key1, key2, paranoidMode);
 

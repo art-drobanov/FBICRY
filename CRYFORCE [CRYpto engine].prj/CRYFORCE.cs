@@ -18,6 +18,9 @@ namespace CRYFORCE.Engine
 
 		#region Constants
 
+		/// <summary>Размер буфера в ОЗУ под каждый поток.</summary>
+		private const int DEFAULT_BUFFER_SIZE_PER_STREAM = 16 * 1024 * 1024; // 16 мегабайт
+
 		#endregion Constants
 
 		#region Data
@@ -45,7 +48,7 @@ namespace CRYFORCE.Engine
 		{
 			WorkInMemory = true;
 			WorkInTempDir = true;
-			BufferSizePerStream = 16 * 1024 * 1024; // 16 мегабайт
+			BufferSizePerStream = DEFAULT_BUFFER_SIZE_PER_STREAM;
 			RndSeed = DateTime.Now.Ticks.GetHashCode();
 		}
 
@@ -58,7 +61,7 @@ namespace CRYFORCE.Engine
 		{
 			WorkInMemory = workInMemory;
 			WorkInTempDir = workInTempDir;
-			BufferSizePerStream = 16 * 1024 * 1024; // 16 мегабайт
+			BufferSizePerStream = DEFAULT_BUFFER_SIZE_PER_STREAM;
 			RndSeed = DateTime.Now.Ticks.GetHashCode();
 		}
 
