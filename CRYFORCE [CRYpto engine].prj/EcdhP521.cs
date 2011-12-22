@@ -92,37 +92,61 @@ namespace CRYFORCE.Engine
 			{
 				if(Key512 != null)
 				{
-					var keys256 = new byte[2][] {new byte[256 >> 3], new byte[256 >> 3]};
+					var keys256 = new byte[][] {new byte[256 >> 3], new byte[256 >> 3]};
 					Array.Copy(Key512, 0, keys256[0], 0, (256 >> 3));
 					Array.Copy(Key512, (256 >> 3), keys256[1], 0, (256 >> 3));
+					
 					return keys256;
 				}
-				else
-				{
-					return null;
-				}
+							
+				return null;				
 			}
 		}
-
+		
 		/// <summary>
 		/// Открытый ключ
 		/// </summary>
+		public byte[] PublicKeyBin
+		{
+			get { return ExportKeyBinData(_ECDiffieHellmanCng.Key, true); }
+		}
+
+		/// <summary>
+		/// Открытый ключ (в формате Base64)
+		/// </summary>
 		public string PublicKey
 		{
-			get { return Convert.ToBase64String(ExportKeyBinData(_ECDiffieHellmanCng.Key, true)); }
+			get { return Convert.ToBase64String(PublicKeyBin); }
 		}
 
 		/// <summary>
 		/// Открытый ключ от второй стороны
 		/// </summary>
-		public string PublicKeyFromOtherParty { get; set; }
+		public byte[] PublicKeyFromOtherPartyBin { get; set; }
+
+		/// <summary>
+		/// Открытый ключ от второй стороны (в формате Base64)
+		/// </summary>
+		public string PublicKeyFromOtherParty
+		{
+			get { return Convert.ToBase64String(PublicKeyFromOtherPartyBin); }
+			set { PublicKeyFromOtherPartyBin = Convert.FromBase64String(value); }
+		}
 
 		/// <summary>
 		/// Закрытый ключ
 		/// </summary>
+		public byte[] PrivateKeyBin
+		{
+			get { return ExportKeyBinData(_ECDiffieHellmanCng.Key, false); }
+		}
+
+		/// <summary>
+		/// Закрытый ключ (в формате Base64)
+		/// </summary>
 		public string PrivateKey
 		{
-			get { return Convert.ToBase64String(ExportKeyBinData(_ECDiffieHellmanCng.Key, false)); }
+			get { return Convert.ToBase64String(PrivateKeyBin); }
 		}
 
 		/// <summary>Экземпляр класса инициализирован?</summary>
@@ -228,10 +252,10 @@ namespace CRYFORCE.Engine
 			Clear();
 
 			// Ключ для алгоритма ECDH
-			CngKey cngKeyDH;
+			CngKey cngKeyECDH;
 
-			// Ключ для алгоритма ECDsa
-			CngKey cngKeyDS;
+			// Ключ для алгоритма ECDSA
+			CngKey cngKeyECDSA;
 
 			// Задаем параметры создания ключа
 			_cngKeyCreationParameters = new CngKeyCreationParameters();
@@ -244,21 +268,21 @@ namespace CRYFORCE.Engine
 			if(privateKey == null)
 			{
 				// - создаем его...
-				cngKeyDH = CngKey.Create(CngAlgorithm.ECDiffieHellmanP521, "CngKey", _cngKeyCreationParameters);
+				cngKeyECDH = CngKey.Create(CngAlgorithm.ECDiffieHellmanP521, "CngKey", _cngKeyCreationParameters);
 
 				//...и экспортируя в двоичные данные подготовленный ключ DH, задаем на его основе ключ для ЭЦП
-				cngKeyDS = ImportKeyBinData(ExportKeyBinData(cngKeyDH, false), false, true);
+				cngKeyECDSA = ImportKeyBinData(ExportKeyBinData(cngKeyECDH, false), false, true);
 			}
 			else //...а иначе используем предоставленный...
 			{
 				//...импортируя его из строки в формате Base64
-				cngKeyDH = ImportKeyBinData(Convert.FromBase64String(privateKey), false, false); // Не ЭЦП
-				cngKeyDS = ImportKeyBinData(Convert.FromBase64String(privateKey), false, true); // ЭЦП
+				cngKeyECDH = ImportKeyBinData(Convert.FromBase64String(privateKey), false, false); // Не ЭЦП
+				cngKeyECDSA = ImportKeyBinData(Convert.FromBase64String(privateKey), false, true); // ЭЦП
 			}
 
 			// Инициализируем криптографические сущности ключом
-			_ECDiffieHellmanCng = new ECDiffieHellmanCng(cngKeyDH);
-			_ECDsaCng = new ECDsaCng(cngKeyDS);
+			_ECDiffieHellmanCng = new ECDiffieHellmanCng(cngKeyECDH);
+			_ECDsaCng = new ECDsaCng(cngKeyECDSA);
 			if(seed != null)
 			{
 				_ECDiffieHellmanCng.Seed = ExtractByteArrayFromObject(seed);
