@@ -26,7 +26,7 @@ namespace FBICRYcmd
 			{
 				// Очистка строки (при завершении процесса)
 				Console.Write("\r");
-				for(int i = 0; i < 80; i++)
+				for(int i = 0; i < (Console.BufferWidth - 1); i++)
 				{
 					Console.Write(" ");
 				}
@@ -94,13 +94,18 @@ namespace FBICRYcmd
 		/// </summary>
 		private static void HelpOut()
 		{
-			Console.WriteLine("\tFBICRYcmd <команда> <входной файл> <выходной файл> [файл-пароль] [итераций хеша]");
+			Console.WriteLine("\tFBICRYcmd <команда> <входной файл> <выходной файл> [файл-ключ] [итераций хеша]");
 			Console.WriteLine();
-			Console.WriteLine("\tКоманды: e1 - шифровать (Rijndael-256);");
-			Console.WriteLine("\t         e2 - шифровать (двойной Rijndael-256 с перестановкой битов между слоями);");
+			Console.WriteLine("\tКоманды: e  - шифровать (на основе открытого ключа другого абонента);");
+			Console.WriteLine("\t         e1 - шифровать (Rijndael-256);");
+			Console.WriteLine("\t         e2 - шифровать (двойной Rijndael-256 с перестановкой битов между слоями).");
 			Console.WriteLine();
-			Console.WriteLine("\tКоманды: d1 - дешифровать (Rijndael-256);");
-			Console.WriteLine("\t         d2 - дешифровать (двойной Rijndael-256 с перестановкой битов между слоями);");
+			Console.WriteLine("\tКоманды: d  - дешифровать (на основе открытого ключа другого абонента);");
+			Console.WriteLine("\t         d1 - дешифровать (Rijndael-256);");
+			Console.WriteLine("\t         d2 - дешифровать (двойной Rijndael-256 с перестановкой битов между слоями).");
+			Console.WriteLine();
+			Console.WriteLine("\tКоманды: g  - сгенерировать пару открытый/закрытый ключ для ECDH521 (вторым аргументом");
+			Console.WriteLine("\t              можно передать файл, который будет использован как набор случайных данных);");
 			Console.WriteLine();
 			Console.WriteLine();
 			Console.WriteLine("\tПри вводе пароля, при нажатии каждой клавиши можно использовать");
@@ -143,11 +148,69 @@ namespace FBICRYcmd
 			// Работаем в ОЗУ
 			bool workInMemory = true;
 
+			// Задаем имена открытого и закрытого ключей
+			string publicKeyFilename = "FBICRY.PUB.txt";
+			string privateKeyFilename = "FBICRY.ECC.txt";
+
+			// Выполняем очистку консоли, вывод логотипа и версии
 			ConsoleClear();
 			LogoOut();
 			VersionOut();
 
+			// Текст в консоль комфортнее выводить серым
 			Console.ForegroundColor = ConsoleColor.DarkGray;
+
+			// Криптографическое ядро
+			var cryforce = new Cryforce();
+			cryforce.ProgressChanged += OnProgressChanged;
+
+			// Проверка на запрос генерации пары открытый/закрытый ключ...
+			if((args.Length != 0) && (args[0].ToLower() == "g"))
+			{
+				Stream seedStream = null;
+
+				// Если можно открыть поток с данными, которые будут использоваться как случайные...
+				if(args.Length >= 2)
+				{
+					seedStream = new FileStream(args[1], FileMode.Open, FileAccess.Read);
+				}
+
+				// Удаляем выходные файлы, если таковые имеются
+				if(File.Exists(publicKeyFilename))
+				{
+					Console.WriteLine("Файл открытого ключа {0} уже существует!", publicKeyFilename);
+					return;
+				}
+
+				if(File.Exists(privateKeyFilename))
+				{
+					Console.WriteLine("Файл закрытого ключа {0} уже существует!", privateKeyFilename);
+					return;
+				}
+
+				// Открываем потоки для генерирования ключей...
+				Stream publicKeyStream = new FileStream(publicKeyFilename, FileMode.Create, FileAccess.Write);
+				Stream privateKeyStream = new FileStream(privateKeyFilename, FileMode.Create, FileAccess.Write);
+
+				//...и создаем сами ключи
+				cryforce.CreateECCKeys(publicKeyStream, privateKeyStream, seedStream);
+
+				publicKeyStream.Flush();
+				publicKeyStream.Close();
+
+				privateKeyStream.Flush();
+				privateKeyStream.Close();
+
+				if(seedStream != null)
+				{
+					seedStream.Close();
+				}
+
+				Console.WriteLine();
+				Console.WriteLine("Генерирование открытого и закрытого ключей завершено!");
+
+				return;
+			}
 
 			// Если задано слишком малое количество аргументов - выводим справку...
 			if(args.Count() < 3)
@@ -173,20 +236,29 @@ namespace FBICRYcmd
 				return;
 			}
 
-			var cryforce = new Cryforce();
-			cryforce.ProgressChanged += OnProgressChanged;
-
 			// Атрибуты процесса обработки
-			bool single = false;
-			bool encryption = false;
-			bool paranoid = false;
+			bool single = false; // Однослойный шифр?
+			bool encryption = false; // Режим шифрования (не дешифрование)?
+			bool ecdh = false; // Используется EcdhP521?
+			bool paranoid = true; // Параноидальный режим шифрования?
 
 			switch(args[0].ToLower())
 			{
+				case "e":
+					{
+						single = false;
+						encryption = true;
+						ecdh = true;
+						paranoid = true;
+						Console.WriteLine("Режим шифрования на основе открытого ключа другого абонента");
+						Console.WriteLine("(двойной Rijndael-256 с перестановкой битов между слоями)...");
+						break;
+					}
 				case "e1":
 					{
 						single = true;
 						encryption = true;
+						ecdh = false;
 						paranoid = false;
 						Console.WriteLine("Режим шифрования (Rijndael-256)...");
 						break;
@@ -195,14 +267,26 @@ namespace FBICRYcmd
 					{
 						single = false;
 						encryption = true;
+						ecdh = false;
 						paranoid = true;
 						Console.WriteLine("Режим шифрования (двойной Rijndael-256 с перестановкой битов между слоями)...");
 						break;
-					}				
+					}
+				case "d":
+					{
+						single = false;
+						encryption = false;
+						ecdh = true;
+						paranoid = true;
+						Console.WriteLine("Режим дешифрования на основе открытого ключа другого абонента");
+						Console.WriteLine("(двойной Rijndael-256 с перестановкой битов между слоями)...");
+						break;
+					}
 				case "d1":
 					{
 						single = true;
 						encryption = false;
+						ecdh = false;
 						paranoid = false;
 						Console.WriteLine("Режим дешифрования (Rijndael-256)...");
 						break;
@@ -211,10 +295,11 @@ namespace FBICRYcmd
 					{
 						single = false;
 						encryption = false;
+						ecdh = false;
 						paranoid = true;
 						Console.WriteLine("Режим дешифрования (двойной Rijndael-256 с перестановкой битов между слоями)...");
 						break;
-					}			
+					}
 				default:
 					{
 						Console.WriteLine("Неизвестный режим обработки!");
@@ -226,6 +311,7 @@ namespace FBICRYcmd
 
 			Console.WriteLine();
 
+			// Проверяем входной файл
 			if(!File.Exists(args[1]))
 			{
 				Console.WriteLine("Входной файл {0} не существует!", args[1]);
@@ -249,8 +335,8 @@ namespace FBICRYcmd
 			byte[] passwordDataForKey1 = null;
 			byte[] passwordDataForKey2 = null;
 
-			// Читаем файл-пароль...
-			if((args.Count() >= 4) && File.Exists(args[3]))
+			// Читаем файл-пароль (если не задан режим работы по Диффи-Хеллману)
+			if((!ecdh) && (args.Count() >= 4) && File.Exists(args[3]))
 			{
 				try
 				{
@@ -282,6 +368,31 @@ namespace FBICRYcmd
 				}
 			}
 
+			// Получаем ключи по Диффи-Хеллману...
+			if(ecdh && (args.Count() >= 4) && File.Exists(args[3]))
+			{
+				// Проверяем файлы ключей на существование
+				if(!File.Exists(args[3]))
+				{
+					Console.WriteLine("Файл открытого ключа другой стороны {0} не существует!", args[3]);
+					return;
+				}
+
+				if(!File.Exists(privateKeyFilename))
+				{
+					Console.WriteLine("Файл закрытого ключа {0} не существует!", privateKeyFilename);
+					return;
+				}
+
+				// Читаем открытый ключ другой стороны и наш закрытый ключ...
+				Stream publicKeyFromOtherPartyStream = new FileStream(args[3], FileMode.Open, FileAccess.Read);
+				Stream privateKeyStream = new FileStream(privateKeyFilename, FileMode.Open, FileAccess.Read);
+
+				//...а затем формируем симметричные ключи
+				cryforce.GetSymmetricKeys(publicKeyFromOtherPartyStream, privateKeyStream,
+				                          out passwordDataForKeyFromFile1, out passwordDataForKeyFromFile2);
+			}
+
 			// Пароль с клавиатуры считываем в любом случае...
 			if(single)
 			{
@@ -299,7 +410,6 @@ namespace FBICRYcmd
 				passwordDataForKeyFromKeyboard2 = CryforceUtilities.GetPasswordBytesSafely();
 				Console.WriteLine();
 			}
-
 
 			// Удаляем выходной файл, если такой имеется (невосстановимое удаление)
 			if(File.Exists(args[2]))

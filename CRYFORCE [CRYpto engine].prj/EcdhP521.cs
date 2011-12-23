@@ -92,17 +92,17 @@ namespace CRYFORCE.Engine
 			{
 				if(Key512 != null)
 				{
-					var keys256 = new byte[][] {new byte[256 >> 3], new byte[256 >> 3]};
+					var keys256 = new[] {new byte[256 >> 3], new byte[256 >> 3]};
 					Array.Copy(Key512, 0, keys256[0], 0, (256 >> 3));
 					Array.Copy(Key512, (256 >> 3), keys256[1], 0, (256 >> 3));
-					
+
 					return keys256;
 				}
-							
-				return null;				
+
+				return null;
 			}
 		}
-		
+
 		/// <summary>
 		/// Открытый ключ
 		/// </summary>
@@ -155,29 +155,6 @@ namespace CRYFORCE.Engine
 		#endregion Properties
 
 		#region Private
-
-		/// <summary>
-		/// Извлечение массива байт из объекта
-		/// </summary>
-		/// <param name="obj">Объект.</param>
-		/// <returns>Массив байт.</returns>
-		private byte[] ExtractByteArrayFromObject(Object obj)
-		{
-			byte[] result = null;
-
-			if(obj is byte[])
-			{
-				// Либо берем байты напрямую...
-				if(((byte[])obj).Length > 0) result = (byte[])obj;
-			}
-			else if(obj is string)
-			{
-				//...либо извлекаем их из строки
-				if(((string)obj).Length > 0) result = Encoding.Unicode.GetBytes(((string)obj));
-			}
-
-			return result;
-		}
 
 		/// <summary>
 		/// Экспорт двоичных данных ключа
@@ -285,13 +262,13 @@ namespace CRYFORCE.Engine
 			_ECDsaCng = new ECDsaCng(cngKeyECDSA);
 			if(seed != null)
 			{
-				_ECDiffieHellmanCng.Seed = ExtractByteArrayFromObject(seed);
+				_ECDiffieHellmanCng.Seed = CryforceUtilities.ExtractByteArrayFromObject(seed);
 			}
 
 			// Если требуется использование кода аутентичности сообщения на основе хеша
 			if(hmacKey != null)
 			{
-				_ECDiffieHellmanCng.HmacKey = ExtractByteArrayFromObject(hmacKey);
+				_ECDiffieHellmanCng.HmacKey = CryforceUtilities.ExtractByteArrayFromObject(hmacKey);
 				_ECDiffieHellmanCng.KeyDerivationFunction = ECDiffieHellmanKeyDerivationFunction.Hmac;
 			}
 			else
@@ -321,7 +298,7 @@ namespace CRYFORCE.Engine
 			byte[] seedBuffer;
 			if(seed != null)
 			{
-				seedBuffer = ExtractByteArrayFromObject(seed);
+				seedBuffer = CryforceUtilities.ExtractByteArrayFromObject(seed);
 			}
 			else
 			{

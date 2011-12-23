@@ -13,6 +13,29 @@ namespace CRYFORCE.Engine
 	public static class CryforceUtilities
 	{
 		/// <summary>
+		/// Извлечение массива байт из объекта
+		/// </summary>
+		/// <param name="obj">Объект.</param>
+		/// <returns>Массив байт.</returns>
+		public static byte[] ExtractByteArrayFromObject(Object obj)
+		{
+			byte[] result = null;
+
+			if(obj is byte[])
+			{
+				// Либо берем байты напрямую...
+				if(((byte[])obj).Length > 0) result = (byte[])obj;
+			}
+			else if(obj is string)
+			{
+				//...либо извлекаем их из строки
+				if(((string)obj).Length > 0) result = Encoding.Unicode.GetBytes(((string)obj));
+			}
+
+			return result;
+		}
+
+		/// <summary>
 		/// Очистка массива
 		/// </summary>
 		/// <typeparam name="T">Тип элементов массивов.</typeparam>

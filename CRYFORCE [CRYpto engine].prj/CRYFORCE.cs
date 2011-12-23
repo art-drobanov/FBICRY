@@ -25,9 +25,6 @@ namespace CRYFORCE.Engine
 
 		#region Data
 
-		/// <summary>Сущность для обеспечения обмена ключами на основе шифрования на основе эллиптических кривых.</summary>
-		private EcdhP521 _ecdhP521;
-
 		#endregion Data
 
 		#region Events
@@ -336,6 +333,90 @@ namespace CRYFORCE.Engine
 
 			outputStreamAtLevel0.Close();
 			outputStreamAtLevel1.Close();
+		}
+
+		/// <summary>
+		/// Генерация пары открытый/закрытый ключ
+		/// </summary>
+		/// <param name="publicKeyStream">Поток для записи открытого ключа.</param>
+		/// <param name="privateKeyStream">Поток для записи закрытого ключа.</param>
+		/// <param name="seedStream">Поток, содержащий случайные данные.</param>
+		public void CreateECCKeys(Stream publicKeyStream, Stream privateKeyStream, Stream seedStream = null)
+		{
+			byte[] seedDataFromStream = null;
+
+			if(!publicKeyStream.CanWrite)
+			{
+				throw new Exception("Cryforce::CreateECCKeys() ==> Public key stream can't write!");
+			}
+
+			if(!privateKeyStream.CanWrite)
+			{
+				throw new Exception("Cryforce::CreateECCKeys() ==> Private key stream can't write!");
+			}
+
+			// Если можем использовать seed-поток...
+			if((seedStream != null) && (seedStream.CanSeek))
+			{
+				CryforceUtilities.SafeSeekBegin(seedStream);
+				seedDataFromStream = new byte[seedStream.Length];
+				seedStream.Read(seedDataFromStream, 0, seedDataFromStream.Length);
+			}
+
+			Console.WriteLine("Генерирование пары открытый/закрытый ключ.");
+			Console.WriteLine("Нажимайте случайные клавиши на клавиатуре (включая модификаторы");
+			Console.WriteLine("\"Alt\", \"Shift\", \"Control\"). Для завершения нажмите Enter...");
+			Console.WriteLine();
+			byte[] seedDataFromKeyboard = CryforceUtilities.GetPasswordBytesSafely();
+			byte[] seedData = CryforceUtilities.MergeArrays(seedDataFromStream, seedDataFromKeyboard);
+			var ecdhP521 = new EcdhP521(seedData, null); // Приватного ключа нет - он будет сгенерирован!
+
+			// Чистим массивы...
+			CryforceUtilities.ClearArray(seedDataFromStream);
+			CryforceUtilities.ClearArray(seedDataFromKeyboard);
+			CryforceUtilities.ClearArray(seedData);
+
+			// Пишем ключи в потоки
+			publicKeyStream.Write(ecdhP521.PublicKey.Select(item => (byte)item).ToArray(), 0, ecdhP521.PublicKey.Length);
+			privateKeyStream.Write(ecdhP521.PrivateKey.Select(item => (byte)item).ToArray(), 0, ecdhP521.PrivateKey.Length);
+		}
+
+		/// <summary>
+		/// Генерирование симметричных ключей
+		/// </summary>
+		/// <param name="publicKeyFromOtherPartyStream">Поток открытого ключа другой стороны.</param>
+		/// <param name="privateKeyStream">Поток своего закрытого ключа.</param>
+		/// <param name="symmetricKey1">Симметричный ключ №1 (256 bit).</param>
+		/// <param name="symmetricKey2">Симметричный ключ №2 (256 bit).</param>
+		public void GetSymmetricKeys(Stream publicKeyFromOtherPartyStream, Stream privateKeyStream,
+		                             out byte[] symmetricKey1, out byte[] symmetricKey2)
+		{
+			if(!publicKeyFromOtherPartyStream.CanSeek)
+			{
+				throw new Exception("Cryforce::GetSymmetricKeys() ==> Public key from other party stream can't seek!");
+			}
+
+			if(!privateKeyStream.CanSeek)
+			{
+				throw new Exception("Cryforce::GetSymmetricKeys() ==> Private key stream can't seek!");
+			}
+
+			var publicKeyFromOtherParty = new byte[publicKeyFromOtherPartyStream.Length];
+			publicKeyFromOtherPartyStream.Read(publicKeyFromOtherParty, 0, publicKeyFromOtherParty.Length);
+
+			var privateKey = new byte[privateKeyStream.Length];
+			privateKeyStream.Read(privateKey, 0, privateKey.Length);
+
+			var ecdhP521 = new EcdhP521(null, new string(privateKey.Select(item => (char)item).ToArray())) {PublicKeyFromOtherParty = new string(publicKeyFromOtherParty.Select(item => (char)item).ToArray())};
+
+			if(!ecdhP521.CreateSymmetricKey())
+			{
+				throw new Exception("Cryforce::CreateSymmetricKey() failed!");
+			}
+
+			// Получаем симметричные ключи
+			symmetricKey1 = (byte[])ecdhP521.Keys256[0].Clone();
+			symmetricKey2 = (byte[])ecdhP521.Keys256[1].Clone();
 		}
 
 		#endregion Public
