@@ -48,7 +48,7 @@ namespace FBICRYcmd
 		/// <summary>
 		/// Сброс режима консоли
 		/// </summary>
-		private static void ConsoleClear()
+		private static void ConsoleClearAndPrepare()
 		{
 			Console.Clear();
 			Console.ForegroundColor = ConsoleColor.Green;
@@ -81,7 +81,7 @@ namespace FBICRYcmd
 		{
 			Console.BackgroundColor = ConsoleColor.DarkGreen;
 			Console.ForegroundColor = ConsoleColor.Black;
-			Console.Write(" FBICRYcmd 1.00 (c) 2012 Дробанов Артём Федорович (DrAF)     ");
+			Console.Write(" FBICRYcmd 1.0.0.1 (c) 2☺12 Дробанов Артём Федорович (DrAF)  ");
 			Console.BackgroundColor = ConsoleColor.Black;
 			Console.WriteLine();
 			Console.WriteLine();
@@ -108,8 +108,8 @@ namespace FBICRYcmd
 			Console.WriteLine("\t              можно передать файл, который будет использован как набор случайных данных);");
 			Console.WriteLine();
 			Console.WriteLine();
-			Console.WriteLine("\tПри вводе пароля, при нажатии каждой клавиши можно использовать");
-			Console.WriteLine("\tмодификаторы \"Alt\", \"Shift\", \"Control\"...");
+			Console.WriteLine("\tПри вводе пароля, при нажатии каждой клавиши можно использовать модификаторы");
+			Console.WriteLine("\t\"Alt\", \"Shift\", \"Control\"...");
 			Console.WriteLine();
 		}
 
@@ -153,7 +153,7 @@ namespace FBICRYcmd
 			string privateKeyFilename = "FBICRY.ECC.txt";
 
 			// Выполняем очистку консоли, вывод логотипа и версии
-			ConsoleClear();
+			ConsoleClearAndPrepare();
 			LogoOut();
 			VersionOut();
 
