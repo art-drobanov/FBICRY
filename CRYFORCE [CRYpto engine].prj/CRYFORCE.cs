@@ -185,10 +185,8 @@ namespace CRYFORCE.Engine
 		/// <param name="key2">Ключ для второго прохода шифрования.</param>
 		/// <param name="outputStream">Выходной поток.</param>
 		/// <param name="encryptionMode">Используется шифрование?</param>
-		/// <param name="paranoidMode">Параноидальный режим?</param>
 		/// <param name="iterations">Количество итераций хеширования пароля.</param>
-		public void DoubleRijndael(Stream inputStream, byte[] key1, byte[] key2, Stream outputStream, bool encryptionMode,
-		                           bool paranoidMode, int iterations = 1)
+		public void DoubleRijndael(Stream inputStream, byte[] key1, byte[] key2, Stream outputStream, bool encryptionMode, int iterations = 1)
 		{
 			if(!inputStream.CanSeek)
 			{
@@ -258,7 +256,7 @@ namespace CRYFORCE.Engine
 			CryforceUtilities.SafeSeekBegin(inputStreamAtLevel1);
 			CryforceUtilities.SafeSeekBegin(outputStreamAtLevel1);
 
-			var bitSplitter = new BitSplitter(tempFilenamesToBitSplitter, key1, key2, paranoidMode, WorkInMemory);
+			var bitSplitter = new BitSplitter(tempFilenamesToBitSplitter, key1, key2, WorkInMemory);
 			bitSplitter.RndSeed = RndSeed; // Некритичный параметр, но проброска значения желательна
 			bitSplitter.ProgressChanged += ProgressChanged;
 			if(encryptionMode)

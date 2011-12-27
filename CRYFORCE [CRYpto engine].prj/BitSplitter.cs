@@ -72,13 +72,12 @@ namespace CRYFORCE.Engine
 		/// </summary>
 		/// <param name="key1">Ключ для первого прохода шифрования.</param>
 		/// <param name="key2">Ключ для второго прохода шифрования.</param>
-		/// <param name="paranoidMode">Параноидальный режим?</param>
 		/// <param name="workInMemory">Работать в ОЗУ?</param>
-		public BitSplitter(byte[] key1, byte[] key2, bool paranoidMode, bool workInMemory)
+		public BitSplitter(byte[] key1, byte[] key2, bool workInMemory)
 		{
 			BufferSizePerStream = DEFAULT_BUFFER_SIZE_PER_STREAM;
 			RndSeed = DateTime.Now.Ticks.GetHashCode();
-			_bitMaps = new BitMaps(key1, key2, paranoidMode);
+			_bitMaps = new BitMaps(key1, key2);
 
 			// Работаем так, как желает пользователь
 			Initialize(CryforceUtilities.GetRandomFilenames(NBITS, NBITS, RndSeed).Select(item => item + ".jpg").ToArray(), workInMemory);
@@ -90,13 +89,12 @@ namespace CRYFORCE.Engine
 		/// <param name="bitStreamsNames">Имена битовых потоков.</param>
 		/// <param name="key1">Ключ для первого прохода шифрования.</param>
 		/// <param name="key2">Ключ для второго прохода шифрования.</param>
-		/// <param name="paranoidMode">Параноидальный режим?</param>
 		/// <param name="workInMemory">Работать в ОЗУ?</param>
-		public BitSplitter(IEnumerable<string> bitStreamsNames, byte[] key1, byte[] key2, bool paranoidMode, bool workInMemory)
+		public BitSplitter(IEnumerable<string> bitStreamsNames, byte[] key1, byte[] key2, bool workInMemory)
 		{
 			BufferSizePerStream = DEFAULT_BUFFER_SIZE_PER_STREAM;
 			RndSeed = DateTime.Now.Ticks.GetHashCode();
-			_bitMaps = new BitMaps(key1, key2, paranoidMode);
+			_bitMaps = new BitMaps(key1, key2);
 
 			// Работаем так, как желает пользователь
 			Initialize(bitStreamsNames, workInMemory);

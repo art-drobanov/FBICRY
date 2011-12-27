@@ -26,10 +26,8 @@ namespace CRYFORCE.Engine
 		/// </summary>
 		/// <param name="key1">Ключ для первого прохода шифрования.</param>
 		/// <param name="key2">Ключ для второго прохода шифрования.</param>
-		/// <param name="paranoidMode">Параноидальный режим?</param>
-		public BitMaps(byte[] key1, byte[] key2, bool paranoidMode)
+		public BitMaps(byte[] key1, byte[] key2)
 		{
-			ParanoidMode = paranoidMode;
 			Bitmaps = new Permutations<int>(new[] {0, 1, 2, 3, 4, 5, 6, 7}).MakePermutationsSet(); // 40320 перестановок 8 бит
 			BitmapsIdx = 0;
 
@@ -39,11 +37,6 @@ namespace CRYFORCE.Engine
 
 			// Производим самообновление ключа
 			RefreshKey();
-
-			if(paranoidMode)
-			{
-				RefreshKey();
-			}
 		}
 
 		/// <summary>

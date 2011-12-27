@@ -240,7 +240,6 @@ namespace FBICRYcmd
 			bool single = false; // Однослойный шифр?
 			bool encryption = false; // Режим шифрования (не дешифрование)?
 			bool ecdh = false; // Используется EcdhP521?
-			bool paranoid = true; // Параноидальный режим шифрования?
 
 			switch(args[0].ToLower())
 			{
@@ -249,7 +248,6 @@ namespace FBICRYcmd
 						single = false;
 						encryption = true;
 						ecdh = true;
-						paranoid = true;
 						Console.WriteLine("Режим шифрования на основе открытого ключа другого абонента");
 						Console.WriteLine("(двойной Rijndael-256 с перестановкой битов между слоями)...");
 						break;
@@ -259,7 +257,6 @@ namespace FBICRYcmd
 						single = true;
 						encryption = true;
 						ecdh = false;
-						paranoid = false;
 						Console.WriteLine("Режим шифрования (Rijndael-256)...");
 						break;
 					}
@@ -268,7 +265,6 @@ namespace FBICRYcmd
 						single = false;
 						encryption = true;
 						ecdh = false;
-						paranoid = true;
 						Console.WriteLine("Режим шифрования (двойной Rijndael-256 с перестановкой битов между слоями)...");
 						break;
 					}
@@ -277,7 +273,6 @@ namespace FBICRYcmd
 						single = false;
 						encryption = false;
 						ecdh = true;
-						paranoid = true;
 						Console.WriteLine("Режим дешифрования на основе открытого ключа другого абонента");
 						Console.WriteLine("(двойной Rijndael-256 с перестановкой битов между слоями)...");
 						break;
@@ -287,7 +282,6 @@ namespace FBICRYcmd
 						single = true;
 						encryption = false;
 						ecdh = false;
-						paranoid = false;
 						Console.WriteLine("Режим дешифрования (Rijndael-256)...");
 						break;
 					}
@@ -296,7 +290,6 @@ namespace FBICRYcmd
 						single = false;
 						encryption = false;
 						ecdh = false;
-						paranoid = true;
 						Console.WriteLine("Режим дешифрования (двойной Rijndael-256 с перестановкой битов между слоями)...");
 						break;
 					}
@@ -442,7 +435,7 @@ namespace FBICRYcmd
 				{
 					passwordDataForKey1 = CryforceUtilities.MergeArrays(passwordDataForKeyFromFile1, passwordDataForKeyFromKeyboard1);
 					passwordDataForKey2 = CryforceUtilities.MergeArrays(passwordDataForKeyFromFile2, passwordDataForKeyFromKeyboard2);
-					cryforce.DoubleRijndael(inputStream, passwordDataForKey1, passwordDataForKey2, outputStream, encryption, paranoid, iterations);
+					cryforce.DoubleRijndael(inputStream, passwordDataForKey1, passwordDataForKey2, outputStream, encryption, iterations);
 				}
 			}
 			catch
