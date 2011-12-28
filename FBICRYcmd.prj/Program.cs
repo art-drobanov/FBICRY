@@ -107,7 +107,9 @@ namespace FBICRYcmd
 			Console.WriteLine("\tКоманды: g  - сгенерировать пару открытый/закрытый ключ для ECDH521 (вторым аргументом");
 			Console.WriteLine("\t              можно передать файл, который будет использован как набор случайных данных);");
 			Console.WriteLine("\t         s  - подписать файл своим закрытым ключом (проверка валидности подписи - открытым);");
-			Console.WriteLine("\t         c  - проверить валидность указанной подписи (сам файл находится автоматически).");
+			Console.WriteLine("\t         c  - проверить валидность указанной подписи (сам файл находится автоматически)");
+			Console.WriteLine("\t              для передаваемого следующим аргументом открытого ключа.");
+			Console.WriteLine("\t              Пример проверки подписи: FBICRYcmd.exe с input.txt.sig FBICRY.PUB.txt");
 			Console.WriteLine();
 			Console.WriteLine();
 			Console.WriteLine("\tПри вводе пароля, при нажатии каждой клавиши можно использовать модификаторы");
@@ -153,7 +155,7 @@ namespace FBICRYcmd
 			// Задаем имена открытого и закрытого ключей
 			string publicKeyFilename = "FBICRY.PUB.txt";
 			string privateKeyFilename = "FBICRY.ECC.txt";
-			
+
 			// Задаем расширение ЭЦП
 			string signExt = ".sig";
 
@@ -200,6 +202,7 @@ namespace FBICRYcmd
 				//...и создаем сами ключи
 				cryforce.CreateEccKeys(publicKeyStream, privateKeyStream, seedStream);
 
+				// Закрываем файловые потоки
 				publicKeyStream.Flush();
 				publicKeyStream.Close();
 
@@ -232,7 +235,7 @@ namespace FBICRYcmd
 
 				// Имя создаваемого файла с ЭЦП
 				string signFilename = args[1] + signExt;
-				
+
 				if(File.Exists(signFilename))
 				{
 					File.SetAttributes(signFilename, FileAttributes.Normal);
@@ -244,6 +247,7 @@ namespace FBICRYcmd
 				Console.WriteLine("Начато вычисление электронной цифровой подписи файла {0}...", args[1]);
 				cryforce.SignData(privateKeyStream, dataStream, signStream);
 
+				// Закрываем файловые потоки
 				privateKeyStream.Close();
 				dataStream.Close();
 
@@ -256,7 +260,7 @@ namespace FBICRYcmd
 			}
 
 			// Проверка на запрос проверки ЭЦП...
-			if((args.Length != 0) && (args[0].ToLower() == "с"))
+			if((args.Length != 0) && (args[0].ToLower() == "c"))
 			{
 				// Проверяем файл открытого ключа на существование
 				if(!File.Exists(args[2]))
@@ -265,7 +269,40 @@ namespace FBICRYcmd
 					return;
 				}
 
-				//...
+				// Определяем имя файла данных, ассоциированного с файлом ЭЦП....
+				string dataFileName = args[1].Replace(signExt, "");
+
+				if(!File.Exists(dataFileName))
+				{
+					Console.WriteLine("Файл данных {0}, ассоциируемый с файлом электронной подписи {1}, не существует!", dataFileName, args[1]);
+					return;
+				}
+
+				// Открываем потоки для чтения данных, подписи и открытого ключа другой стороны...
+				Stream dataStream = new FileStream(dataFileName, FileMode.Open, FileAccess.Read);
+				Stream signStream = new FileStream(args[1], FileMode.Open, FileAccess.Read);
+				Stream publicKeyFromOtherPartyStream = new FileStream(args[2], FileMode.Open, FileAccess.Read);
+
+				// Осуществляем проверку ЭЦП
+				Console.WriteLine("Начата проверка электронной цифровой подписи файла {0}...", dataFileName);
+				bool result = cryforce.VerifySign(dataStream, signStream, publicKeyFromOtherPartyStream);
+
+				// Закрываем файловые потоки
+				dataStream.Close();
+				signStream.Close();
+				publicKeyFromOtherPartyStream.Close();
+
+				Console.WriteLine();
+				if(result)
+				{
+					Console.WriteLine("Файл {0} СООТВЕТСТВУЕТ предъявленной электронной подписи {1} и открытому ключу {2}...", dataFileName, args[1], args[2]);
+				}
+				else
+				{
+					Console.WriteLine("Файл {0} НЕ СООТВЕТСТВУЕТ предъявленной электронной подписи {1} и открытому ключу {2}!", dataFileName, args[1], args[2]);
+				}
+
+				return;
 			}
 
 			// Если задано слишком малое количество аргументов - выводим справку...

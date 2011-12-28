@@ -466,15 +466,29 @@ namespace CRYFORCE.Engine
 		/// <returns>Булевский флаг проверки ЭЦП.</returns>
 		public bool VerifyData(byte[] data, int offset, int count, string signature, string publicKey)
 		{
+			return VerifyData(data, offset, count, Convert.FromBase64String(signature), Convert.FromBase64String(publicKey));
+		}
+
+		/// <summary>
+		/// Проверка ЭЦП
+		/// </summary>
+		/// <param name="data">Массив данных.</param>
+		/// <param name="offset">Смещение до участка интереса.</param>
+		/// <param name="count">Длина байт участка интереса.</param>
+		/// <param name="signature">ЭЦП.</param>
+		/// <param name="publicKey">Открытый ключ для проверки ЭЦП.</param>
+		/// <returns>Булевский флаг проверки ЭЦП.</returns>
+		public bool VerifyData(byte[] data, int offset, int count, byte[] signature, byte[] publicKey)
+		{
 			if(!IsInitialized)
 			{
 				throw new Exception("EcdhP521::VerifyData() ==> EcdhP521 is not initialized!");
 			}
 
-			using(var eECDsaCng = new ECDsaCng(ImportKeyBinData(Convert.FromBase64String(publicKey), true, true))) // public, DS
+			using(var eECDsaCng = new ECDsaCng(ImportKeyBinData(publicKey, true, true))) // public, DS
 			{
 				eECDsaCng.HashAlgorithm = CngAlgorithm.Sha512;
-				return eECDsaCng.VerifyData(data, offset, count, Convert.FromBase64String(signature));
+				return eECDsaCng.VerifyData(data, offset, count, signature);
 			}
 		}
 
@@ -488,16 +502,8 @@ namespace CRYFORCE.Engine
 		/// <returns>Булевский флаг проверки ЭЦП.</returns>
 		public bool VerifyData(byte[] data, int offset, string signature, string publicKey)
 		{
-			if(!IsInitialized)
-			{
-				throw new Exception("EcdhP521::VerifyData() ==> EcdhP521 is not initialized!");
-			}
-
-			using(var eECDsaCng = new ECDsaCng(ImportKeyBinData(Convert.FromBase64String(publicKey), true, true))) // public, DS
-			{
-				eECDsaCng.HashAlgorithm = CngAlgorithm.Sha512;
-				return eECDsaCng.VerifyData(data, offset, (data.Length - offset), Convert.FromBase64String(signature));
-			}
+			byte[] signatureByteArr = Convert.FromBase64String(signature);
+			return VerifyData(data, offset, signature.Length, signatureByteArr, Convert.FromBase64String(publicKey));
 		}
 
 		/// <summary>
@@ -509,37 +515,8 @@ namespace CRYFORCE.Engine
 		/// <returns>Булевский флаг проверки ЭЦП.</returns>
 		public bool VerifyData(byte[] data, string signature, string publicKey)
 		{
-			if(!IsInitialized)
-			{
-				throw new Exception("EcdhP521::VerifyData() ==> EcdhP521 is not initialized!");
-			}
-
-			using(var eECDsaCng = new ECDsaCng(ImportKeyBinData(Convert.FromBase64String(publicKey), true, true))) // public, DS
-			{
-				eECDsaCng.HashAlgorithm = CngAlgorithm.Sha512;
-				return eECDsaCng.VerifyData(data, Convert.FromBase64String(signature));
-			}
-		}
-
-		/// <summary>
-		/// Проверка ЭЦП
-		/// </summary>
-		/// <param name="data">Поток данных.</param>
-		/// <param name="signature">ЭЦП.</param>
-		/// <param name="publicKey">Открытый ключ для проверки ЭЦП.</param>
-		/// <returns>Булевский флаг проверки ЭЦП.</returns>
-		public bool VerifyData(Stream data, string signature, string publicKey)
-		{
-			if(!IsInitialized)
-			{
-				throw new Exception("EcdhP521::VerifyData() ==> EcdhP521 is not initialized!");
-			}
-
-			using(var eECDsaCng = new ECDsaCng(ImportKeyBinData(Convert.FromBase64String(publicKey), true, true))) // public, DS
-			{
-				eECDsaCng.HashAlgorithm = CngAlgorithm.Sha512;
-				return eECDsaCng.VerifyData(data, Convert.FromBase64String(signature));
-			}
+			byte[] signatureByteArr = Convert.FromBase64String(signature);
+			return VerifyData(data, 0, signature.Length, signatureByteArr, Convert.FromBase64String(publicKey));
 		}
 
 		/// <summary>
@@ -551,15 +528,40 @@ namespace CRYFORCE.Engine
 		/// <returns>Булевский флаг проверки ЭЦП.</returns>
 		public bool VerifyData(string data, string signature, string publicKey)
 		{
+			byte[] signatureByteArr = Convert.FromBase64String(signature);
+			return VerifyData(Encoding.Unicode.GetBytes(data), 0, signature.Length, signatureByteArr, Convert.FromBase64String(publicKey));
+		}
+
+		/// <summary>
+		/// Проверка ЭЦП
+		/// </summary>
+		/// <param name="data">Поток данных.</param>
+		/// <param name="signature">ЭЦП.</param>
+		/// <param name="publicKey">Открытый ключ для проверки ЭЦП.</param>
+		/// <returns>Булевский флаг проверки ЭЦП.</returns>
+		public bool VerifyData(Stream data, string signature, string publicKey)
+		{
+			return VerifyData(data, Convert.FromBase64String(signature), Convert.FromBase64String(publicKey));
+		}
+
+		/// <summary>
+		/// Проверка ЭЦП
+		/// </summary>
+		/// <param name="data">Поток данных.</param>
+		/// <param name="signature">ЭЦП.</param>
+		/// <param name="publicKey">Открытый ключ для проверки ЭЦП.</param>
+		/// <returns>Булевский флаг проверки ЭЦП.</returns>
+		public bool VerifyData(Stream data, byte[] signature, byte[] publicKey)
+		{
 			if(!IsInitialized)
 			{
 				throw new Exception("EcdhP521::VerifyData() ==> EcdhP521 is not initialized!");
 			}
 
-			using(var eECDsaCng = new ECDsaCng(ImportKeyBinData(Convert.FromBase64String(publicKey), true, true))) // public, DS
+			using(var eECDsaCng = new ECDsaCng(ImportKeyBinData(publicKey, true, true))) // public, DS
 			{
 				eECDsaCng.HashAlgorithm = CngAlgorithm.Sha512;
-				return eECDsaCng.VerifyData(Encoding.Unicode.GetBytes(data), Convert.FromBase64String(signature));
+				return eECDsaCng.VerifyData(data, signature);
 			}
 		}
 
@@ -572,15 +574,27 @@ namespace CRYFORCE.Engine
 		/// <returns>Булевский флаг проверки ЭЦП.</returns>
 		public bool VerifyHash(byte[] data, string signature, string publicKey)
 		{
+			return VerifyHash(data, Convert.FromBase64String(signature), Convert.FromBase64String(publicKey));
+		}
+
+		/// <summary>
+		/// Проверка ЭЦП
+		/// </summary>
+		/// <param name="data">Массив данных.</param>
+		/// <param name="signature">ЭЦП.</param>
+		/// <param name="publicKey">Открытый ключ для проверки ЭЦП.</param>
+		/// <returns>Булевский флаг проверки ЭЦП.</returns>
+		public bool VerifyHash(byte[] data, byte[] signature, byte[] publicKey)
+		{
 			if(!IsInitialized)
 			{
 				throw new Exception("EcdhP521::VerifyHash() ==> EcdhP521 is not initialized!");
 			}
 
-			using(var eECDsaCng = new ECDsaCng(ImportKeyBinData(Convert.FromBase64String(publicKey), true, true))) // public, DS
+			using(var eECDsaCng = new ECDsaCng(ImportKeyBinData(publicKey, true, true))) // public, DS
 			{
 				eECDsaCng.HashAlgorithm = CngAlgorithm.Sha512;
-				return eECDsaCng.VerifyHash(data, Convert.FromBase64String(signature));
+				return eECDsaCng.VerifyHash(data, signature);
 			}
 		}
 

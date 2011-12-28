@@ -2,7 +2,6 @@
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
-using System.Text;
 
 using EventArgsUtilities;
 
@@ -408,7 +407,7 @@ namespace CRYFORCE.Engine
 			// Читаем открытый ключ
 			var publicKeyFromOtherParty = new byte[publicKeyFromOtherPartyStream.Length];
 			publicKeyFromOtherPartyStream.Read(publicKeyFromOtherParty, 0, publicKeyFromOtherParty.Length);
-			
+
 			// Читаем закрытый ключ
 			var privateKey = new byte[privateKeyStream.Length];
 			privateKeyStream.Read(privateKey, 0, privateKey.Length);
@@ -461,7 +460,7 @@ namespace CRYFORCE.Engine
 			// Создаем сущность для работы с эллиптическими кривыми
 			var ecdhP521 = new EcdhP521(null, new string(privateKey.Select(item => (char)item).ToArray()));
 
-			var sign = ecdhP521.SignData(dataStream);
+			string sign = ecdhP521.SignData(dataStream);
 			signStream.Write(sign.Select(item => (byte)item).ToArray(), 0, sign.Length);
 
 			// Чистим массивы...
@@ -469,6 +468,56 @@ namespace CRYFORCE.Engine
 
 			// Уничтожаем секретные данные...
 			ecdhP521.Clear();
+		}
+
+		/// <summary>
+		/// Проверка ЭЦП на базе открытого ключа другой стороны
+		/// </summary>
+		/// <param name="dataStream">Поток данных.</param>
+		/// <param name="signStream">ЭЦП.</param>
+		/// <param name="publicKeyFromOtherPartyStream">Поток открытого ключа другой стороны.</param>
+		/// <returns>Булевский флаг операции.</returns>
+		public bool VerifySign(Stream dataStream, Stream signStream, Stream publicKeyFromOtherPartyStream)
+		{
+			if(!publicKeyFromOtherPartyStream.CanSeek)
+			{
+				throw new Exception("Cryforce::VerifySign() ==> Public key from other party stream can't seek!");
+			}
+
+			// Читаем открытый ключ
+			var publicKeyFromOtherParty = new byte[publicKeyFromOtherPartyStream.Length];
+			publicKeyFromOtherPartyStream.Read(publicKeyFromOtherParty, 0, publicKeyFromOtherParty.Length);
+
+			// Читаем ЭЦП
+			var sign = new byte[signStream.Length];
+			signStream.Read(sign, 0, sign.Length);
+
+			// Создаем сущность для работы с эллиптическими кривыми
+			var ecdhP521 = new EcdhP521(null, null);
+
+			// Возвращаем результат проверки ЭЦП
+			bool result;
+
+			try
+			{
+				// Осуществляем проверку ЭЦП...
+				result = ecdhP521.VerifyData(dataStream,
+				                             Convert.FromBase64String(new string(sign.Select(item => (char)item).ToArray())),
+				                             Convert.FromBase64String(new string(publicKeyFromOtherParty.Select(item => (char)item).ToArray())));
+			}
+			catch
+			{
+				result = false;
+			}
+
+			// Чистим массивы...
+			CryforceUtilities.ClearArray(sign);
+
+			// Уничтожаем секретные данные...
+			ecdhP521.Clear();
+
+			// Возвращаем результат проверки ЭЦП
+			return result;
 		}
 
 		#endregion Public
