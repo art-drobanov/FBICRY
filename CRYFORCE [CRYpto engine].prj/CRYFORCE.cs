@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
+using System.Text;
 
 using EventArgsUtilities;
 
@@ -339,18 +340,18 @@ namespace CRYFORCE.Engine
 		/// <param name="publicKeyStream">Поток для записи открытого ключа.</param>
 		/// <param name="privateKeyStream">Поток для записи закрытого ключа.</param>
 		/// <param name="seedStream">Поток, содержащий случайные данные.</param>
-		public void CreateECCKeys(Stream publicKeyStream, Stream privateKeyStream, Stream seedStream = null)
+		public void CreateEccKeys(Stream publicKeyStream, Stream privateKeyStream, Stream seedStream = null)
 		{
 			byte[] seedDataFromStream = null;
 
 			if(!publicKeyStream.CanWrite)
 			{
-				throw new Exception("Cryforce::CreateECCKeys() ==> Public key stream can't write!");
+				throw new Exception("Cryforce::CreateEccKeys() ==> Public key stream can't write!");
 			}
 
 			if(!privateKeyStream.CanWrite)
 			{
-				throw new Exception("Cryforce::CreateECCKeys() ==> Private key stream can't write!");
+				throw new Exception("Cryforce::CreateEccKeys() ==> Private key stream can't write!");
 			}
 
 			// Если можем использовать seed-поток...
@@ -367,6 +368,8 @@ namespace CRYFORCE.Engine
 			Console.WriteLine();
 			byte[] seedDataFromKeyboard = CryforceUtilities.GetPasswordBytesSafely();
 			byte[] seedData = CryforceUtilities.MergeArrays(seedDataFromStream, seedDataFromKeyboard);
+
+			// Создаем сущность для работы с эллиптическими кривыми
 			var ecdhP521 = new EcdhP521(seedData, null); // Приватного ключа нет - он будет сгенерирован!
 
 			// Чистим массивы...
@@ -377,6 +380,9 @@ namespace CRYFORCE.Engine
 			// Пишем ключи в потоки
 			publicKeyStream.Write(ecdhP521.PublicKey.Select(item => (byte)item).ToArray(), 0, ecdhP521.PublicKey.Length);
 			privateKeyStream.Write(ecdhP521.PrivateKey.Select(item => (byte)item).ToArray(), 0, ecdhP521.PrivateKey.Length);
+
+			// Уничтожаем секретные данные...
+			ecdhP521.Clear();
 		}
 
 		/// <summary>
@@ -399,22 +405,70 @@ namespace CRYFORCE.Engine
 				throw new Exception("Cryforce::GetSymmetricKeys() ==> Private key stream can't seek!");
 			}
 
+			// Читаем открытый ключ
 			var publicKeyFromOtherParty = new byte[publicKeyFromOtherPartyStream.Length];
 			publicKeyFromOtherPartyStream.Read(publicKeyFromOtherParty, 0, publicKeyFromOtherParty.Length);
-
+			
+			// Читаем закрытый ключ
 			var privateKey = new byte[privateKeyStream.Length];
 			privateKeyStream.Read(privateKey, 0, privateKey.Length);
 
+			// Создаем сущность для работы с эллиптическими кривыми
 			var ecdhP521 = new EcdhP521(null, new string(privateKey.Select(item => (char)item).ToArray())) {PublicKeyFromOtherParty = new string(publicKeyFromOtherParty.Select(item => (char)item).ToArray())};
 
+			// Если не получилось сгенерировать симметричные ключи...
 			if(!ecdhP521.CreateSymmetricKey())
 			{
+				// Чистим массивы...
+				CryforceUtilities.ClearArray(publicKeyFromOtherParty);
+				CryforceUtilities.ClearArray(privateKey);
+
+				//...уничтожаем секретные данные...
+				ecdhP521.Clear();
+
 				throw new Exception("Cryforce::CreateSymmetricKey() failed!");
 			}
 
 			// Получаем симметричные ключи
 			symmetricKey1 = (byte[])ecdhP521.Keys256[0].Clone();
 			symmetricKey2 = (byte[])ecdhP521.Keys256[1].Clone();
+
+			// Чистим массивы...
+			CryforceUtilities.ClearArray(publicKeyFromOtherParty);
+			CryforceUtilities.ClearArray(privateKey);
+
+			// Уничтожаем секретные данные...
+			ecdhP521.Clear();
+		}
+
+		/// <summary>
+		/// Вычисление ЭЦП потока данных
+		/// </summary>
+		/// <param name="privateKeyStream">Приватный ключ.</param>
+		/// <param name="dataStream">Поток данных.</param>
+		/// <param name="signStream">ЭЦП для потока данных.</param>
+		public void SignData(Stream privateKeyStream, Stream dataStream, Stream signStream)
+		{
+			if(!privateKeyStream.CanSeek)
+			{
+				throw new Exception("Cryforce::SignData() ==> Private key stream can't seek!");
+			}
+
+			// Читаем закрытый ключ
+			var privateKey = new byte[privateKeyStream.Length];
+			privateKeyStream.Read(privateKey, 0, privateKey.Length);
+
+			// Создаем сущность для работы с эллиптическими кривыми
+			var ecdhP521 = new EcdhP521(null, new string(privateKey.Select(item => (char)item).ToArray()));
+
+			var sign = ecdhP521.SignData(dataStream);
+			signStream.Write(sign.Select(item => (byte)item).ToArray(), 0, sign.Length);
+
+			// Чистим массивы...
+			CryforceUtilities.ClearArray(privateKey);
+
+			// Уничтожаем секретные данные...
+			ecdhP521.Clear();
 		}
 
 		#endregion Public

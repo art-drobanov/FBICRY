@@ -105,7 +105,9 @@ namespace FBICRYcmd
 			Console.WriteLine("\t         d2 - дешифровать (двойной Rijndael-256 с перестановкой битов между слоями).");
 			Console.WriteLine();
 			Console.WriteLine("\tКоманды: g  - сгенерировать пару открытый/закрытый ключ для ECDH521 (вторым аргументом");
-			Console.WriteLine("\t              можно передать файл, который будет использован как набор случайных данных).");
+			Console.WriteLine("\t              можно передать файл, который будет использован как набор случайных данных);");
+			Console.WriteLine("\t         s  - подписать файл своим закрытым ключом (проверка валидности подписи - открытым);");
+			Console.WriteLine("\t         c  - проверить валидность указанной подписи (сам файл находится автоматически).");
 			Console.WriteLine();
 			Console.WriteLine();
 			Console.WriteLine("\tПри вводе пароля, при нажатии каждой клавиши можно использовать модификаторы");
@@ -151,6 +153,9 @@ namespace FBICRYcmd
 			// Задаем имена открытого и закрытого ключей
 			string publicKeyFilename = "FBICRY.PUB.txt";
 			string privateKeyFilename = "FBICRY.ECC.txt";
+			
+			// Задаем расширение ЭЦП
+			string signExt = ".sig";
 
 			// Выполняем очистку консоли, вывод логотипа и версии
 			ConsoleClearAndPrepare();
@@ -193,7 +198,7 @@ namespace FBICRYcmd
 				Stream privateKeyStream = new FileStream(privateKeyFilename, FileMode.Create, FileAccess.Write);
 
 				//...и создаем сами ключи
-				cryforce.CreateECCKeys(publicKeyStream, privateKeyStream, seedStream);
+				cryforce.CreateEccKeys(publicKeyStream, privateKeyStream, seedStream);
 
 				publicKeyStream.Flush();
 				publicKeyStream.Close();
@@ -210,6 +215,57 @@ namespace FBICRYcmd
 				Console.WriteLine("Генерирование открытого и закрытого ключей завершено!");
 
 				return;
+			}
+
+			// Проверка на запрос выполнения ЭЦП...
+			if((args.Length != 0) && (args[0].ToLower() == "s"))
+			{
+				if(!File.Exists(privateKeyFilename))
+				{
+					Console.WriteLine("Файл закрытого ключа {0} не существует!", privateKeyFilename);
+					return;
+				}
+
+				// Открываем поток для чтения закрытого ключа и исходного файла...
+				Stream privateKeyStream = new FileStream(privateKeyFilename, FileMode.Open, FileAccess.Read);
+				Stream dataStream = new FileStream(args[1], FileMode.Open, FileAccess.Read);
+
+				// Имя создаваемого файла с ЭЦП
+				string signFilename = args[1] + signExt;
+				
+				if(File.Exists(signFilename))
+				{
+					File.SetAttributes(signFilename, FileAttributes.Normal);
+				}
+
+				Stream signStream = new FileStream(signFilename, FileMode.Create, FileAccess.Write);
+
+				// Вычисляем ЭЦП
+				Console.WriteLine("Начато вычисление электронной цифровой подписи файла {0}...", args[1]);
+				cryforce.SignData(privateKeyStream, dataStream, signStream);
+
+				privateKeyStream.Close();
+				dataStream.Close();
+
+				signStream.Flush();
+				signStream.Close();
+
+				Console.WriteLine("Вычисление электронной цифровой подписи завершено! Создан файл {0}", signFilename);
+
+				return;
+			}
+
+			// Проверка на запрос проверки ЭЦП...
+			if((args.Length != 0) && (args[0].ToLower() == "с"))
+			{
+				// Проверяем файл открытого ключа на существование
+				if(!File.Exists(args[2]))
+				{
+					Console.WriteLine("Файл открытого ключа другой стороны {0} не существует!", args[2]);
+					return;
+				}
+
+				//...
 			}
 
 			// Если задано слишком малое количество аргументов - выводим справку...
