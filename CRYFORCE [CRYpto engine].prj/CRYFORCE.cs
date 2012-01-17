@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
+using System.Text;
 
 using EventArgsUtilities;
 
@@ -376,9 +377,15 @@ namespace CRYFORCE.Engine
 			CryforceUtilities.ClearArray(seedDataFromKeyboard);
 			CryforceUtilities.ClearArray(seedData);
 
-			// Пишем ключи в потоки
-			publicKeyStream.Write(ecdhP521.PublicKey.Select(item => (byte)item).ToArray(), 0, ecdhP521.PublicKey.Length);
-			privateKeyStream.Write(ecdhP521.PrivateKey.Select(item => (byte)item).ToArray(), 0, ecdhP521.PrivateKey.Length);
+			// Пишем открытый ключ...
+			var swPublicKey = new StreamWriter(publicKeyStream, Encoding.ASCII);
+			swPublicKey.Write(ecdhP521.PublicKey);
+			swPublicKey.Flush();
+
+			// Пишем закрытый ключ...
+			var swPrivateKey = new StreamWriter(privateKeyStream, Encoding.ASCII);
+			swPrivateKey.Write(ecdhP521.PrivateKey);
+			swPrivateKey.Flush();
 
 			// Уничтожаем секретные данные...
 			ecdhP521.Clear();
@@ -404,24 +411,16 @@ namespace CRYFORCE.Engine
 				throw new Exception("Cryforce::GetSymmetricKeys() ==> Private key stream can't seek!");
 			}
 
-			// Читаем открытый ключ
-			var publicKeyFromOtherParty = new byte[publicKeyFromOtherPartyStream.Length];
-			publicKeyFromOtherPartyStream.Read(publicKeyFromOtherParty, 0, publicKeyFromOtherParty.Length);
-
-			// Читаем закрытый ключ
-			var privateKey = new byte[privateKeyStream.Length];
-			privateKeyStream.Read(privateKey, 0, privateKey.Length);
+			// Ищем начало потоков...
+			CryforceUtilities.SafeSeekBegin(publicKeyFromOtherPartyStream);
+			CryforceUtilities.SafeSeekBegin(privateKeyStream);
 
 			// Создаем сущность для работы с эллиптическими кривыми
-			var ecdhP521 = new EcdhP521(null, new string(privateKey.Select(item => (char)item).ToArray())) {PublicKeyFromOtherParty = new string(publicKeyFromOtherParty.Select(item => (char)item).ToArray())};
+			var ecdhP521 = new EcdhP521(null, new StreamReader(privateKeyStream, Encoding.UTF8).ReadToEnd()) {PublicKeyFromOtherParty = new StreamReader(publicKeyFromOtherPartyStream, Encoding.UTF8).ReadToEnd()};
 
 			// Если не получилось сгенерировать симметричные ключи...
 			if(!ecdhP521.CreateSymmetricKey())
 			{
-				// Чистим массивы...
-				CryforceUtilities.ClearArray(publicKeyFromOtherParty);
-				CryforceUtilities.ClearArray(privateKey);
-
 				//...уничтожаем секретные данные...
 				ecdhP521.Clear();
 
@@ -431,10 +430,6 @@ namespace CRYFORCE.Engine
 			// Получаем симметричные ключи
 			symmetricKey1 = (byte[])ecdhP521.Keys256[0].Clone();
 			symmetricKey2 = (byte[])ecdhP521.Keys256[1].Clone();
-
-			// Чистим массивы...
-			CryforceUtilities.ClearArray(publicKeyFromOtherParty);
-			CryforceUtilities.ClearArray(privateKey);
 
 			// Уничтожаем секретные данные...
 			ecdhP521.Clear();
@@ -453,18 +448,17 @@ namespace CRYFORCE.Engine
 				throw new Exception("Cryforce::SignData() ==> Private key stream can't seek!");
 			}
 
-			// Читаем закрытый ключ
-			var privateKey = new byte[privateKeyStream.Length];
-			privateKeyStream.Read(privateKey, 0, privateKey.Length);
+			// Ищем начало потоков...
+			CryforceUtilities.SafeSeekBegin(privateKeyStream);
+			CryforceUtilities.SafeSeekBegin(dataStream);
 
 			// Создаем сущность для работы с эллиптическими кривыми
-			var ecdhP521 = new EcdhP521(null, new string(privateKey.Select(item => (char)item).ToArray()));
+			var ecdhP521 = new EcdhP521(null, new StreamReader(privateKeyStream, Encoding.UTF8).ReadToEnd());
 
-			string sign = ecdhP521.SignData(dataStream);
-			signStream.Write(sign.Select(item => (byte)item).ToArray(), 0, sign.Length);
-
-			// Чистим массивы...
-			CryforceUtilities.ClearArray(privateKey);
+			// Пишем ЭЦП...
+			var sw = new StreamWriter(signStream, Encoding.ASCII);
+			sw.Write(ecdhP521.SignData(dataStream));
+			sw.Flush();
 
 			// Уничтожаем секретные данные...
 			ecdhP521.Clear();
@@ -484,13 +478,10 @@ namespace CRYFORCE.Engine
 				throw new Exception("Cryforce::VerifySign() ==> Public key from other party stream can't seek!");
 			}
 
-			// Читаем открытый ключ
-			var publicKeyFromOtherParty = new byte[publicKeyFromOtherPartyStream.Length];
-			publicKeyFromOtherPartyStream.Read(publicKeyFromOtherParty, 0, publicKeyFromOtherParty.Length);
-
-			// Читаем ЭЦП
-			var sign = new byte[signStream.Length];
-			signStream.Read(sign, 0, sign.Length);
+			// Ищем начало потоков...
+			CryforceUtilities.SafeSeekBegin(dataStream);
+			CryforceUtilities.SafeSeekBegin(signStream);
+			CryforceUtilities.SafeSeekBegin(publicKeyFromOtherPartyStream);
 
 			// Создаем сущность для работы с эллиптическими кривыми
 			var ecdhP521 = new EcdhP521(null, null);
@@ -502,16 +493,13 @@ namespace CRYFORCE.Engine
 			{
 				// Осуществляем проверку ЭЦП...
 				result = ecdhP521.VerifyData(dataStream,
-				                             Convert.FromBase64String(new string(sign.Select(item => (char)item).ToArray())),
-				                             Convert.FromBase64String(new string(publicKeyFromOtherParty.Select(item => (char)item).ToArray())));
+				                             Convert.FromBase64String(new StreamReader(signStream, Encoding.UTF8).ReadToEnd()),
+				                             Convert.FromBase64String(new StreamReader(publicKeyFromOtherPartyStream, Encoding.UTF8).ReadToEnd()));
 			}
 			catch
 			{
 				result = false;
 			}
-
-			// Чистим массивы...
-			CryforceUtilities.ClearArray(sign);
 
 			// Уничтожаем секретные данные...
 			ecdhP521.Clear();

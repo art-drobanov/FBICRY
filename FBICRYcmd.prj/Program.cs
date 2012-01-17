@@ -81,9 +81,8 @@ namespace FBICRYcmd
 		{
 			Console.BackgroundColor = ConsoleColor.DarkGreen;
 			Console.ForegroundColor = ConsoleColor.Black;
-			Console.Write(" FBICRYcmd 1.0.0.1 (c) 2☺12 Дробанов Артём Федорович (DrAF)  ");
+			Console.Write(" FBICRYcmd 1.0.1.3 (c) 2☺12 Дробанов Артём Федорович (DrAF)  ");
 			Console.BackgroundColor = ConsoleColor.Black;
-			Console.WriteLine();
 			Console.WriteLine();
 			Console.WriteLine();
 			Console.WriteLine();
@@ -107,14 +106,13 @@ namespace FBICRYcmd
 			Console.WriteLine("\tКоманды: g  - сгенерировать пару открытый/закрытый ключ для ECDH521 (вторым аргументом");
 			Console.WriteLine("\t              можно передать файл, который будет использован как набор случайных данных);");
 			Console.WriteLine("\t         s  - подписать файл своим закрытым ключом (проверка валидности подписи - открытым);");
+			Console.WriteLine("\t              Пример вычисления подписи: FBICRYcmd.exe s input.txt");
 			Console.WriteLine("\t         c  - проверить валидность указанной подписи (сам файл находится автоматически)");
 			Console.WriteLine("\t              для передаваемого следующим аргументом открытого ключа.");
 			Console.WriteLine("\t              Пример проверки подписи: FBICRYcmd.exe с input.txt.sig FBICRY.PUB.txt");
 			Console.WriteLine();
-			Console.WriteLine();
 			Console.WriteLine("\tПри вводе пароля, при нажатии каждой клавиши можно использовать модификаторы");
 			Console.WriteLine("\t\"Alt\", \"Shift\", \"Control\"...");
-			Console.WriteLine();
 		}
 
 		/// <summary>
@@ -149,9 +147,6 @@ namespace FBICRYcmd
 
 		private static void Main(string[] args)
 		{
-			// Работаем в ОЗУ
-			bool workInMemory = true;
-
 			// Задаем имена открытого и закрытого ключей
 			string publicKeyFilename = "FBICRY.PUB.txt";
 			string privateKeyFilename = "FBICRY.ECC.txt";
@@ -221,7 +216,7 @@ namespace FBICRYcmd
 			}
 
 			// Проверка на запрос выполнения ЭЦП...
-			if((args.Length != 0) && (args[0].ToLower() == "s"))
+			if((args.Length == 2) && (args[0].ToLower() == "s"))
 			{
 				if(!File.Exists(privateKeyFilename))
 				{
@@ -254,13 +249,14 @@ namespace FBICRYcmd
 				signStream.Flush();
 				signStream.Close();
 
-				Console.WriteLine("Вычисление электронной цифровой подписи завершено! Создан файл {0}", signFilename);
+				Console.WriteLine("Вычисление электронной цифровой подписи завершено!");
+				Console.WriteLine("Создан файл {0}", signFilename);
 
 				return;
 			}
 
 			// Проверка на запрос проверки ЭЦП...
-			if((args.Length != 0) && (args[0].ToLower() == "c"))
+			if((args.Length == 3) && (args[0].ToLower() == "c"))
 			{
 				// Проверяем файл открытого ключа на существование
 				if(!File.Exists(args[2]))
@@ -292,10 +288,9 @@ namespace FBICRYcmd
 				signStream.Close();
 				publicKeyFromOtherPartyStream.Close();
 
-				Console.WriteLine();
 				if(result)
 				{
-					Console.WriteLine("Файл {0} СООТВЕТСТВУЕТ предъявленной электронной подписи {1} и открытому ключу {2}...", dataFileName, args[1], args[2]);
+					Console.WriteLine("Файл {0} соответствует предъявленной электронной подписи {1} и открытому ключу {2}...", dataFileName, args[1], args[2]);
 				}
 				else
 				{
