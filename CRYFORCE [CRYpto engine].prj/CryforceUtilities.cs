@@ -375,6 +375,44 @@ namespace CRYFORCE.Engine
 		}
 
 		/// <summary>
+		/// Получение хеш-множества символов, принадлежащих Base64
+		/// </summary>
+		/// <returns>Хеш-множество символов, принадлежащих Base64</returns>
+		public static HashSet<byte> GetBase64HashSet()
+		{
+			var base64HashSet = new HashSet<byte>();
+			foreach (var c in "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/")
+			{
+				base64HashSet.Add((byte)c);
+			}
+			return base64HashSet;
+		}
+
+		/// <summary>
+		/// Очистка входной строки от символов, не принадлежащих Base64
+		/// </summary>
+		public static string Base64String(this string source)
+		{
+			// Хеш-множество кодировки Base64
+			var base64 = GetBase64HashSet();
+
+			// Здесь будем хранить формируемую строку
+			StringBuilder sb = new StringBuilder();
+
+			// Обрабатываем каждый символ входной последовательности...
+			foreach (var c in source)
+			{
+				if (base64.Contains((byte)c))
+				{
+					sb.Append((char)((byte)c));
+				}
+			}
+
+			// Шлем отфильтрованную по стандарту Base64 строку...
+			return sb.ToString();
+		}
+
+		/// <summary>
 		/// Безопасное считывание пароля с клавиатуры с учетом нажатия клавиш "Alt", "Shift", "Control"
 		/// </summary>
 		/// <returns>Набор байт в кодировке Unicode для введенной строки.</returns>
@@ -465,7 +503,7 @@ namespace CRYFORCE.Engine
 		/// </summary>
 		/// <param name="inputString">Входная строка.</param>
 		/// <returns>Результат элиминации.</returns>
-		public static string EliminateInvalidFileNameChars(string inputString)
+		public static string EliminateInvalidFileNameChars(this string inputString)
 		{
 			// Получаем список символов, запрещенных к использованию в именах файлов
 			char[] invalidFileNameChars = Path.GetInvalidFileNameChars();

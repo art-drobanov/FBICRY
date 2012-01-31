@@ -130,7 +130,7 @@ namespace CRYFORCE.Engine
 		public string PublicKeyFromOtherParty
 		{
 			get { return Convert.ToBase64String(PublicKeyFromOtherPartyBin); }
-			set { PublicKeyFromOtherPartyBin = Convert.FromBase64String(value); }
+			set { PublicKeyFromOtherPartyBin = Convert.FromBase64String(value.Base64String()); }
 		}
 
 		/// <summary>
@@ -253,8 +253,8 @@ namespace CRYFORCE.Engine
 			else //...а иначе используем предоставленный...
 			{
 				//...импортируя его из строки в формате Base64
-				cngKeyECDH = ImportKeyBinData(Convert.FromBase64String(privateKey), false, false); // Не ЭЦП
-				cngKeyECDSA = ImportKeyBinData(Convert.FromBase64String(privateKey), false, true); // ЭЦП
+				cngKeyECDH = ImportKeyBinData(Convert.FromBase64String(privateKey.Base64String()), false, false); // Не ЭЦП
+				cngKeyECDSA = ImportKeyBinData(Convert.FromBase64String(privateKey.Base64String()), false, true); // ЭЦП
 			}
 
 			// Инициализируем криптографические сущности ключом
@@ -352,7 +352,7 @@ namespace CRYFORCE.Engine
 
 			try
 			{
-				Key512 = _ECDiffieHellmanCng.DeriveKeyMaterial(ImportKeyBinData(Convert.FromBase64String(PublicKeyFromOtherParty), true, false));
+				Key512 = _ECDiffieHellmanCng.DeriveKeyMaterial(ImportKeyBinData(Convert.FromBase64String(PublicKeyFromOtherParty.Base64String()), true, false));
 			}
 			catch
 			{
@@ -466,7 +466,7 @@ namespace CRYFORCE.Engine
 		/// <returns>Булевский флаг проверки ЭЦП.</returns>
 		public bool VerifyData(byte[] data, int offset, int count, string signature, string publicKey)
 		{
-			return VerifyData(data, offset, count, Convert.FromBase64String(signature), Convert.FromBase64String(publicKey));
+			return VerifyData(data, offset, count, Convert.FromBase64String(signature.Base64String()), Convert.FromBase64String(publicKey.Base64String()));
 		}
 
 		/// <summary>
@@ -502,8 +502,8 @@ namespace CRYFORCE.Engine
 		/// <returns>Булевский флаг проверки ЭЦП.</returns>
 		public bool VerifyData(byte[] data, int offset, string signature, string publicKey)
 		{
-			byte[] signatureByteArr = Convert.FromBase64String(signature);
-			return VerifyData(data, offset, signature.Length, signatureByteArr, Convert.FromBase64String(publicKey));
+			byte[] signatureByteArr = Convert.FromBase64String(signature.Base64String());
+			return VerifyData(data, offset, signature.Length, signatureByteArr, Convert.FromBase64String(publicKey.Base64String()));
 		}
 
 		/// <summary>
@@ -515,8 +515,8 @@ namespace CRYFORCE.Engine
 		/// <returns>Булевский флаг проверки ЭЦП.</returns>
 		public bool VerifyData(byte[] data, string signature, string publicKey)
 		{
-			byte[] signatureByteArr = Convert.FromBase64String(signature);
-			return VerifyData(data, 0, signature.Length, signatureByteArr, Convert.FromBase64String(publicKey));
+			byte[] signatureByteArr = Convert.FromBase64String(signature.Base64String());
+			return VerifyData(data, 0, signature.Length, signatureByteArr, Convert.FromBase64String(publicKey.Base64String()));
 		}
 
 		/// <summary>
@@ -528,8 +528,8 @@ namespace CRYFORCE.Engine
 		/// <returns>Булевский флаг проверки ЭЦП.</returns>
 		public bool VerifyData(string data, string signature, string publicKey)
 		{
-			byte[] signatureByteArr = Convert.FromBase64String(signature);
-			return VerifyData(Encoding.Unicode.GetBytes(data), 0, signature.Length, signatureByteArr, Convert.FromBase64String(publicKey));
+			byte[] signatureByteArr = Convert.FromBase64String(signature.Base64String());
+			return VerifyData(Encoding.Unicode.GetBytes(data), 0, signature.Length, signatureByteArr, Convert.FromBase64String(publicKey.Base64String()));
 		}
 
 		/// <summary>
@@ -541,7 +541,7 @@ namespace CRYFORCE.Engine
 		/// <returns>Булевский флаг проверки ЭЦП.</returns>
 		public bool VerifyData(Stream data, string signature, string publicKey)
 		{
-			return VerifyData(data, Convert.FromBase64String(signature), Convert.FromBase64String(publicKey));
+			return VerifyData(data, Convert.FromBase64String(signature.Base64String()), Convert.FromBase64String(publicKey.Base64String()));
 		}
 
 		/// <summary>
@@ -574,7 +574,7 @@ namespace CRYFORCE.Engine
 		/// <returns>Булевский флаг проверки ЭЦП.</returns>
 		public bool VerifyHash(byte[] data, string signature, string publicKey)
 		{
-			return VerifyHash(data, Convert.FromBase64String(signature), Convert.FromBase64String(publicKey));
+			return VerifyHash(data, Convert.FromBase64String(signature.Base64String()), Convert.FromBase64String(publicKey.Base64String()));
 		}
 
 		/// <summary>

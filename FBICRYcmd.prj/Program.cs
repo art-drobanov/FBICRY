@@ -81,7 +81,7 @@ namespace FBICRYcmd
 		{
 			Console.BackgroundColor = ConsoleColor.DarkGreen;
 			Console.ForegroundColor = ConsoleColor.Black;
-			Console.Write(" FBICRYcmd 1.0.1.3 (c) 2☺12 Дробанов Артём Федорович (DrAF)  ");
+			Console.Write(" FBICRYcmd 1.0.2.5 (c) 2☺12 Дробанов Артём Федорович (DrAF)  ");
 			Console.BackgroundColor = ConsoleColor.Black;
 			Console.WriteLine();
 			Console.WriteLine();
