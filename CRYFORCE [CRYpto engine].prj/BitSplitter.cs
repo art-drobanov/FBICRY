@@ -328,8 +328,8 @@ namespace CRYFORCE.Engine
 			//...и целевые потоки устанавливаем на начало
 			outputStream.Seek(0, SeekOrigin.Begin);
 
-			// Выделяем временный буфер
-			var buffer = new byte[BufferSizePerStream];
+			// Выделяем временный буфер (1/8 размера потока)
+			var buffer = new byte[inputStream.Length / NBITS];
 
 			// Создаем буфер для работы блоками по 8 байт
 			var bytesIn = new byte[NBITS];

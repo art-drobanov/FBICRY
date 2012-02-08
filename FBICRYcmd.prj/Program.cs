@@ -20,7 +20,7 @@ namespace FBICRYcmd
 
 			if(processProgress != 100)
 			{
-				Console.Write("процесс \"{0}\" / прогресс: {1}", e.TargetObject.ProcessDescription, processProgress);
+				Console.Write("процесс \"{0}\" / прогресс: {1} %", e.TargetObject.ProcessDescription, processProgress);
 			}
 			else
 			{
@@ -81,7 +81,7 @@ namespace FBICRYcmd
 		{
 			Console.BackgroundColor = ConsoleColor.DarkGreen;
 			Console.ForegroundColor = ConsoleColor.Black;
-			Console.Write(" FBICRYcmd 1.0.2.5 (c) 2☺12 Дробанов Артём Федорович (DrAF)  ");
+			Console.Write(" FBICRYcmd 1.0.3.7 (c) 2☺12 Дробанов Артём Федорович (DrAF)  ");
 			Console.BackgroundColor = ConsoleColor.Black;
 			Console.WriteLine();
 			Console.WriteLine();

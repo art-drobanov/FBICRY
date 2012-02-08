@@ -381,7 +381,7 @@ namespace CRYFORCE.Engine
 		public static HashSet<byte> GetBase64HashSet()
 		{
 			var base64HashSet = new HashSet<byte>();
-			foreach (var c in "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/")
+			foreach(char c in "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/")
 			{
 				base64HashSet.Add((byte)c);
 			}
@@ -394,15 +394,15 @@ namespace CRYFORCE.Engine
 		public static string Base64String(this string source)
 		{
 			// Хеш-множество кодировки Base64
-			var base64 = GetBase64HashSet();
+			HashSet<byte> base64 = GetBase64HashSet();
 
 			// Здесь будем хранить формируемую строку
-			StringBuilder sb = new StringBuilder();
+			var sb = new StringBuilder();
 
 			// Обрабатываем каждый символ входной последовательности...
-			foreach (var c in source)
+			foreach(char c in source)
 			{
-				if (base64.Contains((byte)c))
+				if(base64.Contains((byte)c))
 				{
 					sb.Append((char)((byte)c));
 				}

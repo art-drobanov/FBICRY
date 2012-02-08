@@ -43,11 +43,8 @@ namespace CRYFORCE.Engine
 		/// Конструктор с параметрами
 		/// </summary>
 		public Cryforce()
+			: this(false, true, DEFAULT_BUFFER_SIZE_PER_STREAM)
 		{
-			WorkInMemory = true;
-			WorkInTempDir = true;
-			BufferSizePerStream = DEFAULT_BUFFER_SIZE_PER_STREAM;
-			RndSeed = DateTime.Now.Ticks.GetHashCode();
 		}
 
 		/// <summary>
@@ -56,11 +53,21 @@ namespace CRYFORCE.Engine
 		/// <param name="workInMemory">Работать в ОЗУ?</param>
 		/// <param name="workInTempDir">Работать в директории для временных файлов?</param>
 		public Cryforce(bool workInMemory, bool workInTempDir)
+			: this(workInMemory, workInTempDir, DEFAULT_BUFFER_SIZE_PER_STREAM)
 		{
-			WorkInMemory = workInMemory;
-			WorkInTempDir = workInTempDir;
-			BufferSizePerStream = DEFAULT_BUFFER_SIZE_PER_STREAM;
-			RndSeed = DateTime.Now.Ticks.GetHashCode();
+		}
+
+		/// <summary>
+		/// Конструктор с параметрами
+		/// </summary>
+		/// <param name="workInMemory">Работать в ОЗУ?</param>
+		/// <param name="workInTempDir">Работать в директории для временных файлов?</param>
+		/// <param name="bufferSizePerStream">Размер буфера на файловый поток.</param>
+		/// <param name="rndSeed">Инициализирующее значение генератора случайных чисел.</param>
+		public Cryforce(bool workInMemory, bool workInTempDir, int bufferSizePerStream, int rndSeed)
+			: this(workInMemory, workInTempDir, bufferSizePerStream)
+		{
+			RndSeed = rndSeed;
 		}
 
 		/// <summary>
@@ -75,21 +82,6 @@ namespace CRYFORCE.Engine
 			WorkInTempDir = workInTempDir;
 			BufferSizePerStream = bufferSizePerStream;
 			RndSeed = DateTime.Now.Ticks.GetHashCode();
-		}
-
-		/// <summary>
-		/// Конструктор с параметрами
-		/// </summary>
-		/// <param name="workInMemory">Работать в ОЗУ?</param>
-		/// <param name="workInTempDir">Работать в директории для временных файлов?</param>
-		/// <param name="bufferSizePerStream">Размер буфера на файловый поток.</param>
-		/// <param name="rndSeed">Инициализирующее значение генератора случайных чисел.</param>
-		public Cryforce(bool workInMemory, bool workInTempDir, int bufferSizePerStream, int rndSeed)
-		{
-			WorkInMemory = workInMemory;
-			WorkInTempDir = workInTempDir;
-			BufferSizePerStream = bufferSizePerStream;
-			RndSeed = rndSeed;
 		}
 
 		#endregion .ctor
