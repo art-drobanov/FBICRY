@@ -145,6 +145,9 @@ namespace FBICRYcmd
 			return true;
 		}
 
+		/// <summary>
+		/// Версия 1.0.3.7
+		/// </summary>
 		private static void Main(string[] args)
 		{
 			// Задаем имена открытого и закрытого ключей
