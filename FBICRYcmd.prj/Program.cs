@@ -20,7 +20,7 @@ namespace FBICRYcmd
 
 			if(processProgress != 100)
 			{
-				Console.Write("процесс \"{0}\" / прогресс: {1} %", e.TargetObject.ProcessDescription, processProgress);
+				Console.Write("процесс \"{0}\" / прогресс: {1} % ", e.TargetObject.ProcessDescription, processProgress);
 			}
 			else
 			{
