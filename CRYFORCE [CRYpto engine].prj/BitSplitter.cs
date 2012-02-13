@@ -218,10 +218,10 @@ namespace CRYFORCE.Engine
 			{
 				// Вычисляем выравнивание входного потока до 8 байт (маскируя его дополнительными битами)...
 				var rnd = new Random(RndSeed ^ DateTime.Now.Ticks.GetHashCode());
-				var align8rnd = (byte)(align8 | (0xF8 & (rnd.Next(0, 31) << 3)));
+				var align8Rnd = (byte)(align8 | (0xF8 & (rnd.Next(0, 31) << 3)));
 
 				//...и пишем его в выходной поток
-				outputStream.WriteByte(align8rnd);
+				outputStream.WriteByte(align8Rnd);
 
 				// Первый блок данных требуется считывать особым образом - так, чтобы учесть невыровненность по границе 8 байт -
 				// для этого заполняем его случайными данными и пишем в него реальные данные из исходного потока, начиная с некоторой позиции
@@ -328,8 +328,8 @@ namespace CRYFORCE.Engine
 			//...и целевые потоки устанавливаем на начало
 			outputStream.Seek(0, SeekOrigin.Begin);
 
-			// Выделяем временный буфер (1/8 размера потока)
-			var buffer = new byte[inputStream.Length / NBITS];
+			// Выделяем временный буфер
+			var buffer = new byte[BufferSizePerStream];
 
 			// Создаем буфер для работы блоками по 8 байт
 			var bytesIn = new byte[NBITS];
@@ -368,14 +368,16 @@ namespace CRYFORCE.Engine
 					//...вычисляем количество байт для считывания
 					int toRead = (remaining2 < buffer.Length) ? (int)remaining2 : buffer.Length;
 					int read = 0;
+
+					// Наполняем временный буфер
 					while((toRead -= (read += inputStream.Read(buffer, read, toRead))) != 0) ;
 
 					// Учитываем отработанный объем
 					remaining2 -= read;
-				}
 
-				// Считали блок байт принадлежащий некоторому битстриму - помещаем его на свое место...
-				_bitStreams[i].Write(buffer, 0, (int)bitstreamSize);
+					// Считали блок байт принадлежащий некоторому битстриму - помещаем его на свое место (bitstreamSize)...
+					_bitStreams[i].Write(buffer, 0, buffer.Length);
+				}
 
 				// Сообщаем о прогрессе
 				if(ProgressChanged != null)
