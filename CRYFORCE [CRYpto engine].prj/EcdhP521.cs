@@ -19,6 +19,12 @@ namespace CRYFORCE.Engine
 		/// <summary>Длина префикса ключа Cng.</summary>
 		private const int CNG_KEY_PREFIX_LEN = 8;
 
+		/// <summary>Размер открытого ключа.</summary>
+		private const int PUBLIC_KEY_SIZE = 176;
+
+		/// <summary>Размер закрытого ключа.</summary>
+		private const int PRIVATE_KEY_SIZE = 264;
+
 		#endregion Constants
 
 		#region Data
@@ -209,6 +215,95 @@ namespace CRYFORCE.Engine
 			return cngKey;
 		}
 
+		/// <summary>
+		/// Получение предпочтительной части открытого ключа абонента
+		/// </summary>
+		/// <param name="publicKey">Открытый ключ ЭЦП.</param>
+		/// <returns>Предпочтительная часть ключа.</returns>
+		private string GetEcdsaPrefferedKeyPart(string publicKey)
+		{
+			// Строка с ключом для ЭЦП
+			string stringECDSA;
+
+			try
+			{
+				// Пытаемся грузить расширенную часть ключа...
+				stringECDSA = publicKey.Base64String().Substring(PUBLIC_KEY_SIZE, PUBLIC_KEY_SIZE);
+			}
+			catch
+			{
+				//...если не получилось - формируем ключ для ECDSA на основе ключа для ECDH
+				stringECDSA = publicKey.Base64String().Substring(0, PUBLIC_KEY_SIZE);
+			}
+
+			return stringECDSA;
+		}
+
+		/// <summary>
+		/// Проверка ЭЦП
+		/// </summary>
+		/// <param name="data">Массив данных.</param>
+		/// <param name="offset">Смещение до участка интереса.</param>
+		/// <param name="count">Длина байт участка интереса.</param>
+		/// <param name="signature">ЭЦП.</param>
+		/// <param name="publicKey">Открытый ключ для проверки ЭЦП.</param>
+		/// <returns>Булевский флаг проверки ЭЦП.</returns>
+		private bool VerifyData(byte[] data, int offset, int count, byte[] signature, byte[] publicKey)
+		{
+			if(!IsInitialized)
+			{
+				throw new Exception("EcdhP521::VerifyData() ==> EcdhP521 is not initialized!");
+			}
+
+			using(var eECDsaCng = new ECDsaCng(ImportKeyBinData(publicKey, true, true))) // public, DS
+			{
+				eECDsaCng.HashAlgorithm = CngAlgorithm.Sha512;
+				return eECDsaCng.VerifyData(data, offset, count, signature);
+			}
+		}
+
+		/// <summary>
+		/// Проверка ЭЦП
+		/// </summary>
+		/// <param name="data">Поток данных.</param>
+		/// <param name="signature">ЭЦП.</param>
+		/// <param name="publicKey">Открытый ключ для проверки ЭЦП.</param>
+		/// <returns>Булевский флаг проверки ЭЦП.</returns>
+		private bool VerifyData(Stream data, byte[] signature, byte[] publicKey)
+		{
+			if(!IsInitialized)
+			{
+				throw new Exception("EcdhP521::VerifyData() ==> EcdhP521 is not initialized!");
+			}
+
+			using(var eECDsaCng = new ECDsaCng(ImportKeyBinData(publicKey, true, true))) // public, DS
+			{
+				eECDsaCng.HashAlgorithm = CngAlgorithm.Sha512;
+				return eECDsaCng.VerifyData(data, signature);
+			}
+		}
+
+		/// <summary>
+		/// Проверка ЭЦП
+		/// </summary>
+		/// <param name="data">Массив данных.</param>
+		/// <param name="signature">ЭЦП.</param>
+		/// <param name="publicKey">Открытый ключ для проверки ЭЦП.</param>
+		/// <returns>Булевский флаг проверки ЭЦП.</returns>
+		private bool VerifyHash(byte[] data, byte[] signature, byte[] publicKey)
+		{
+			if(!IsInitialized)
+			{
+				throw new Exception("EcdhP521::VerifyHash() ==> EcdhP521 is not initialized!");
+			}
+
+			using(var eECDsaCng = new ECDsaCng(ImportKeyBinData(publicKey, true, true))) // public, DS
+			{
+				eECDsaCng.HashAlgorithm = CngAlgorithm.Sha512;
+				return eECDsaCng.VerifyHash(data, signature);
+			}
+		}
+
 		#endregion Private
 
 		#region Protected
@@ -253,8 +348,24 @@ namespace CRYFORCE.Engine
 			else //...а иначе используем предоставленный...
 			{
 				//...импортируя его из строки в формате Base64
-				cngKeyECDH = ImportKeyBinData(Convert.FromBase64String(privateKey.Base64String()), false, false); // Не ЭЦП
-				cngKeyECDSA = ImportKeyBinData(Convert.FromBase64String(privateKey.Base64String()), false, true); // ЭЦП
+				cngKeyECDH = ImportKeyBinData(Convert.FromBase64String(privateKey.Base64String().Substring(0, PRIVATE_KEY_SIZE)), false, false); // Не ЭЦП
+
+				// Строка с ключом для ЭЦП
+				string stringECDSA;
+
+				try
+				{
+					// Пытаемся грузить расширенную часть ключа...
+					stringECDSA = privateKey.Base64String().Substring(PRIVATE_KEY_SIZE, PRIVATE_KEY_SIZE);
+				}
+				catch
+				{
+					//...если не получилось - формируем ключ для ECDSA на основе ключа для ECDH
+					stringECDSA = privateKey.Base64String().Substring(0, PRIVATE_KEY_SIZE);
+				}
+
+				// Формируем ключ для ЭЦП на основе тех данных, что удалось добыть
+				cngKeyECDSA = ImportKeyBinData(Convert.FromBase64String(stringECDSA), false, true); // ЭЦП
 			}
 
 			// Инициализируем криптографические сущности ключом
@@ -466,30 +577,8 @@ namespace CRYFORCE.Engine
 		/// <returns>Булевский флаг проверки ЭЦП.</returns>
 		public bool VerifyData(byte[] data, int offset, int count, string signature, string publicKey)
 		{
-			return VerifyData(data, offset, count, Convert.FromBase64String(signature.Base64String()), Convert.FromBase64String(publicKey.Base64String()));
-		}
-
-		/// <summary>
-		/// Проверка ЭЦП
-		/// </summary>
-		/// <param name="data">Массив данных.</param>
-		/// <param name="offset">Смещение до участка интереса.</param>
-		/// <param name="count">Длина байт участка интереса.</param>
-		/// <param name="signature">ЭЦП.</param>
-		/// <param name="publicKey">Открытый ключ для проверки ЭЦП.</param>
-		/// <returns>Булевский флаг проверки ЭЦП.</returns>
-		public bool VerifyData(byte[] data, int offset, int count, byte[] signature, byte[] publicKey)
-		{
-			if(!IsInitialized)
-			{
-				throw new Exception("EcdhP521::VerifyData() ==> EcdhP521 is not initialized!");
-			}
-
-			using(var eECDsaCng = new ECDsaCng(ImportKeyBinData(publicKey, true, true))) // public, DS
-			{
-				eECDsaCng.HashAlgorithm = CngAlgorithm.Sha512;
-				return eECDsaCng.VerifyData(data, offset, count, signature);
-			}
+			publicKey = GetEcdsaPrefferedKeyPart(publicKey); // Берем предпочтительную часть расширенного ключа
+			return VerifyData(data, offset, count, Convert.FromBase64String(signature.Base64String()), Convert.FromBase64String(publicKey));
 		}
 
 		/// <summary>
@@ -503,6 +592,7 @@ namespace CRYFORCE.Engine
 		public bool VerifyData(byte[] data, int offset, string signature, string publicKey)
 		{
 			byte[] signatureByteArr = Convert.FromBase64String(signature.Base64String());
+			publicKey = GetEcdsaPrefferedKeyPart(publicKey); // Берем предпочтительную часть расширенного ключа
 			return VerifyData(data, offset, signature.Length, signatureByteArr, Convert.FromBase64String(publicKey.Base64String()));
 		}
 
@@ -516,6 +606,7 @@ namespace CRYFORCE.Engine
 		public bool VerifyData(byte[] data, string signature, string publicKey)
 		{
 			byte[] signatureByteArr = Convert.FromBase64String(signature.Base64String());
+			publicKey = GetEcdsaPrefferedKeyPart(publicKey); // Берем предпочтительную часть расширенного ключа
 			return VerifyData(data, 0, signature.Length, signatureByteArr, Convert.FromBase64String(publicKey.Base64String()));
 		}
 
@@ -529,6 +620,7 @@ namespace CRYFORCE.Engine
 		public bool VerifyData(string data, string signature, string publicKey)
 		{
 			byte[] signatureByteArr = Convert.FromBase64String(signature.Base64String());
+			publicKey = GetEcdsaPrefferedKeyPart(publicKey); // Берем предпочтительную часть расширенного ключа
 			return VerifyData(Encoding.Unicode.GetBytes(data), 0, signature.Length, signatureByteArr, Convert.FromBase64String(publicKey.Base64String()));
 		}
 
@@ -541,28 +633,8 @@ namespace CRYFORCE.Engine
 		/// <returns>Булевский флаг проверки ЭЦП.</returns>
 		public bool VerifyData(Stream data, string signature, string publicKey)
 		{
+			publicKey = GetEcdsaPrefferedKeyPart(publicKey); // Берем предпочтительную часть расширенного ключа
 			return VerifyData(data, Convert.FromBase64String(signature.Base64String()), Convert.FromBase64String(publicKey.Base64String()));
-		}
-
-		/// <summary>
-		/// Проверка ЭЦП
-		/// </summary>
-		/// <param name="data">Поток данных.</param>
-		/// <param name="signature">ЭЦП.</param>
-		/// <param name="publicKey">Открытый ключ для проверки ЭЦП.</param>
-		/// <returns>Булевский флаг проверки ЭЦП.</returns>
-		public bool VerifyData(Stream data, byte[] signature, byte[] publicKey)
-		{
-			if(!IsInitialized)
-			{
-				throw new Exception("EcdhP521::VerifyData() ==> EcdhP521 is not initialized!");
-			}
-
-			using(var eECDsaCng = new ECDsaCng(ImportKeyBinData(publicKey, true, true))) // public, DS
-			{
-				eECDsaCng.HashAlgorithm = CngAlgorithm.Sha512;
-				return eECDsaCng.VerifyData(data, signature);
-			}
 		}
 
 		/// <summary>
@@ -574,28 +646,8 @@ namespace CRYFORCE.Engine
 		/// <returns>Булевский флаг проверки ЭЦП.</returns>
 		public bool VerifyHash(byte[] data, string signature, string publicKey)
 		{
+			publicKey = GetEcdsaPrefferedKeyPart(publicKey); // Берем предпочтительную часть расширенного ключа
 			return VerifyHash(data, Convert.FromBase64String(signature.Base64String()), Convert.FromBase64String(publicKey.Base64String()));
-		}
-
-		/// <summary>
-		/// Проверка ЭЦП
-		/// </summary>
-		/// <param name="data">Массив данных.</param>
-		/// <param name="signature">ЭЦП.</param>
-		/// <param name="publicKey">Открытый ключ для проверки ЭЦП.</param>
-		/// <returns>Булевский флаг проверки ЭЦП.</returns>
-		public bool VerifyHash(byte[] data, byte[] signature, byte[] publicKey)
-		{
-			if(!IsInitialized)
-			{
-				throw new Exception("EcdhP521::VerifyHash() ==> EcdhP521 is not initialized!");
-			}
-
-			using(var eECDsaCng = new ECDsaCng(ImportKeyBinData(publicKey, true, true))) // public, DS
-			{
-				eECDsaCng.HashAlgorithm = CngAlgorithm.Sha512;
-				return eECDsaCng.VerifyHash(data, signature);
-			}
 		}
 
 		/// <summary>

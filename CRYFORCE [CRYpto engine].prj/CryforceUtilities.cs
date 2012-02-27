@@ -123,12 +123,34 @@ namespace CRYFORCE.Engine
 		/// </summary>
 		/// <param name="stream">Входной поток.</param>
 		/// <returns>Булевский флаг операции.</returns>
-		public static bool SafeSeekBegin(Stream stream)
+		public static bool SafeSeekBegin(this Stream stream)
 		{
 			if(stream.CanSeek)
 			{
 				stream.Seek(0, SeekOrigin.Begin);
 				return true;
+			}
+
+			return false;
+		}
+
+		/// <summary>
+		/// Безопасная установка начальной позиции в потоке
+		/// </summary>
+		/// <param name="stream">Входной поток.</param>
+		/// <param name="offset">Смещение от начала во входном потоке.</param>
+		/// <param name="dataLength">Размер блока данных, который должен быть считан.</param>
+		/// <returns>Булевский флаг операции.</returns>
+		public static bool SafeSeekData(this Stream stream, int offset, int dataLength)
+		{
+			if(stream.CanSeek)
+			{
+				// Проверка на наличие требуемого объема данных
+				if((offset + dataLength) <= stream.Length)
+				{
+					stream.Seek(offset, SeekOrigin.Begin);
+					return true;
+				}
 			}
 
 			return false;
@@ -456,7 +478,7 @@ namespace CRYFORCE.Engine
 				}
 
 				//...затем читаем сам символ...
-				var chArr = new char[1] {keypress.KeyChar};
+				var chArr = new[] {keypress.KeyChar};
 				var keypressKeyCharStr = new string(chArr);
 				chArr[0] = '*';
 				passCharsInBytes.Add(Encoding.Unicode.GetBytes(keypressKeyCharStr)[0]);

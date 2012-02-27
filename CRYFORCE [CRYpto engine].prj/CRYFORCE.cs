@@ -136,8 +136,8 @@ namespace CRYFORCE.Engine
 			Stream inputStreamAtLevel0 = encryptionMode ? inputStream : streamCryptoWrapper.WrapStream(inputStream, false);
 			Stream outputStreamAtLevel0 = encryptionMode ? streamCryptoWrapper.WrapStream(outputStream, true) : outputStream;
 
-			CryforceUtilities.SafeSeekBegin(inputStreamAtLevel0);
-			CryforceUtilities.SafeSeekBegin(outputStreamAtLevel0);
+			inputStreamAtLevel0.SafeSeekBegin();
+			outputStreamAtLevel0.SafeSeekBegin();
 
 			// Процесс шифрования/расшифровки происходит прозрачно, во время чтения из зашифрованного потока или записи в зашифрованный
 			// Размер буфера при копировании выбираем таким, чтобы обеспечить вывод каждого процента
@@ -158,8 +158,8 @@ namespace CRYFORCE.Engine
 				outputStreamAtLevel0 = outputStream;
 			}
 
-			CryforceUtilities.SafeSeekBegin(inputStreamAtLevel0);
-			CryforceUtilities.SafeSeekBegin(outputStreamAtLevel0);
+			inputStreamAtLevel0.SafeSeekBegin();
+			outputStreamAtLevel0.SafeSeekBegin();
 
 			//...и как завершение шифрования - деинициализируем криптовраппер
 			streamCryptoWrapper.Clear();
@@ -206,8 +206,8 @@ namespace CRYFORCE.Engine
 			Stream inputStreamAtLevel0 = encryptionMode ? inputStream : streamCryptoWrappers[0].WrapStream(inputStream, false);
 			Stream outputStreamAtLevel0 = encryptionMode ? streamCryptoWrappers[0].WrapStream(randomFilenameStreams[0], true) : randomFilenameStreams[0];
 
-			CryforceUtilities.SafeSeekBegin(inputStreamAtLevel0);
-			CryforceUtilities.SafeSeekBegin(outputStreamAtLevel0);
+			inputStreamAtLevel0.SafeSeekBegin();
+			outputStreamAtLevel0.SafeSeekBegin();
 
 			// Процесс шифрования/расшифровки происходит прозрачно, во время чтения из зашифрованного потока или записи в зашифрованный
 			// Размер буфера при копировании выбираем таким, чтобы обеспечить вывод каждого процента
@@ -228,8 +228,8 @@ namespace CRYFORCE.Engine
 				outputStreamAtLevel0 = randomFilenameStreams[0];
 			}
 
-			CryforceUtilities.SafeSeekBegin(inputStreamAtLevel0);
-			CryforceUtilities.SafeSeekBegin(outputStreamAtLevel0);
+			inputStreamAtLevel0.SafeSeekBegin();
+			outputStreamAtLevel0.SafeSeekBegin();
 
 			if(ProgressChanged != null)
 			{
@@ -246,8 +246,8 @@ namespace CRYFORCE.Engine
 			// Т.к. результат работы битсплиттера не является конечным - работаем с временным потоком
 			Stream outputStreamAtLevel1 = randomFilenameStreams[1];
 
-			CryforceUtilities.SafeSeekBegin(inputStreamAtLevel1);
-			CryforceUtilities.SafeSeekBegin(outputStreamAtLevel1);
+			inputStreamAtLevel1.SafeSeekBegin();
+			outputStreamAtLevel1.SafeSeekBegin();
 
 			var bitSplitter = new BitSplitter(tempFilenamesToBitSplitter, key1, key2, WorkInMemory);
 			bitSplitter.RndSeed = RndSeed; // Некритичный параметр, но проброска значения желательна
@@ -268,8 +268,8 @@ namespace CRYFORCE.Engine
 
 			bitSplitter.ClearAndClose();
 
-			CryforceUtilities.SafeSeekBegin(inputStreamAtLevel1);
-			CryforceUtilities.SafeSeekBegin(outputStreamAtLevel1);
+			inputStreamAtLevel1.SafeSeekBegin();
+			outputStreamAtLevel1.SafeSeekBegin();
 
 			//////////////////////////////////////
 			// Шифрование второго уровня (Level2)
@@ -277,8 +277,8 @@ namespace CRYFORCE.Engine
 			Stream inputStreamAtLevel2 = encryptionMode ? outputStreamAtLevel1 : streamCryptoWrappers[1].WrapStream(outputStreamAtLevel1, false);
 			Stream outputStreamAtLevel2 = encryptionMode ? streamCryptoWrappers[1].WrapStream(outputStream, true) : outputStream;
 
-			CryforceUtilities.SafeSeekBegin(inputStreamAtLevel2);
-			CryforceUtilities.SafeSeekBegin(outputStreamAtLevel2);
+			inputStreamAtLevel2.SafeSeekBegin();
+			outputStreamAtLevel2.SafeSeekBegin();
 
 			// Процесс шифрования/расшифровки происходит прозрачно, во время чтения из зашифрованного потока или записи в зашифрованный
 			// Размер буфера при копировании выбираем таким, чтобы обеспечить вывод каждого процента
@@ -292,8 +292,8 @@ namespace CRYFORCE.Engine
 			}
 			outputStreamAtLevel2.Flush();
 
-			CryforceUtilities.SafeSeekBegin(inputStreamAtLevel2);
-			CryforceUtilities.SafeSeekBegin(outputStreamAtLevel2);
+			inputStreamAtLevel2.SafeSeekBegin();
+			outputStreamAtLevel2.SafeSeekBegin();
 
 			if(ProgressChanged != null)
 			{
@@ -349,7 +349,7 @@ namespace CRYFORCE.Engine
 			// Если можем использовать seed-поток...
 			if((seedStream != null) && (seedStream.CanSeek))
 			{
-				CryforceUtilities.SafeSeekBegin(seedStream);
+				seedStream.SafeSeekBegin();
 				seedDataFromStream = new byte[seedStream.Length];
 				seedStream.Read(seedDataFromStream, 0, seedDataFromStream.Length);
 			}
@@ -362,7 +362,8 @@ namespace CRYFORCE.Engine
 			byte[] seedData = CryforceUtilities.MergeArrays(seedDataFromStream, seedDataFromKeyboard);
 
 			// Создаем сущность для работы с эллиптическими кривыми
-			var ecdhP521 = new EcdhP521(seedData, null); // Приватного ключа нет - он будет сгенерирован!
+			var ecdhP521_1 = new EcdhP521(seedData, null); // Приватного ключа нет - он будет сгенерирован!
+			var ecdhP521_2 = new EcdhP521(seedData, null); // Приватного ключа нет - он будет сгенерирован!
 
 			// Чистим массивы...
 			CryforceUtilities.ClearArray(seedDataFromStream);
@@ -371,16 +372,21 @@ namespace CRYFORCE.Engine
 
 			// Пишем открытый ключ...
 			var swPublicKey = new StreamWriter(publicKeyStream, Encoding.ASCII);
-			swPublicKey.Write(ecdhP521.PublicKey);
+			swPublicKey.Write(ecdhP521_1.PublicKey);
+			swPublicKey.Write("  ");
+			swPublicKey.Write(ecdhP521_2.PublicKey);
 			swPublicKey.Flush();
 
 			// Пишем закрытый ключ...
 			var swPrivateKey = new StreamWriter(privateKeyStream, Encoding.ASCII);
-			swPrivateKey.Write(ecdhP521.PrivateKey);
+			swPrivateKey.Write(ecdhP521_1.PrivateKey);
+			swPrivateKey.Write("  ");
+			swPrivateKey.Write(ecdhP521_2.PrivateKey);
 			swPrivateKey.Flush();
 
 			// Уничтожаем секретные данные...
-			ecdhP521.Clear();
+			ecdhP521_1.Clear();
+			ecdhP521_2.Clear();
 		}
 
 		/// <summary>
@@ -404,8 +410,8 @@ namespace CRYFORCE.Engine
 			}
 
 			// Ищем начало потоков...
-			CryforceUtilities.SafeSeekBegin(publicKeyFromOtherPartyStream);
-			CryforceUtilities.SafeSeekBegin(privateKeyStream);
+			publicKeyFromOtherPartyStream.SafeSeekBegin();
+			privateKeyStream.SafeSeekBegin();
 
 			// Создаем сущность для работы с эллиптическими кривыми
 			var ecdhP521 = new EcdhP521(null, new StreamReader(privateKeyStream, Encoding.UTF8).ReadToEnd()) {PublicKeyFromOtherParty = new StreamReader(publicKeyFromOtherPartyStream, Encoding.UTF8).ReadToEnd()};
@@ -441,8 +447,8 @@ namespace CRYFORCE.Engine
 			}
 
 			// Ищем начало потоков...
-			CryforceUtilities.SafeSeekBegin(privateKeyStream);
-			CryforceUtilities.SafeSeekBegin(dataStream);
+			privateKeyStream.SafeSeekBegin();
+			dataStream.SafeSeekBegin();
 
 			// Создаем сущность для работы с эллиптическими кривыми
 			var ecdhP521 = new EcdhP521(null, new StreamReader(privateKeyStream, Encoding.UTF8).ReadToEnd());
@@ -471,9 +477,9 @@ namespace CRYFORCE.Engine
 			}
 
 			// Ищем начало потоков...
-			CryforceUtilities.SafeSeekBegin(dataStream);
-			CryforceUtilities.SafeSeekBegin(signStream);
-			CryforceUtilities.SafeSeekBegin(publicKeyFromOtherPartyStream);
+			dataStream.SafeSeekBegin();
+			signStream.SafeSeekBegin();
+			publicKeyFromOtherPartyStream.SafeSeekBegin();
 
 			// Создаем сущность для работы с эллиптическими кривыми
 			var ecdhP521 = new EcdhP521(null, null);
@@ -485,8 +491,8 @@ namespace CRYFORCE.Engine
 			{
 				// Осуществляем проверку ЭЦП...
 				result = ecdhP521.VerifyData(dataStream,
-				                             Convert.FromBase64String(new StreamReader(signStream, Encoding.UTF8).ReadToEnd()),
-				                             Convert.FromBase64String(new StreamReader(publicKeyFromOtherPartyStream, Encoding.UTF8).ReadToEnd()));
+				                             new StreamReader(signStream, Encoding.UTF8).ReadToEnd(),
+				                             new StreamReader(publicKeyFromOtherPartyStream, Encoding.UTF8).ReadToEnd());
 			}
 			catch
 			{

@@ -81,7 +81,7 @@ namespace FBICRYcmd
 		{
 			Console.BackgroundColor = ConsoleColor.DarkGreen;
 			Console.ForegroundColor = ConsoleColor.Black;
-			Console.Write(" FBICRYcmd 1.0.4.9 (c) 2☺12 Дробанов Артём Федорович (DrAF)  ");
+			Console.Write(" FBICRYcmd 1.0.5.11 (c) 2☺12 Дробанов Артём Федорович (DrAF)  ");
 			Console.BackgroundColor = ConsoleColor.Black;
 			Console.WriteLine();
 			Console.WriteLine();
@@ -146,7 +146,7 @@ namespace FBICRYcmd
 		}
 
 		/// <summary>
-		/// Версия 1.0.4.9
+		/// Версия 1.0.5.11
 		/// </summary>
 		private static void Main(string[] args)
 		{
@@ -328,9 +328,9 @@ namespace FBICRYcmd
 			}
 
 			// Атрибуты процесса обработки
-			bool single = false; // Однослойный шифр?
-			bool encryption = false; // Режим шифрования (не дешифрование)?
-			bool ecdh = false; // Используется EcdhP521?
+			bool single; // Однослойный шифр?
+			bool encryption; // Режим шифрования (не дешифрование)?
+			bool ecdh; // Используется EcdhP521?
 
 			switch(args[0].ToLower())
 			{
@@ -564,6 +564,7 @@ namespace FBICRYcmd
 			Console.WriteLine();
 			Console.WriteLine("Завершено!");
 
+			// Сбрасываем цветовой режим
 			Console.ResetColor();
 		}
 	}
