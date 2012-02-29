@@ -146,6 +146,21 @@ namespace FBICRYcmd
 		}
 
 		/// <summary>
+		/// Запись исключения в лог ошибок
+		/// </summary>
+		/// <param name="errLogFilename">Имя перезаписываемого лог-файла.</param>
+		/// <param name="e">Исключение, текст которого нужно сохранить.</param>
+		private static void ErrLogOut(string errLogFilename, Exception e)
+		{
+			if(File.Exists(errLogFilename))
+			{
+				File.SetAttributes(errLogFilename, FileAttributes.Normal);
+				File.Delete(errLogFilename);
+			}
+			File.WriteAllText(errLogFilename, e.ToString());
+		}
+
+		/// <summary>
 		/// Версия 1.0.5.11
 		/// </summary>
 		private static void Main(string[] args)
@@ -153,6 +168,7 @@ namespace FBICRYcmd
 			// Задаем имена открытого и закрытого ключей
 			string publicKeyFilename = "FBICRY.PUB.txt";
 			string privateKeyFilename = "FBICRY.ECC.txt";
+			string errLogFilename = "!ErrLog.txt";
 
 			// Задаем расширение ЭЦП
 			string signExt = ".sig";
@@ -198,22 +214,36 @@ namespace FBICRYcmd
 				Stream privateKeyStream = new FileStream(privateKeyFilename, FileMode.Create, FileAccess.Write);
 
 				//...и создаем сами ключи
-				cryforce.CreateEccKeys(publicKeyStream, privateKeyStream, seedStream);
-
-				// Закрываем файловые потоки
-				publicKeyStream.Flush();
-				publicKeyStream.Close();
-
-				privateKeyStream.Flush();
-				privateKeyStream.Close();
-
-				if(seedStream != null)
+				try
 				{
-					seedStream.Close();
+					cryforce.CreateEccKeys(publicKeyStream, privateKeyStream, seedStream);
+				}
+				catch(Exception e)
+				{
+					Console.WriteLine("Ошибка при создании ключей!");
+					ErrLogOut(errLogFilename, e);
+
+					Console.ResetColor();
+					return;
+				}
+				finally
+				{
+					// Закрываем файловые потоки
+					publicKeyStream.Flush();
+					publicKeyStream.Close();
+
+					privateKeyStream.Flush();
+					privateKeyStream.Close();
+
+					if(seedStream != null)
+					{
+						seedStream.Close();
+					}
 				}
 
 				Console.WriteLine();
-				Console.WriteLine("Генерирование открытого и закрытого ключей завершено!");
+				Console.WriteLine("Генерирование открытого и закрытого ключей завершено ("
+				                  + publicKeyFilename + " и " + privateKeyFilename + ")!");
 
 				return;
 			}
@@ -243,14 +273,28 @@ namespace FBICRYcmd
 
 				// Вычисляем ЭЦП
 				Console.WriteLine("Начато вычисление электронной цифровой подписи файла {0}...", args[1]);
-				cryforce.SignData(privateKeyStream, dataStream, signStream);
 
-				// Закрываем файловые потоки
-				privateKeyStream.Close();
-				dataStream.Close();
+				try
+				{
+					cryforce.SignData(privateKeyStream, dataStream, signStream);
+				}
+				catch(Exception e)
+				{
+					Console.WriteLine("Ошибка при вычислении ЭЦП!");
+					ErrLogOut(errLogFilename, e);
 
-				signStream.Flush();
-				signStream.Close();
+					Console.ResetColor();
+					return;
+				}
+				finally
+				{
+					// Закрываем файловые потоки
+					privateKeyStream.Close();
+					dataStream.Close();
+
+					signStream.Flush();
+					signStream.Close();
+				}
 
 				Console.WriteLine("Вычисление электронной цифровой подписи завершено!");
 				Console.WriteLine("Создан файл {0}", signFilename);
@@ -294,10 +338,12 @@ namespace FBICRYcmd
 				if(result)
 				{
 					Console.WriteLine("Файл {0} соответствует предъявленной электронной подписи {1} и открытому ключу {2}...", dataFileName, args[1], args[2]);
+					Console.WriteLine("All OK!");
 				}
 				else
 				{
 					Console.WriteLine("Файл {0} НЕ СООТВЕТСТВУЕТ предъявленной электронной подписи {1} и открытому ключу {2}!", dataFileName, args[1], args[2]);
+					Console.WriteLine("ERROR!");
 				}
 
 				return;
@@ -473,8 +519,19 @@ namespace FBICRYcmd
 				Stream privateKeyStream = new FileStream(privateKeyFilename, FileMode.Open, FileAccess.Read);
 
 				//...а затем формируем симметричные ключи
-				cryforce.GetSymmetricKeys(publicKeyFromOtherPartyStream, privateKeyStream,
-				                          out passwordDataForKeyFromFile1, out passwordDataForKeyFromFile2);
+				try
+				{
+					cryforce.GetSymmetricKeys(publicKeyFromOtherPartyStream, privateKeyStream,
+					                          out passwordDataForKeyFromFile1, out passwordDataForKeyFromFile2);
+				}
+				catch(Exception e)
+				{
+					Console.WriteLine("Ошибка при вычислении симметричных ключей ECDH!");
+					ErrLogOut(errLogFilename, e);
+
+					Console.ResetColor();
+					return;
+				}
 			}
 
 			// Пароль с клавиатуры считываем в любом случае...

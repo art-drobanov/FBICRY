@@ -354,39 +354,53 @@ namespace CRYFORCE.Engine
 				seedStream.Read(seedDataFromStream, 0, seedDataFromStream.Length);
 			}
 
-			Console.WriteLine("Генерирование пары открытый/закрытый ключ.");
+			// ECDH
+			Console.WriteLine("Генерирование пары открытый/закрытый ключ (ECDH, шифрование).");
 			Console.WriteLine("Нажимайте случайные клавиши на клавиатуре (включая модификаторы");
 			Console.WriteLine("\"Alt\", \"Shift\", \"Control\"). Для завершения нажмите Enter...");
 			Console.WriteLine();
-			byte[] seedDataFromKeyboard = CryforceUtilities.GetPasswordBytesSafely();
-			byte[] seedData = CryforceUtilities.MergeArrays(seedDataFromStream, seedDataFromKeyboard);
+			byte[] seedDataFromKeyboard_ECDH = CryforceUtilities.GetPasswordBytesSafely();
+			Console.WriteLine();
+			byte[] seedData_ECDH = CryforceUtilities.MergeArrays(seedDataFromStream, seedDataFromKeyboard_ECDH);
+			var ecdhP521_ECDH = new EcdhP521(seedData_ECDH, null); // Приватного ключа нет - он будет сгенерирован!
 
-			// Создаем сущность для работы с эллиптическими кривыми
-			var ecdhP521_1 = new EcdhP521(seedData, null); // Приватного ключа нет - он будет сгенерирован!
-			var ecdhP521_2 = new EcdhP521(seedData, null); // Приватного ключа нет - он будет сгенерирован!
+			// ECDSA
+			Console.WriteLine("Генерирование пары открытый/закрытый ключ (ECDSA, ЭЦП).");
+			Console.WriteLine("Нажимайте случайные клавиши на клавиатуре (включая модификаторы");
+			Console.WriteLine("\"Alt\", \"Shift\", \"Control\"). Для завершения нажмите Enter...");
+			Console.WriteLine();
+			byte[] seedDataFromKeyboard_ECDSA = CryforceUtilities.GetPasswordBytesSafely();
+			byte[] seedData_ECDSA = CryforceUtilities.MergeArrays(seedDataFromStream, seedDataFromKeyboard_ECDSA);
+			var ecdhP521_ECDSA = new EcdhP521(seedData_ECDSA, null); // Приватного ключа нет - он будет сгенерирован!
 
 			// Чистим массивы...
 			CryforceUtilities.ClearArray(seedDataFromStream);
-			CryforceUtilities.ClearArray(seedDataFromKeyboard);
-			CryforceUtilities.ClearArray(seedData);
+			CryforceUtilities.ClearArray(seedDataFromKeyboard_ECDH);
+			CryforceUtilities.ClearArray(seedDataFromKeyboard_ECDSA);
+			CryforceUtilities.ClearArray(seedData_ECDH);
+			CryforceUtilities.ClearArray(seedData_ECDSA);
 
-			// Пишем открытый ключ...
+			// Пишем открытые ключи...
 			var swPublicKey = new StreamWriter(publicKeyStream, Encoding.ASCII);
-			swPublicKey.Write(ecdhP521_1.PublicKey);
-			swPublicKey.Write("  ");
-			swPublicKey.Write(ecdhP521_2.PublicKey);
+			swPublicKey.Write("[ ;|;; ");
+			swPublicKey.Write(ecdhP521_ECDH.PublicKey);
+			swPublicKey.Write(" ;|;; ");
+			swPublicKey.Write(ecdhP521_ECDSA.PublicKey);
+			swPublicKey.Write(" ]");
 			swPublicKey.Flush();
 
-			// Пишем закрытый ключ...
+			// Пишем закрытые ключи...
 			var swPrivateKey = new StreamWriter(privateKeyStream, Encoding.ASCII);
-			swPrivateKey.Write(ecdhP521_1.PrivateKey);
-			swPrivateKey.Write("  ");
-			swPrivateKey.Write(ecdhP521_2.PrivateKey);
+			swPrivateKey.Write("[ ( ; ) ");
+			swPrivateKey.Write(ecdhP521_ECDH.PrivateKey);
+			swPrivateKey.Write(" ( ; ) ");
+			swPrivateKey.Write(ecdhP521_ECDSA.PrivateKey);
+			swPrivateKey.Write(" ]");
 			swPrivateKey.Flush();
 
 			// Уничтожаем секретные данные...
-			ecdhP521_1.Clear();
-			ecdhP521_2.Clear();
+			ecdhP521_ECDH.Clear();
+			ecdhP521_ECDSA.Clear();
 		}
 
 		/// <summary>
@@ -422,7 +436,7 @@ namespace CRYFORCE.Engine
 				//...уничтожаем секретные данные...
 				ecdhP521.Clear();
 
-				throw new Exception("Cryforce::CreateSymmetricKey() failed!");
+				throw new Exception("EcdhP521::CreateSymmetricKey() failed!");
 			}
 
 			// Получаем симметричные ключи

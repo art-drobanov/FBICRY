@@ -463,7 +463,7 @@ namespace CRYFORCE.Engine
 
 			try
 			{
-				Key512 = _ECDiffieHellmanCng.DeriveKeyMaterial(ImportKeyBinData(Convert.FromBase64String(PublicKeyFromOtherParty.Base64String()), true, false));
+				Key512 = _ECDiffieHellmanCng.DeriveKeyMaterial(ImportKeyBinData(Convert.FromBase64String(PublicKeyFromOtherParty.Base64String().Substring(0, PUBLIC_KEY_SIZE)), true, false));
 			}
 			catch
 			{
