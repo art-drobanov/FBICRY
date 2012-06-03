@@ -19,6 +19,7 @@ rem @del /A:H *.suo
 	@cd %%i
 	@del *.xml
 	@del *.user
+	@del *.snk
 	@rmdir /S/Q bin
 	@rmdir /S/Q obj
 	@cd ..
@@ -32,6 +33,7 @@ rem @del /A:H *.suo
 	@cd %%i
 	@del *.xml
 	@del *.user
+	@del *.snk
 	@rmdir /S/Q bin
 	@rmdir /S/Q obj
 	@cd ..
