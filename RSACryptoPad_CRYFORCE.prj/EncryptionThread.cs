@@ -1,5 +1,7 @@
 using System;
 using System.Collections;
+using System.IO;
+using System.IO.Compression;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
@@ -35,13 +37,62 @@ namespace RSACryptoPad
 			containerControl.Invoke(finishedProcessDelegate);
 		}
 
+		/// <summary>
+		/// Сжатие данных, находящихся во входном потоке
+		/// </summary>
+		/// <param name="stream">Поток с данными для сжатия</param>
+		/// <returns>Поток со сжатыми данными</returns>
+		public Stream Compress(Stream stream)
+		{
+			byte[] compressed;
+			stream.Position = 0;
+			using(var outStream = new MemoryStream())
+			{
+				using(var tinyStream = new GZipStream(outStream, CompressionMode.Compress, true))
+				{
+					stream.CopyTo(tinyStream);
+					tinyStream.Flush();
+				}
+				outStream.Position = 0;
+				compressed = outStream.ToArray();
+			}
+			return new MemoryStream(compressed);
+		}
+
+		/// <summary>
+		/// Получение данных из сжатого состояния
+		/// </summary>
+		/// <param name="stream">Поток со сжатыми данными</param>
+		/// <returns>Поток с исходными данными</returns>
+		public Stream Uncompress(Stream stream)
+		{
+			byte[] output;
+			stream.Position = 0;
+			using(var bigStream = new GZipStream(stream, CompressionMode.Decompress, true))
+			using(var bigStreamOut = new MemoryStream())
+			{
+				bigStream.CopyTo(bigStreamOut);
+				bigStreamOut.Position = 0;
+				output = bigStreamOut.ToArray();
+			}
+			return new MemoryStream(output);
+		}
+
 		public string EncryptString(string inputString, int dwKeySize, string xmlString)
 		{
-			// TODO: Add Proper Exception Handlers
 			RSACryptoServiceProvider rsaCryptoServiceProvider = new RSACryptoServiceProvider(dwKeySize);
 			rsaCryptoServiceProvider.FromXmlString(xmlString);
 			int keySize = dwKeySize / 8;
-			byte[] bytes = Encoding.UTF32.GetBytes(inputString);
+			byte[] bytesInput = Encoding.UTF8.GetBytes(inputString);
+
+			// Сжатие GZip
+			MemoryStream input = new MemoryStream(bytesInput);
+			MemoryStream output = (MemoryStream)Compress(input);
+			output.Seek(0, SeekOrigin.Begin);
+			byte[] bytes = output.ToArray();
+			input.Close();
+			output.Close();
+
 			// The hash function in use by the .NET RSACryptoServiceProvider here is SHA1
 			// int maxLength = ( keySize ) - 2 - ( 2 * SHA1.Create().ComputeHash( rawBytes ).Length );
 			int maxLength = keySize - 42;
@@ -66,7 +117,6 @@ namespace RSACryptoPad
 
 		public string DecryptString(string inputString, int dwKeySize, string xmlString)
 		{
-			// TODO: Add Proper Exception Handlers
 			RSACryptoServiceProvider rsaCryptoServiceProvider = new RSACryptoServiceProvider(dwKeySize);
 			rsaCryptoServiceProvider.FromXmlString(xmlString);
 			int base64BlockSize = ((dwKeySize / 8) % 3 != 0) ? (((dwKeySize / 8) / 3) * 4) + 4 : ((dwKeySize / 8) / 3) * 4;
@@ -81,7 +131,18 @@ namespace RSACryptoPad
 				Array.Reverse(encryptedBytes);
 				arrayList.AddRange(rsaCryptoServiceProvider.Decrypt(encryptedBytes, true));
 			}
-			return Encoding.UTF32.GetString(arrayList.ToArray(Type.GetType("System.Byte")) as byte[]);
+
+			byte[] bytesInput = arrayList.ToArray(Type.GetType("System.Byte")) as byte[];
+
+			// Сжатие GZip
+			MemoryStream input = new MemoryStream(bytesInput);
+			MemoryStream output = (MemoryStream)Uncompress(input);
+			output.Seek(0, SeekOrigin.Begin);
+			byte[] bytes = output.ToArray();
+			input.Close();
+			output.Close();
+
+			return Encoding.UTF8.GetString(bytes);
 		}
 	}
 }

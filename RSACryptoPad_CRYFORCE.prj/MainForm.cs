@@ -525,7 +525,8 @@ namespace RSACryptoPad
 			{
 				if(File.Exists(openFileDialog.FileName))
 				{
-					StreamReader streamReader = new StreamReader(openFileDialog.FileName, true);
+					StreamReader streamReader = new StreamReader(openFileDialog.FileName, Encoding.Default, true);
+
 					string fileString = streamReader.ReadToEnd();
 					streamReader.Close();
 					if(fileString.Length >= inputTextBox.MaxLength)
@@ -553,7 +554,7 @@ namespace RSACryptoPad
 			{
 				try
 				{
-					StreamWriter streamWriter = new StreamWriter(saveFileDialog.FileName, false);
+					StreamWriter streamWriter = new StreamWriter(saveFileDialog.FileName, false, Encoding.UTF8);
 					streamWriter.Write(inputTextBox.Text);
 					streamWriter.Close();
 					this.Text = GetFileName(saveFileDialog.FileName) + " - RSACryptoPad [256 Kb] / CRYFORCE powered";
@@ -578,7 +579,7 @@ namespace RSACryptoPad
 			{
 				try
 				{
-					StreamWriter streamWriter = new StreamWriter(saveFileDialog.FileName, false);
+					StreamWriter streamWriter = new StreamWriter(saveFileDialog.FileName, false, Encoding.UTF8);
 					if(outputString != null)
 					{
 						streamWriter.Write(outputString);
