@@ -81,7 +81,7 @@ namespace FBICRYcmd
 		{
 			Console.BackgroundColor = ConsoleColor.DarkGreen;
 			Console.ForegroundColor = ConsoleColor.Black;
-			Console.Write(" FBICRYcmd 1.0.5.11 (c) 2☺12 Дробанов Артём Федорович (DrAF) ");
+			Console.Write(" FBICRYcmd 1.0.6.13 (c) 2☺12 Дробанов Артём Федорович (DrAF) ");
 			Console.BackgroundColor = ConsoleColor.Black;
 			Console.WriteLine();
 			Console.WriteLine();
@@ -161,7 +161,7 @@ namespace FBICRYcmd
 		}
 
 		/// <summary>
-		/// Версия 1.0.5.11
+		/// Версия 1.0.6.13
 		/// </summary>
 		private static void Main(string[] args)
 		{
@@ -199,13 +199,13 @@ namespace FBICRYcmd
 				// Удаляем выходные файлы, если таковые имеются
 				if(File.Exists(publicKeyFilename))
 				{
-					Console.WriteLine("Файл открытого ключа {0} уже существует!", publicKeyFilename);
+					Console.WriteLine("Файл открытого ключа \"{0}\" уже существует!", publicKeyFilename);
 					return;
 				}
 
 				if(File.Exists(privateKeyFilename))
 				{
-					Console.WriteLine("Файл закрытого ключа {0} уже существует!", privateKeyFilename);
+					Console.WriteLine("Файл закрытого ключа \"{0}\" уже существует!", privateKeyFilename);
 					return;
 				}
 
@@ -242,8 +242,7 @@ namespace FBICRYcmd
 				}
 
 				Console.WriteLine();
-				Console.WriteLine("Генерирование открытого и закрытого ключей завершено ("
-				                  + publicKeyFilename + " и " + privateKeyFilename + ")!");
+				Console.WriteLine("Генерирование открытого и закрытого ключей завершено (\"{0}\" и \"{1}\")!", publicKeyFilename, privateKeyFilename);
 
 				return;
 			}
@@ -253,7 +252,7 @@ namespace FBICRYcmd
 			{
 				if(!File.Exists(privateKeyFilename))
 				{
-					Console.WriteLine("Файл закрытого ключа {0} не существует!", privateKeyFilename);
+					Console.WriteLine("Файл закрытого ключа \"{0}\" не существует!", privateKeyFilename);
 					return;
 				}
 
@@ -272,7 +271,7 @@ namespace FBICRYcmd
 				Stream signStream = new FileStream(signFilename, FileMode.Create, FileAccess.Write);
 
 				// Вычисляем ЭЦП
-				Console.WriteLine("Начато вычисление электронной цифровой подписи файла {0}...", args[1]);
+				Console.WriteLine("Начато вычисление электронной цифровой подписи файла \"{0}\"...", args[1]);
 
 				try
 				{
@@ -297,7 +296,7 @@ namespace FBICRYcmd
 				}
 
 				Console.WriteLine("Вычисление электронной цифровой подписи завершено!");
-				Console.WriteLine("Создан файл {0}", signFilename);
+				Console.WriteLine("Создан файл \"{0}\"", signFilename);
 
 				return;
 			}
@@ -308,7 +307,7 @@ namespace FBICRYcmd
 				// Проверяем файл открытого ключа на существование
 				if(!File.Exists(args[2]))
 				{
-					Console.WriteLine("Файл открытого ключа другой стороны {0} не существует!", args[2]);
+					Console.WriteLine("Файл открытого ключа другой стороны \"{0}\" не существует!", args[2]);
 					return;
 				}
 
@@ -317,7 +316,7 @@ namespace FBICRYcmd
 
 				if(!File.Exists(dataFileName))
 				{
-					Console.WriteLine("Файл данных {0}, ассоциируемый с файлом электронной подписи {1}, не существует!", dataFileName, args[1]);
+					Console.WriteLine("Файл данных \"{0}\", ассоциируемый с файлом электронной подписи \"{1}\", не существует!", dataFileName, args[1]);
 					return;
 				}
 
@@ -327,7 +326,7 @@ namespace FBICRYcmd
 				Stream publicKeyFromOtherPartyStream = new FileStream(args[2], FileMode.Open, FileAccess.Read);
 
 				// Осуществляем проверку ЭЦП
-				Console.WriteLine("Начата проверка электронной цифровой подписи файла {0}...", dataFileName);
+				Console.WriteLine("Начата проверка электронной цифровой подписи файла \"{0}\"...", dataFileName);
 				bool result = cryforce.VerifySign(dataStream, signStream, publicKeyFromOtherPartyStream);
 
 				// Закрываем файловые потоки
@@ -337,12 +336,12 @@ namespace FBICRYcmd
 
 				if(result)
 				{
-					Console.WriteLine("Файл {0} соответствует предъявленной электронной подписи {1} и открытому ключу {2}...", dataFileName, args[1], args[2]);
+					Console.WriteLine("Файл \"{0}\" соответствует предъявленной электронной подписи \"{1}\" и открытому ключу \"{2}\"...", dataFileName, args[1], args[2]);
 					Console.WriteLine("All OK!");
 				}
 				else
 				{
-					Console.WriteLine("Файл {0} НЕ СООТВЕТСТВУЕТ предъявленной электронной подписи {1} и открытому ключу {2}!", dataFileName, args[1], args[2]);
+					Console.WriteLine("Файл \"{0}\" НЕ СООТВЕТСТВУЕТ предъявленной электронной подписи \"{1}\" и открытому ключу \"{2}\"!", dataFileName, args[1], args[2]);
 					Console.WriteLine("ERROR!");
 				}
 
@@ -444,7 +443,7 @@ namespace FBICRYcmd
 			// Проверяем входной файл
 			if(!File.Exists(args[1]))
 			{
-				Console.WriteLine("Входной файл {0} не существует!", args[1]);
+				Console.WriteLine("Входной файл \"{0}\" не существует!", args[1]);
 
 				Console.ResetColor();
 				return;
@@ -479,7 +478,7 @@ namespace FBICRYcmd
 				}
 				catch
 				{
-					Console.WriteLine("Ошибка чтения данных файла-пароля {0}!", args[3]);
+					Console.WriteLine("Ошибка чтения данных файла-пароля \"{0}\"!", args[3]);
 
 					Console.ResetColor();
 					return;
@@ -504,13 +503,13 @@ namespace FBICRYcmd
 				// Проверяем файлы ключей на существование
 				if(!File.Exists(args[3]))
 				{
-					Console.WriteLine("Файл открытого ключа другой стороны {0} не существует!", args[3]);
+					Console.WriteLine("Файл открытого ключа другой стороны \"{0}\" не существует!", args[3]);
 					return;
 				}
 
 				if(!File.Exists(privateKeyFilename))
 				{
-					Console.WriteLine("Файл закрытого ключа {0} не существует!", privateKeyFilename);
+					Console.WriteLine("Файл закрытого ключа \"{0}\" не существует!", privateKeyFilename);
 					return;
 				}
 
@@ -590,7 +589,7 @@ namespace FBICRYcmd
 			{
 				Console.ForegroundColor = ConsoleColor.Red;
 				Console.WriteLine();
-				Console.WriteLine("Ошибка в ходе криптографического преобразования! Неверный ключ?");
+				Console.WriteLine("Ошибка в ходе криптографического преобразования (неверный ключ?).");
 
 				Console.ResetColor();
 				return;

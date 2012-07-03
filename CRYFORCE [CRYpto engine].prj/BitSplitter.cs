@@ -246,6 +246,8 @@ namespace CRYFORCE.Engine
 			// Рассчитываем количество итераций на один процент
 			long nItersTotal = remaining / NBITS;
 			long itersForPercent = nItersTotal / 100;
+			itersForPercent = (itersForPercent != 0) ? itersForPercent : 1; // Минимум - 1 итерация на процент!
+			
 			long nIter = 0;
 
 			// Пока есть объем для обработки...
@@ -421,6 +423,8 @@ namespace CRYFORCE.Engine
 			// Рассчитываем количество итераций на один процент
 			long nItersTotal = remaining / NBITS;
 			long itersForPercent = nItersTotal / 100;
+			itersForPercent = (itersForPercent != 0) ? itersForPercent : 1; // Минимум - 1 итерация на процент!
+
 			long nIter = 0;
 
 			// Пока есть объем для обработки...

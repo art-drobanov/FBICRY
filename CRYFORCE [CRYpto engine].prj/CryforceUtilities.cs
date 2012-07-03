@@ -99,9 +99,14 @@ namespace CRYFORCE.Engine
 		public static void StreamCopy(EventHandler<EventArgsGeneric<ProgressChangedArg>> progressChanged,
 		                              Stream source, Stream destination, long dataSize, int bufferSize)
 		{
+			// Обеспечиваем минимальный размер буфера
+			bufferSize = bufferSize == 0 ? 4096 : bufferSize;
+
+			// Выделяем буфер для копирования данных потока
 			var buffer = new byte[bufferSize];
-			int count;
+
 			long totalCount = 0;
+			int count;
 
 			// Пытаемся читать из потока фрагментами по bufferSize, а сколько было прочитано по-факту узнаем из count
 			while((count = source.Read(buffer, 0, buffer.Length)) != 0)

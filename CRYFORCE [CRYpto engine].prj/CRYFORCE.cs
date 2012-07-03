@@ -191,7 +191,7 @@ namespace CRYFORCE.Engine
 			streamCryptoWrappers[1].Initialize(encryptionMode ? key2 : key1, iterations); // ...а при расшифровке - обратный
 
 			// Генерируем 10 случайных имен файлов: два для целей временного хранения данных в пределах данного метода
-			// и 8 штук для битсплиттера (генерируем их совместно, чтобы избежать конфликтов)			
+			// и 8 штук для битсплиттера (генерируем их совместно, чтобы избежать конфликтов)
 			string[] tempFilenamesAll = WorkInTempDir ? CryforceUtilities.GetTempFilenames(10) : CryforceUtilities.GetRandomFilenames(10, 8, RndSeed).Select(item => item + ".jpg").ToArray();
 			var tempFilenames = new string[2];
 			var tempFilenamesToBitSplitter = new string[8];
