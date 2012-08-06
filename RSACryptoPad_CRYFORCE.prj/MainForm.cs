@@ -135,23 +135,27 @@ namespace RSACryptoPad
 			// 
 			// mainMenu
 			// 
-			this.mainMenu.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
-            this.fileMenuItem,
-            this.editMenuItem,
-            this.formatMenuItem,
-            this.encryptionMenuItem,
-            this.helpMenuItem});
+			this.mainMenu.MenuItems.AddRange(new System.Windows.Forms.MenuItem[]
+			                                 	{
+			                                 		this.fileMenuItem,
+			                                 		this.editMenuItem,
+			                                 		this.formatMenuItem,
+			                                 		this.encryptionMenuItem,
+			                                 		this.helpMenuItem
+			                                 	});
 			// 
 			// fileMenuItem
 			// 
 			this.fileMenuItem.Index = 0;
-			this.fileMenuItem.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
-            this.newFileMenuItem,
-            this.openFileMenuItem,
-            this.saveMenuItem,
-            this.saveAsFileMenuItem,
-            this.separator1,
-            this.exitMenuItem});
+			this.fileMenuItem.MenuItems.AddRange(new System.Windows.Forms.MenuItem[]
+			                                     	{
+			                                     		this.newFileMenuItem,
+			                                     		this.openFileMenuItem,
+			                                     		this.saveMenuItem,
+			                                     		this.saveAsFileMenuItem,
+			                                     		this.separator1,
+			                                     		this.exitMenuItem
+			                                     	});
 			this.fileMenuItem.Text = "File";
 			// 
 			// newFileMenuItem
@@ -196,15 +200,17 @@ namespace RSACryptoPad
 			// editMenuItem
 			// 
 			this.editMenuItem.Index = 1;
-			this.editMenuItem.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
-            this.undoMenuItem,
-            this.separator2,
-            this.cutMenuItem,
-            this.copyMenuItem,
-            this.pasteMenuItem,
-            this.deleteMenuItem,
-            this.separator3,
-            this.selectAllmenuItem});
+			this.editMenuItem.MenuItems.AddRange(new System.Windows.Forms.MenuItem[]
+			                                     	{
+			                                     		this.undoMenuItem,
+			                                     		this.separator2,
+			                                     		this.cutMenuItem,
+			                                     		this.copyMenuItem,
+			                                     		this.pasteMenuItem,
+			                                     		this.deleteMenuItem,
+			                                     		this.separator3,
+			                                     		this.selectAllmenuItem
+			                                     	});
 			this.editMenuItem.Text = "Edit";
 			// 
 			// undoMenuItem
@@ -262,9 +268,11 @@ namespace RSACryptoPad
 			// formatMenuItem
 			// 
 			this.formatMenuItem.Index = 2;
-			this.formatMenuItem.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
-            this.wordWrapMenuItem,
-            this.fontMenuItem});
+			this.formatMenuItem.MenuItems.AddRange(new System.Windows.Forms.MenuItem[]
+			                                       	{
+			                                       		this.wordWrapMenuItem,
+			                                       		this.fontMenuItem
+			                                       	});
 			this.formatMenuItem.Text = "Format";
 			// 
 			// wordWrapMenuItem
@@ -284,10 +292,12 @@ namespace RSACryptoPad
 			// encryptionMenuItem
 			// 
 			this.encryptionMenuItem.Index = 3;
-			this.encryptionMenuItem.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
-            this.rsaEncryptMenuItem,
-            this.rsaDecryptMenuItem,
-            this.generateRsaKeyPairMenuItem});
+			this.encryptionMenuItem.MenuItems.AddRange(new System.Windows.Forms.MenuItem[]
+			                                           	{
+			                                           		this.rsaEncryptMenuItem,
+			                                           		this.rsaDecryptMenuItem,
+			                                           		this.generateRsaKeyPairMenuItem
+			                                           	});
 			this.encryptionMenuItem.Text = "Encryption";
 			// 
 			// rsaEncryptMenuItem
@@ -311,8 +321,10 @@ namespace RSACryptoPad
 			// helpMenuItem
 			// 
 			this.helpMenuItem.Index = 4;
-			this.helpMenuItem.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
-            this.aboutMenuItem});
+			this.helpMenuItem.MenuItems.AddRange(new System.Windows.Forms.MenuItem[]
+			                                     	{
+			                                     		this.aboutMenuItem
+			                                     	});
 			this.helpMenuItem.Text = "Help";
 			// 
 			// aboutMenuItem
@@ -399,7 +411,6 @@ namespace RSACryptoPad
 			((System.ComponentModel.ISupportInitialize)(this.pictureBox)).EndInit();
 			this.ResumeLayout(false);
 			this.PerformLayout();
-
 		}
 
 		[STAThread]
