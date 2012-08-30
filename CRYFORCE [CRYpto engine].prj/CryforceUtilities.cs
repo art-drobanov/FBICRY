@@ -146,7 +146,7 @@ namespace CRYFORCE.Engine
 		/// <param name="offset">Смещение от начала во входном потоке.</param>
 		/// <param name="dataLength">Размер блока данных, который должен быть считан.</param>
 		/// <returns>Булевский флаг операции.</returns>
-		public static bool SafeSeekData(this Stream stream, int offset, int dataLength)
+		public static bool SafeSeekData(this Stream stream, long offset, long dataLength)
 		{
 			if(stream.CanSeek)
 			{
