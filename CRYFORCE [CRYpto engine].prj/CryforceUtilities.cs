@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
+using System.Security.Cryptography;
 using System.Text;
 
 using EventArgsUtilities;
@@ -121,6 +124,181 @@ namespace CRYFORCE.Engine
 					progressChanged(null, new EventArgsGeneric<ProgressChangedArg>(new ProgressChangedArg("StreamCopy", progress, "\r")));
 				}
 			}
+		}
+
+		/// <summary>
+		/// Сжатие данных, находящихся во входном потоке
+		/// </summary>
+		/// <param name="stream">Поток с данными для сжатия.</param>
+		/// <returns>Поток со сжатыми данными.</returns>
+		public static Stream Compress(Stream stream)
+		{
+			byte[] compressed;
+			stream.Position = 0;
+			using(var outStream = new MemoryStream())
+			{
+				using(var tinyStream = new GZipStream(outStream, CompressionMode.Compress, true))
+				{
+					stream.CopyTo(tinyStream);
+					tinyStream.Flush();
+				}
+				outStream.Position = 0;
+				compressed = outStream.ToArray();
+			}
+			return new MemoryStream(compressed);
+		}
+
+		/// <summary>
+		/// Получение данных из сжатого состояния
+		/// </summary>
+		/// <param name="stream">Поток со сжатыми данными.</param>
+		/// <returns>Поток с исходными данными.</returns>
+		public static Stream Uncompress(Stream stream)
+		{
+			byte[] output;
+			stream.Position = 0;
+			using(var bigStream = new GZipStream(stream, CompressionMode.Decompress, true))
+			using(var bigStreamOut = new MemoryStream())
+			{
+				bigStream.CopyTo(bigStreamOut);
+				bigStreamOut.Position = 0;
+				output = bigStreamOut.ToArray();
+			}
+			return new MemoryStream(output);
+		}
+
+		/// <summary>
+		/// Выравнивание потока по указанной границе
+		/// </summary>
+		/// <param name="input">Входной поток.</param>
+		/// <param name="align">Выравнивание.</param>
+		/// <returns>Выровненный поток.</returns>
+		public static Stream Align(Stream input, int align)
+		{
+			var output = new MemoryStream();
+			input.Seek(0, SeekOrigin.Begin);
+			input.CopyTo(output);
+			var tail = (byte)(align - output.Length % align);
+			output.SetLength(output.Length + tail - 1);
+			output.Seek(0, SeekOrigin.End);
+			output.WriteByte(tail);
+			output.Flush();
+			return output;
+		}
+
+		/// <summary>
+		/// Извлечение выровненного потока
+		/// </summary>
+		/// <param name="input">Входной поток.</param>
+		/// <returns>Выровненный поток.</returns>
+		public static Stream DeAlign(Stream input)
+		{
+			input.Position = input.Length - 1;
+			int tail = input.ReadByte();
+			input.SetLength(input.Length - tail);
+			var output = new MemoryStream();
+			input.Seek(0, SeekOrigin.Begin);
+			input.CopyTo(output);
+			output.Flush();
+			return output;
+		}
+
+		/// <summary>
+		/// Шифрование строки алгоритмом RSA
+		/// </summary>
+		/// <param name="inputString">Входная строка.</param>
+		/// <param name="rsaXmlKey">RSA-ключ.</param>
+		/// <returns>Зашифрованная строка в XML.</returns>
+		public static string EncryptStringByRSA(string inputString, string rsaXmlKey)
+		{
+			// Определяем размер ключа RSA...
+			string bitStrengthString = rsaXmlKey.Substring(0, rsaXmlKey.IndexOf("</BitStrength>") + 14);
+			int keySize = Convert.ToInt32(bitStrengthString.Replace("<BitStrength>", "").Replace("</BitStrength>", ""));
+			//...и убираем блок данных с размером ключа
+			rsaXmlKey = rsaXmlKey.Replace(bitStrengthString, "");
+
+			// Алгоритм RSA
+			var rsaCryptoServiceProvider = new RSACryptoServiceProvider(keySize);
+			rsaCryptoServiceProvider.FromXmlString(rsaXmlKey);
+			byte[] bytesInput = Encoding.UTF8.GetBytes(inputString);
+
+			// Сжатие GZip...
+			var input = new MemoryStream(bytesInput);
+			var output = (MemoryStream)CryforceUtilities.Compress(input);
+			output.Seek(0, SeekOrigin.Begin);
+			byte[] bytes = output.ToArray();
+			input.Close();
+			output.Close();
+
+			//...и выравнивание по границе 4 байта (важно для последующего деления!)
+			var ms = new MemoryStream(bytes);
+			var output2 = (MemoryStream)CryforceUtilities.Align(ms, 4);
+			output2.Seek(0, SeekOrigin.Begin);
+			byte[] alignedBytes = output2.ToArray();
+			ms.Close();
+			output2.Close();
+
+			// The hash function in use by the .NET RSACryptoServiceProvider here is SHA1
+			// int maxLength = ( keySize ) - 2 - ( 2 * SHA1.Create().ComputeHash( rawBytes ).Length );
+			keySize = keySize >> 3;
+			int maxLength = keySize - 42;
+			int dataLength = alignedBytes.Length;
+			int iterations = dataLength / maxLength;
+			var stringBuilder = new StringBuilder();
+			for(int i = 0; i <= iterations; i++)
+			{
+				var tempBytes = new byte[(dataLength - maxLength * i > maxLength) ? maxLength : dataLength - maxLength * i];
+				Buffer.BlockCopy(alignedBytes, maxLength * i, tempBytes, 0, tempBytes.Length);
+				byte[] encryptedBytes = rsaCryptoServiceProvider.Encrypt(tempBytes, true);
+				stringBuilder.Append(Convert.ToBase64String(encryptedBytes));
+			}
+			return stringBuilder.ToString();
+		}
+
+		/// <summary>
+		/// Расшифровка строки, зашифрованной посредством RSA
+		/// </summary>
+		/// <param name="inputString">Входная строка.</param>
+		/// <param name="rsaXmlKey">RSA-ключ.</param>
+		/// <returns>Расшифрованная строка.</returns>
+		public static string DecryptStringByRSA(string inputString, string rsaXmlKey)
+		{
+			// Определяем размер ключа RSA...
+			string bitStrengthString = rsaXmlKey.Substring(0, rsaXmlKey.IndexOf("</BitStrength>") + 14);
+			int keySize = Convert.ToInt32(bitStrengthString.Replace("<BitStrength>", "").Replace("</BitStrength>", ""));
+			//...и убираем блок данных с размером ключа
+			rsaXmlKey = rsaXmlKey.Replace(bitStrengthString, "");
+
+			// Алгоритм RSA
+			var rsaCryptoServiceProvider = new RSACryptoServiceProvider(keySize);
+			rsaCryptoServiceProvider.FromXmlString(rsaXmlKey);
+			keySize = keySize >> 3;
+			int base64BlockSize = (keySize % 3 != 0) ? ((keySize / 3) * 4) + 4 : (keySize / 3) * 4;
+			int iterations = inputString.Length / base64BlockSize;
+			var arrayList = new ArrayList();
+			for(int i = 0; i < iterations; i++)
+			{
+				byte[] encryptedBytes = Convert.FromBase64String(inputString.Substring(base64BlockSize * i, base64BlockSize));
+				arrayList.AddRange(rsaCryptoServiceProvider.Decrypt(encryptedBytes, true));
+			}
+
+			// Снятие выравнивания с потока
+			var bytesInput = arrayList.ToArray(Type.GetType("System.Byte")) as byte[];
+			var ms = new MemoryStream(bytesInput);
+			var output2 = (MemoryStream)CryforceUtilities.DeAlign(ms);
+			output2.Seek(0, SeekOrigin.Begin);
+			byte[] bytesInput2 = output2.ToArray();
+			ms.Close();
+			output2.Close();
+
+			// Декомпрессия GZip
+			var input = new MemoryStream(bytesInput2);
+			var output = (MemoryStream)CryforceUtilities.Uncompress(input);
+			output.Seek(0, SeekOrigin.Begin);
+			byte[] bytes = output.ToArray();
+			input.Close();
+			output.Close();
+			return Encoding.UTF8.GetString(bytes);
 		}
 
 		/// <summary>
@@ -345,7 +523,7 @@ namespace CRYFORCE.Engine
 		/// <param name="fileName">Имя файла.</param>
 		/// <param name="bufferSizePerStream">Размер буфера на файловый поток.</param>
 		/// <param name="zeroOut">Затирать выходной поток нулями?</param>
-		/// <param name="workInMemory"></param>
+		/// <param name="workInMemory">Работать в ОЗУ?</param>
 		/// <param name="rndSeed">Инициализирующее значение генератора случайных чисел.</param>
 		public static Stream PrepareOutputStream(EventHandler<EventArgsGeneric<ProgressChangedArg>> progressChanged,
 		                                         string fileName, int bufferSizePerStream, bool zeroOut, bool workInMemory, int rndSeed = int.MinValue)

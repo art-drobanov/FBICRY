@@ -1,17 +1,14 @@
 using System;
 using System.Drawing;
-using System.Collections;
 using System.ComponentModel;
-using System.Data;
 using System.IO;
-using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
-using System.Xml.Serialization;
 
+// 1,618
 namespace RSACryptoPad
 {
 	public class MainForm : Form
@@ -135,27 +132,23 @@ namespace RSACryptoPad
 			// 
 			// mainMenu
 			// 
-			this.mainMenu.MenuItems.AddRange(new System.Windows.Forms.MenuItem[]
-			                                 	{
-			                                 		this.fileMenuItem,
-			                                 		this.editMenuItem,
-			                                 		this.formatMenuItem,
-			                                 		this.encryptionMenuItem,
-			                                 		this.helpMenuItem
-			                                 	});
+			this.mainMenu.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
+            this.fileMenuItem,
+            this.editMenuItem,
+            this.formatMenuItem,
+            this.encryptionMenuItem,
+            this.helpMenuItem});
 			// 
 			// fileMenuItem
 			// 
 			this.fileMenuItem.Index = 0;
-			this.fileMenuItem.MenuItems.AddRange(new System.Windows.Forms.MenuItem[]
-			                                     	{
-			                                     		this.newFileMenuItem,
-			                                     		this.openFileMenuItem,
-			                                     		this.saveMenuItem,
-			                                     		this.saveAsFileMenuItem,
-			                                     		this.separator1,
-			                                     		this.exitMenuItem
-			                                     	});
+			this.fileMenuItem.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
+            this.newFileMenuItem,
+            this.openFileMenuItem,
+            this.saveMenuItem,
+            this.saveAsFileMenuItem,
+            this.separator1,
+            this.exitMenuItem});
 			this.fileMenuItem.Text = "File";
 			// 
 			// newFileMenuItem
@@ -200,17 +193,15 @@ namespace RSACryptoPad
 			// editMenuItem
 			// 
 			this.editMenuItem.Index = 1;
-			this.editMenuItem.MenuItems.AddRange(new System.Windows.Forms.MenuItem[]
-			                                     	{
-			                                     		this.undoMenuItem,
-			                                     		this.separator2,
-			                                     		this.cutMenuItem,
-			                                     		this.copyMenuItem,
-			                                     		this.pasteMenuItem,
-			                                     		this.deleteMenuItem,
-			                                     		this.separator3,
-			                                     		this.selectAllmenuItem
-			                                     	});
+			this.editMenuItem.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
+            this.undoMenuItem,
+            this.separator2,
+            this.cutMenuItem,
+            this.copyMenuItem,
+            this.pasteMenuItem,
+            this.deleteMenuItem,
+            this.separator3,
+            this.selectAllmenuItem});
 			this.editMenuItem.Text = "Edit";
 			// 
 			// undoMenuItem
@@ -268,11 +259,9 @@ namespace RSACryptoPad
 			// formatMenuItem
 			// 
 			this.formatMenuItem.Index = 2;
-			this.formatMenuItem.MenuItems.AddRange(new System.Windows.Forms.MenuItem[]
-			                                       	{
-			                                       		this.wordWrapMenuItem,
-			                                       		this.fontMenuItem
-			                                       	});
+			this.formatMenuItem.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
+            this.wordWrapMenuItem,
+            this.fontMenuItem});
 			this.formatMenuItem.Text = "Format";
 			// 
 			// wordWrapMenuItem
@@ -292,12 +281,10 @@ namespace RSACryptoPad
 			// encryptionMenuItem
 			// 
 			this.encryptionMenuItem.Index = 3;
-			this.encryptionMenuItem.MenuItems.AddRange(new System.Windows.Forms.MenuItem[]
-			                                           	{
-			                                           		this.rsaEncryptMenuItem,
-			                                           		this.rsaDecryptMenuItem,
-			                                           		this.generateRsaKeyPairMenuItem
-			                                           	});
+			this.encryptionMenuItem.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
+            this.rsaEncryptMenuItem,
+            this.rsaDecryptMenuItem,
+            this.generateRsaKeyPairMenuItem});
 			this.encryptionMenuItem.Text = "Encryption";
 			// 
 			// rsaEncryptMenuItem
@@ -321,10 +308,8 @@ namespace RSACryptoPad
 			// helpMenuItem
 			// 
 			this.helpMenuItem.Index = 4;
-			this.helpMenuItem.MenuItems.AddRange(new System.Windows.Forms.MenuItem[]
-			                                     	{
-			                                     		this.aboutMenuItem
-			                                     	});
+			this.helpMenuItem.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
+            this.aboutMenuItem});
 			this.helpMenuItem.Text = "Help";
 			// 
 			// aboutMenuItem
@@ -397,7 +382,7 @@ namespace RSACryptoPad
 			// 
 			this.AutoScaleBaseSize = new System.Drawing.Size(8, 19);
 			this.BackColor = System.Drawing.SystemColors.Control;
-			this.ClientSize = new System.Drawing.Size(700, 404);
+			this.ClientSize = new System.Drawing.Size(644, 348);
 			this.Controls.Add(this.panel);
 			this.Controls.Add(this.inputTextBox);
 			this.Font = new System.Drawing.Font("Georgia", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -411,6 +396,7 @@ namespace RSACryptoPad
 			((System.ComponentModel.ISupportInitialize)(this.pictureBox)).EndInit();
 			this.ResumeLayout(false);
 			this.PerformLayout();
+
 		}
 
 		[STAThread]
@@ -1006,15 +992,15 @@ namespace RSACryptoPad
 				openFileDialog.FileName = "";
 				openFileDialog.Title = "Open Private Key File";
 				openFileDialog.Filter = "Private Key Document( *.kez )|*.kez";
-				string fileString = null;
+				string rsaKeyString = null;
 				if(openFileDialog.ShowDialog() == DialogResult.OK)
 				{
 					if(File.Exists(openFileDialog.FileName))
 					{
 						StreamReader streamReader = new StreamReader(openFileDialog.FileName, true);
-						fileString = streamReader.ReadToEnd();
+						rsaKeyString = streamReader.ReadToEnd();
 						streamReader.Close();
-						if(fileString.Length >= inputTextBox.MaxLength)
+						if(rsaKeyString.Length >= inputTextBox.MaxLength)
 						{
 							MessageBox.Show("ERROR: \nThe file you are trying to open is too big for the text editor to display properly.\nPlease open a smaller document!\nOperation Aborted!");
 						}
@@ -1022,9 +1008,6 @@ namespace RSACryptoPad
 				}
 				if(File.Exists(openFileDialog.FileName))
 				{
-					string bitStrengthString = fileString.Substring(0, fileString.IndexOf("</BitStrength>") + 14);
-					fileString = fileString.Replace(bitStrengthString, "");
-					int bitStrength = Convert.ToInt32(bitStrengthString.Replace("<BitStrength>", "").Replace("</BitStrength>", ""));
 					Point point = new Point((inputTextBox.Size.Width / 2) - (panel.Size.Width / 2), (inputTextBox.Size.Height / 2) - (panel.Size.Height / 2));
 					panel.Location = point;
 					panel.Visible = true;
@@ -1035,7 +1018,7 @@ namespace RSACryptoPad
 					encryptionMenuItem.Enabled = false;
 					helpMenuItem.Enabled = false;
 					string tempStorage = inputTextBox.Text;
-					if(fileString != null)
+					if(rsaKeyString != null)
 					{
 						FinishedProcessDelegate finishedProcessDelegate = new FinishedProcessDelegate(FinishedProcess);
 						UpdateTextDelegate updateTextDelegate = new UpdateTextDelegate(UpdateText);
@@ -1044,7 +1027,7 @@ namespace RSACryptoPad
 							EncryptionThread decryptionThread = new EncryptionThread();
 							Thread decryptThread = new Thread(decryptionThread.Decrypt);
 							decryptThread.IsBackground = true;
-							decryptThread.Start(new Object[] {this, finishedProcessDelegate, updateTextDelegate, inputTextBox.Text, bitStrength, fileString});
+							decryptThread.Start(new Object[] { this, finishedProcessDelegate, updateTextDelegate, inputTextBox.Text, rsaKeyString });
 						}
 						catch(CryptographicException CEx)
 						{
@@ -1071,27 +1054,24 @@ namespace RSACryptoPad
 				openFileDialog.FileName = "";
 				openFileDialog.Title = "Open Public Key File";
 				openFileDialog.Filter = "Public Key Document( *.pke )|*.pke";
-				string fileString = null;
+				string rsaKeyString = null;
 				if(openFileDialog.ShowDialog() == DialogResult.OK)
 				{
 					if(File.Exists(openFileDialog.FileName))
 					{
 						StreamReader streamReader = new StreamReader(openFileDialog.FileName, true);
-						fileString = streamReader.ReadToEnd();
+						rsaKeyString = streamReader.ReadToEnd();
 						streamReader.Close();
-						if(fileString.Length >= inputTextBox.MaxLength)
+						if(rsaKeyString.Length >= inputTextBox.MaxLength)
 						{
 							MessageBox.Show("ERROR: \nThe file you are trying to open is too big for the text editor to display properly.\nPlease open a smaller document!\nOperation Aborted!");
 						}
 					}
 				}
-				if(fileString != null)
+				if(rsaKeyString != null)
 				{
 					FinishedProcessDelegate finishedProcessDelegate = new FinishedProcessDelegate(FinishedProcess);
 					UpdateTextDelegate updateTextDelegate = new UpdateTextDelegate(UpdateText);
-					string bitStrengthString = fileString.Substring(0, fileString.IndexOf("</BitStrength>") + 14);
-					fileString = fileString.Replace(bitStrengthString, "");
-					int bitStrength = Convert.ToInt32(bitStrengthString.Replace("<BitStrength>", "").Replace("</BitStrength>", ""));
 					Point point = new Point((inputTextBox.Size.Width / 2) - (panel.Size.Width / 2), (inputTextBox.Size.Height / 2) - (panel.Size.Height / 2));
 					panel.Location = point;
 					panel.Visible = true;
@@ -1101,14 +1081,14 @@ namespace RSACryptoPad
 					formatMenuItem.Enabled = false;
 					encryptionMenuItem.Enabled = false;
 					helpMenuItem.Enabled = false;
-					if(fileString != null)
+					if(rsaKeyString != null)
 					{
 						try
 						{
 							EncryptionThread encryptionThread = new EncryptionThread();
 							Thread encryptThread = new Thread(encryptionThread.Encrypt);
 							encryptThread.IsBackground = true;
-							encryptThread.Start(new Object[] {this, finishedProcessDelegate, updateTextDelegate, inputTextBox.Text, bitStrength, fileString});
+							encryptThread.Start(new Object[] { this, finishedProcessDelegate, updateTextDelegate, inputTextBox.Text, rsaKeyString });
 						}
 						catch(CryptographicException CEx)
 						{

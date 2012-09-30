@@ -2,6 +2,10 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RSACryptoPad", "RSACryptoPad_CRYFORCE.prj\RSACryptoPad.csproj", "{9A973A32-66AA-4003-A5C2-48B7B517DB8D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CRYFORCE [CRYpto engine]", "CRYFORCE [CRYpto engine].prj\CRYFORCE [CRYpto engine].csproj", "{B20C4D6F-2E75-4E09-9348-2B7070FBB470}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventArgsGeneric", "EventArgsGeneric.prj\EventArgsGeneric.csproj", "{2ABEBDF1-99FE-43C7-8B07-F9F685FF010C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,6 +16,14 @@ Global
 		{9A973A32-66AA-4003-A5C2-48B7B517DB8D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9A973A32-66AA-4003-A5C2-48B7B517DB8D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9A973A32-66AA-4003-A5C2-48B7B517DB8D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B20C4D6F-2E75-4E09-9348-2B7070FBB470}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B20C4D6F-2E75-4E09-9348-2B7070FBB470}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B20C4D6F-2E75-4E09-9348-2B7070FBB470}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B20C4D6F-2E75-4E09-9348-2B7070FBB470}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2ABEBDF1-99FE-43C7-8B07-F9F685FF010C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2ABEBDF1-99FE-43C7-8B07-F9F685FF010C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2ABEBDF1-99FE-43C7-8B07-F9F685FF010C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2ABEBDF1-99FE-43C7-8B07-F9F685FF010C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
