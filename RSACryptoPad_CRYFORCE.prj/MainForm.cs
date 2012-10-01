@@ -8,6 +8,8 @@ using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 
+using CRYFORCE.Engine;
+
 // 1,618
 namespace RSACryptoPad
 {
@@ -69,7 +71,7 @@ namespace RSACryptoPad
 			if(File.Exists(fileName))
 			{
 				currentFileName = fileName;
-				StreamReader streamReader = new StreamReader(fileName, true);
+				var streamReader = new StreamReader(fileName, true);
 				SetText(streamReader.ReadToEnd());
 				streamReader.Close();
 				this.Text = GetFileName(fileName) + " - RSACryptoPad [256 Kb] / CRYFORCE powered";
@@ -454,8 +456,8 @@ namespace RSACryptoPad
 			Settings settings = null;
 			if(File.Exists("Settings.bin"))
 			{
-				StreamReader streamReader = new StreamReader("Settings.bin");
-				BinaryFormatter binaryFormatter = new BinaryFormatter();
+				var streamReader = new StreamReader("Settings.bin");
+				var binaryFormatter = new BinaryFormatter();
 				settings = (Settings)binaryFormatter.Deserialize(streamReader.BaseStream);
 				streamReader.Close();
 			}
@@ -464,11 +466,11 @@ namespace RSACryptoPad
 
 		private void SaveSettings(string settingChanged)
 		{
-			Settings settings = new Settings();
+			var settings = new Settings();
 			if(File.Exists("Settings.bin"))
 			{
-				StreamReader streamReader = new StreamReader("Settings.bin");
-				BinaryFormatter binaryFormatter = new BinaryFormatter();
+				var streamReader = new StreamReader("Settings.bin");
+				var binaryFormatter = new BinaryFormatter();
 				settings = (Settings)binaryFormatter.Deserialize(streamReader.BaseStream);
 				streamReader.Close();
 				switch(settingChanged)
@@ -495,7 +497,7 @@ namespace RSACryptoPad
 							break;
 						}
 				}
-				StreamWriter streamWriter = new StreamWriter("Settings.bin", false);
+				var streamWriter = new StreamWriter("Settings.bin", false);
 				binaryFormatter.Serialize(streamWriter.BaseStream, settings);
 				streamWriter.Close();
 			}
@@ -506,8 +508,8 @@ namespace RSACryptoPad
 				settings.Height = this.Height;
 				settings.Font = inputTextBox.Font;
 				settings.Wrapping = inputTextBox.WordWrap;
-				StreamWriter streamWriter = new StreamWriter("Settings.bin", false);
-				BinaryFormatter binaryFormatter = new BinaryFormatter();
+				var streamWriter = new StreamWriter("Settings.bin", false);
+				var binaryFormatter = new BinaryFormatter();
 				binaryFormatter.Serialize(streamWriter.BaseStream, settings);
 				streamWriter.Close();
 			}
@@ -522,7 +524,7 @@ namespace RSACryptoPad
 			{
 				if(File.Exists(openFileDialog.FileName))
 				{
-					StreamReader streamReader = new StreamReader(openFileDialog.FileName, Encoding.Default, true);
+					var streamReader = new StreamReader(openFileDialog.FileName, Encoding.Default, true);
 
 					string fileString = streamReader.ReadToEnd();
 					streamReader.Close();
@@ -551,7 +553,7 @@ namespace RSACryptoPad
 			{
 				try
 				{
-					StreamWriter streamWriter = new StreamWriter(saveFileDialog.FileName, false, Encoding.UTF8);
+					var streamWriter = new StreamWriter(saveFileDialog.FileName, false, Encoding.UTF8);
 					streamWriter.Write(inputTextBox.Text);
 					streamWriter.Close();
 					this.Text = GetFileName(saveFileDialog.FileName) + " - RSACryptoPad [256 Kb] / CRYFORCE powered";
@@ -576,7 +578,7 @@ namespace RSACryptoPad
 			{
 				try
 				{
-					StreamWriter streamWriter = new StreamWriter(saveFileDialog.FileName, false, Encoding.UTF8);
+					var streamWriter = new StreamWriter(saveFileDialog.FileName, false, Encoding.UTF8);
 					if(outputString != null)
 					{
 						streamWriter.Write(outputString);
@@ -993,6 +995,7 @@ namespace RSACryptoPad
 				openFileDialog.Title = "Open Private Key File";
 				openFileDialog.Filter = "Private Key Document( *.kez )|*.kez";
 				string rsaKeyString = null;
+				
 				if(openFileDialog.ShowDialog() == DialogResult.OK)
 				{
 					if(File.Exists(openFileDialog.FileName))
@@ -1006,6 +1009,7 @@ namespace RSACryptoPad
 						}
 					}
 				}
+
 				if(File.Exists(openFileDialog.FileName))
 				{
 					Point point = new Point((inputTextBox.Size.Width / 2) - (panel.Size.Width / 2), (inputTextBox.Size.Height / 2) - (panel.Size.Height / 2));
@@ -1018,6 +1022,7 @@ namespace RSACryptoPad
 					encryptionMenuItem.Enabled = false;
 					helpMenuItem.Enabled = false;
 					string tempStorage = inputTextBox.Text;
+					
 					if(rsaKeyString != null)
 					{
 						FinishedProcessDelegate finishedProcessDelegate = new FinishedProcessDelegate(FinishedProcess);
@@ -1055,6 +1060,7 @@ namespace RSACryptoPad
 				openFileDialog.Title = "Open Public Key File";
 				openFileDialog.Filter = "Public Key Document( *.pke )|*.pke";
 				string rsaKeyString = null;
+				
 				if(openFileDialog.ShowDialog() == DialogResult.OK)
 				{
 					if(File.Exists(openFileDialog.FileName))
@@ -1068,11 +1074,12 @@ namespace RSACryptoPad
 						}
 					}
 				}
+
 				if(rsaKeyString != null)
 				{
-					FinishedProcessDelegate finishedProcessDelegate = new FinishedProcessDelegate(FinishedProcess);
-					UpdateTextDelegate updateTextDelegate = new UpdateTextDelegate(UpdateText);
-					Point point = new Point((inputTextBox.Size.Width / 2) - (panel.Size.Width / 2), (inputTextBox.Size.Height / 2) - (panel.Size.Height / 2));
+					var finishedProcessDelegate = new FinishedProcessDelegate(FinishedProcess);
+					var updateTextDelegate = new UpdateTextDelegate(UpdateText);
+					var point = new Point((inputTextBox.Size.Width / 2) - (panel.Size.Width / 2), (inputTextBox.Size.Height / 2) - (panel.Size.Height / 2));
 					panel.Location = point;
 					panel.Visible = true;
 					this.Refresh();
@@ -1081,6 +1088,7 @@ namespace RSACryptoPad
 					formatMenuItem.Enabled = false;
 					encryptionMenuItem.Enabled = false;
 					helpMenuItem.Enabled = false;
+					
 					if(rsaKeyString != null)
 					{
 						try
@@ -1103,31 +1111,28 @@ namespace RSACryptoPad
 			}
 			else
 			{
-				MessageBox.Show("ERROR: You Can Not Encrypt A NULL Value!!!");
+				MessageBox.Show("ERROR: You Can Not Encrypt A NULL Value!");
 			}
 		}
 
 		private void generateRsaKeyPairMenuItem_Click(object sender, EventArgs e)
 		{
-			KeyPairGeneratorForm generator = new KeyPairGeneratorForm();
+			var generator = new KeyPairGeneratorForm();
 			if(generator.ShowDialog() == DialogResult.OK)
 			{
-				RSACryptoServiceProvider RSAProvider = new RSACryptoServiceProvider(currentBitStrength);
-				string publicAndPrivateKeys = "<BitStrength>" + currentBitStrength.ToString() + "</BitStrength>" + RSAProvider.ToXmlString(true);
-				string justPublicKey = "<BitStrength>" + currentBitStrength.ToString() + "</BitStrength>" + RSAProvider.ToXmlString(false);
+				string publicAndPrivateKeys;
+				string publicKey;
+				RSA_Helper.GenerateRsaKeyPair(currentBitStrength, out publicKey, out publicAndPrivateKeys);
 				if(saveFile("Save Public/Private Keys As", "Public/Private Keys Document( *.kez )|*.kez", publicAndPrivateKeys))
 				{
-					while(!saveFile("Save Public Key As", "Public Key Document( *.pke )|*.pke", justPublicKey))
-					{
-						;
-					}
+					while(!saveFile("Save Public Key As", "Public Key Document( *.pke )|*.pke", publicKey)) {}
 				}
 			}
 		}
 
 		private void aboutMenuItem_Click(object sender, EventArgs e)
 		{
-			AboutForm aboutRSACryptoPad = new AboutForm();
+			var aboutRSACryptoPad = new AboutForm();
 			aboutRSACryptoPad.ShowDialog(this);
 		}
 	}

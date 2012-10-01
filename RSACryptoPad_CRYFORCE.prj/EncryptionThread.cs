@@ -17,7 +17,7 @@ namespace RSACryptoPad
 			containerControl = (Form)inputObjects[0];
 			finishedProcessDelegate = (Delegate)inputObjects[1];
 			updateTextDelegate = (Delegate)inputObjects[2];
-			string encryptedString = CryforceUtilities.EncryptStringByRSA((string)inputObjects[3], (string)inputObjects[4]);
+			string encryptedString = RSA_Helper.EncryptString((string)inputObjects[3], (string)inputObjects[4]);
 			containerControl.Invoke(updateTextDelegate, new object[] {encryptedString});
 			containerControl.Invoke(finishedProcessDelegate);
 		}
@@ -28,7 +28,7 @@ namespace RSACryptoPad
 			containerControl = (Form)inputObjects[0];
 			finishedProcessDelegate = (Delegate)inputObjects[1];
 			updateTextDelegate = (Delegate)inputObjects[2];
-			string decryptedString = CryforceUtilities.DecryptStringByRSA((string)inputObjects[3], (string)inputObjects[4]);
+			string decryptedString = RSA_Helper.DecryptString((string)inputObjects[3], (string)inputObjects[4]);
 			containerControl.Invoke(updateTextDelegate, new object[] {decryptedString});
 			containerControl.Invoke(finishedProcessDelegate);
 		}
