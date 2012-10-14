@@ -49,7 +49,10 @@
     <Compile Include="BitMaps.cs" />
     <Compile Include="BitSplitter.cs" />
     <Compile Include="Cryforce.cs" />
+    <Compile Include="CryforceMainEngine.cs" />
     <Compile Include="EcdhP521.cs" />
+    <Compile Include="FBICRY_Commands.cs" />
+    <Compile Include="MessageReceivedArg.cs" />
     <Compile Include="Permutations.cs" />
     <Compile Include="ProgressChangedArg.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
