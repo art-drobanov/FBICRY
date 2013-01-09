@@ -140,36 +140,6 @@ namespace CRYFORCE.Engine
         }
 
         /// <summary>
-        /// Проверка версии операционной системы
-        /// </summary>
-        private static bool OSVersionCheck()
-        {
-            OperatingSystem osInfo = Environment.OSVersion;
-
-            if(osInfo.Platform != PlatformID.Win32NT)
-            {
-                return false;
-            }
-
-            if(osInfo.Version.Major < 6)
-            {
-                return false;
-            }
-
-            // Vista...
-            if((osInfo.Version.Major == 6) && (osInfo.Version.Minor == 0))
-            {
-                //...должна иметь хотя бы SP1
-                if((osInfo.ServicePack == "") || (!osInfo.ServicePack.StartsWith("Service Pack")))
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        /// <summary>
         /// Запись исключения в лог ошибок
         /// </summary>
         /// <param name="errLogFilename">Имя перезаписываемого лог-файла.</param>
@@ -305,6 +275,7 @@ namespace CRYFORCE.Engine
                     File.SetAttributes(signFilename, FileAttributes.Normal);
                 }
 
+                // Поток формирования подписи
                 Stream signStream = new FileStream(signFilename, FileMode.Create, FileAccess.Write);
 
                 // Вычисляем ЭЦП
@@ -353,7 +324,7 @@ namespace CRYFORCE.Engine
 
                 if(!File.Exists(dataFileName))
                 {
-                    Console.WriteLine("Файл данных \"{0}\", ассоциируемый с файлом электронной подписи \"{1}\", не существует!", dataFileName, args[1]);
+                    Console.WriteLine("Файл данных \"{0}\", ассоциируемый с файлом ЭЦП \"{1}\", не существует!", dataFileName, args[1]);
                     return;
                 }
 
@@ -363,7 +334,7 @@ namespace CRYFORCE.Engine
                 Stream publicKeyFromOtherPartyStream = new FileStream(args[2], FileMode.Open, FileAccess.Read);
 
                 // Осуществляем проверку ЭЦП
-                Console.WriteLine("Начата проверка электронной цифровой подписи файла \"{0}\"...", dataFileName);
+                Console.WriteLine("Начата проверка ЭЦП файла \"{0}\"...", dataFileName);
                 bool result = cryforce.VerifySign(dataStream, signStream, publicKeyFromOtherPartyStream);
 
                 // Закрываем файловые потоки
@@ -373,12 +344,12 @@ namespace CRYFORCE.Engine
 
                 if(result)
                 {
-                    Console.WriteLine("Файл \"{0}\" соответствует предъявленной электронной подписи \"{1}\" и открытому ключу \"{2}\"...", dataFileName, args[1], args[2]);
+                    Console.WriteLine("Файл \"{0}\" соответствует предъявленной ЭЦП \"{1}\" и открытому ключу \"{2}\"...", dataFileName, args[1], args[2]);
                     Console.WriteLine("All OK!");
                 }
                 else
                 {
-                    Console.WriteLine("Файл \"{0}\" НЕ СООТВЕТСТВУЕТ предъявленной электронной подписи \"{1}\" и открытому ключу \"{2}\"!", dataFileName, args[1], args[2]);
+                    Console.WriteLine("ФАЙЛ \"{0}\" НЕ СООТВЕТСТВУЕТ ПРЕДЪЯВЛЕННОЙ ЭЦП \"{1}\" и открытому ключу \"{2}\"!", dataFileName, args[1], args[2]);
                     Console.WriteLine("ERROR!");
                 }
 
@@ -392,7 +363,7 @@ namespace CRYFORCE.Engine
             }
 
             // Проверка версии ОС
-            if(!OSVersionCheck())
+            if(!CryforceUtilities.OSVersionCheck())
             {
                 Console.ForegroundColor = ConsoleColor.DarkRed;
                 Console.WriteLine();
@@ -591,7 +562,7 @@ namespace CRYFORCE.Engine
             // Удаляем выходной файл, если такой имеется (невосстановимое удаление)
             if(File.Exists(args[2]))
             {
-                Console.WriteLine("Уничтожение данных выходного файла, который будет перезаписан...");
+                Console.WriteLine("Предварительное затирание данных выходного файла, который будет перезаписан...");
                 CryforceUtilities.WipeFile(OnProgressChanged, args[2], cryforce.BufferSizePerStream, true);
                 File.Delete(args[2]);
             }

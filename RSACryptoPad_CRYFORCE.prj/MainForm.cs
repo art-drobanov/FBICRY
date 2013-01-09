@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 
-using CRYFORCE.Engine;
+using RSA = CRYFORCE.Engine.RSA;
 
 // 1,618
 namespace RSACryptoPad
@@ -1122,7 +1122,7 @@ namespace RSACryptoPad
 			{
 				string publicAndPrivateKeys;
 				string publicKey;
-				RSA_Helper.GenerateRsaKeyPair(currentBitStrength, out publicKey, out publicAndPrivateKeys);
+				RSA.GenerateRsaKeyPair(currentBitStrength, out publicKey, out publicAndPrivateKeys);
 				if(saveFile("Save Public/Private Keys As", "Public/Private Keys Document( *.kez )|*.kez", publicAndPrivateKeys))
 				{
 					while(!saveFile("Save Public Key As", "Public Key Document( *.pke )|*.pke", publicKey)) {}

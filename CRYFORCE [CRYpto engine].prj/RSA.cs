@@ -11,8 +11,14 @@ namespace CRYFORCE.Engine
 	/// <summary>
 	/// Класс-обвязка для алгоритмов RSA
 	/// </summary>
-	public static class RSA_Helper
+	public static class RSA
 	{
+        /// <summary>Открывающий маркер RSA-ключа: размер.</summary>
+        private static string _bitStrengthOpeningMarker = "<BitStrength>";
+
+        /// <summary>Закрывающий маркер RSA-ключа: размер.</summary>
+        private static string _bitStrengthClosingMarker = "</BitStrength>";
+
 		/// <summary>
 		/// Генерирование пары открытый / закрытый ключ
 		/// </summary>
@@ -22,8 +28,8 @@ namespace CRYFORCE.Engine
 		public static void GenerateRsaKeyPair(int bitStrength, out string publicKey, out string privateKey)
 		{
 			var RSAProvider = new RSACryptoServiceProvider(bitStrength);
-			publicKey  = "<BitStrength>" + bitStrength.ToString() + "</BitStrength>" + RSAProvider.ToXmlString(false);
-			privateKey = "<BitStrength>" + bitStrength.ToString() + "</BitStrength>" + RSAProvider.ToXmlString(true);
+            publicKey  = _bitStrengthOpeningMarker + bitStrength.ToString() + _bitStrengthClosingMarker + RSAProvider.ToXmlString(false);
+            privateKey = _bitStrengthOpeningMarker + bitStrength.ToString() + _bitStrengthClosingMarker + RSAProvider.ToXmlString(true);
 		}
 
 		/// <summary>
@@ -35,10 +41,10 @@ namespace CRYFORCE.Engine
 		public static string EncryptString(string inputString, string publicKey)
 		{
 			// Определяем размер ключа RSA...
-			string bitStrengthString = publicKey.Substring(0, publicKey.IndexOf("</BitStrength>") + 14);
-			int keySize = Convert.ToInt32(bitStrengthString.Replace("<BitStrength>", "").Replace("</BitStrength>", ""));
+            string bitStrengthString = publicKey.Substring(0, publicKey.IndexOf(_bitStrengthClosingMarker) + _bitStrengthClosingMarker.Length);
+            int keySize = Convert.ToInt32(bitStrengthString.Replace(_bitStrengthOpeningMarker, string.Empty).Replace(_bitStrengthClosingMarker, string.Empty));
 			//...и убираем блок данных с размером ключа
-			publicKey = publicKey.Replace(bitStrengthString, "");
+            publicKey = publicKey.Replace(bitStrengthString, string.Empty);
 
 			// Алгоритм RSA
 			var rsaCryptoServiceProvider = new RSACryptoServiceProvider(keySize);
@@ -53,7 +59,7 @@ namespace CRYFORCE.Engine
 			input.Close();
 			output.Close();
 
-			//...и выравнивание по границе 4 байта (важно для последующего деления!)
+			//...и выравнивание по границе 4 байта (важно для последующего деления на блоки!)
 			var ms = new MemoryStream(bytes);
 			var output2 = (MemoryStream)CryforceUtilities.AlignStream(ms, 4);
 			output2.Seek(0, SeekOrigin.Begin);
@@ -61,9 +67,9 @@ namespace CRYFORCE.Engine
 			ms.Close();
 			output2.Close();
 
-			// The hash function in use by the .NET RSACryptoServiceProvider here is SHA1
+            // Хеш-функция, используемая сущностью ".NET RSACryptoServiceProvider" - это SHA1
 			// int maxLength = ( keySize ) - 2 - ( 2 * SHA1.Create().ComputeHash( rawBytes ).Length );
-			keySize = keySize >> 3;
+			keySize = keySize >> 3; // В байте 8 бит, вычисляем количество байт, осуществляя деление на 8
 			int maxLength = keySize - 42;
 			int dataLength = alignedBytes.Length;
 			int iterations = dataLength / maxLength;
@@ -87,16 +93,16 @@ namespace CRYFORCE.Engine
 		public static string DecryptString(string inputString, string privateKey)
 		{
 			// Определяем размер ключа RSA...
-			string bitStrengthString = privateKey.Substring(0, privateKey.IndexOf("</BitStrength>") + 14);
-			int keySize = Convert.ToInt32(bitStrengthString.Replace("<BitStrength>", "").Replace("</BitStrength>", ""));
+            string bitStrengthString = privateKey.Substring(0, privateKey.IndexOf(_bitStrengthClosingMarker) + _bitStrengthClosingMarker.Length);
+            int keySize = Convert.ToInt32(bitStrengthString.Replace(_bitStrengthOpeningMarker, string.Empty).Replace(_bitStrengthClosingMarker, string.Empty));
 			//...и убираем блок данных с размером ключа
-			privateKey = privateKey.Replace(bitStrengthString, "");
+			privateKey = privateKey.Replace(bitStrengthString, string.Empty);
 
 			// Алгоритм RSA
 			var rsaCryptoServiceProvider = new RSACryptoServiceProvider(keySize);
 			rsaCryptoServiceProvider.FromXmlString(privateKey);
 			keySize = keySize >> 3;
-			int base64BlockSize = (keySize % 3 != 0) ? ((keySize / 3) * 4) + 4 : (keySize / 3) * 4;
+            int base64BlockSize = CryforceUtilities.GetBase64BlockSize(keySize);
 			int iterations = inputString.Length / base64BlockSize;
 			var arrayList = new ArrayList();
 			for(int i = 0; i < iterations; i++)

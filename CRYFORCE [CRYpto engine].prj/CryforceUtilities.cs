@@ -13,6 +13,34 @@ namespace CRYFORCE.Engine
 	/// </summary>
 	public static class CryforceUtilities
 	{
+        /// <summary>
+        /// Проверка версии операционной системы
+        /// </summary>
+        public static bool OSVersionCheck()
+        {
+            // Получаем текущую версию ОС...
+            OperatingSystem osInfo = Environment.OSVersion;
+
+            // Если не "NT" платформы или ОС ниже Vista - не имеет CNG - однозначно, выход...
+            if ((osInfo.Platform != PlatformID.Win32NT) || (osInfo.Version.Major < 6))
+            {
+                return false;
+            }
+
+            // Vista...
+            if ((osInfo.Version.Major == 6) && (osInfo.Version.Minor == 0))
+            {
+                //...должна иметь хотя бы SP1
+                if ((osInfo.ServicePack == "") || (!osInfo.ServicePack.StartsWith("Service Pack")))
+                {
+                    return false;
+                }
+            }
+
+            // Win7 и выше...
+            return true;
+        }
+
 		/// <summary>
 		/// Извлечение массива байт из объекта
 		/// </summary>
@@ -125,7 +153,7 @@ namespace CRYFORCE.Engine
 		}
 
 		/// <summary>
-		/// Сжатие данных, находящихся во входном потоке
+		/// Компрессия потока
 		/// </summary>
 		/// <param name="stream">Поток с данными для сжатия.</param>
 		/// <returns>Поток со сжатыми данными.</returns>
@@ -147,7 +175,7 @@ namespace CRYFORCE.Engine
 		}
 
 		/// <summary>
-		/// Получение данных из сжатого состояния
+		/// Декомпрессия потока
 		/// </summary>
 		/// <param name="stream">Поток со сжатыми данными.</param>
 		/// <returns>Поток с исходными данными.</returns>
@@ -682,7 +710,17 @@ namespace CRYFORCE.Engine
 			return fileNames;
 		}
 
-		/// <summary>
+        /// <summary>
+        /// Получение размера блока в кодировке Base64 на основе сведений о размере исходных данных
+        /// </summary>
+        /// <param name="sourceDataSize">Размер блока исходных данных (в байтах).</param>
+        /// <returns>Размер блока Base64 (в байтах), соответствующий исходному блоку величины sourceDataSize.</returns>
+        public static int GetBase64BlockSize(int sourceDataSize)
+        {
+            return (sourceDataSize % 3 != 0) ? ((sourceDataSize / 3) * 4) + 4 : (sourceDataSize / 3) * 4;
+        }
+
+	    /// <summary>
 		/// Получение бита из байта в байтовой форме
 		/// </summary>
 		/// <param name="data">Байт данных.</param>
