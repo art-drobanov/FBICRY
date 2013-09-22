@@ -1,7 +1,11 @@
-﻿using System;
+﻿#region
+
+using System;
 using System.Linq;
 
 using NUnit.Framework;
+
+#endregion
 
 namespace CRYFORCE.Engine.Test
 {
@@ -18,7 +22,9 @@ namespace CRYFORCE.Engine.Test
 
         #endregion
 
-        /// <summary>Была произведена установка?</summary>
+        /// <summary>
+        /// Была произведена установка?
+        /// </summary>
         public bool SetUpIsOK { get; set; }
 
         /// <summary>
@@ -47,7 +53,7 @@ namespace CRYFORCE.Engine.Test
                     BitSplitter.Split8Bytes(b1, b2);
 
                     // Вычисляем ожидаемое значение в позициях байт после разбиения...
-                    var expectedValue = (byte)(1 << i);
+                    byte expectedValue = (byte)(1 << i);
 
                     foreach(byte b in b2)
                     {

@@ -1,8 +1,12 @@
-﻿using System;
+﻿#region
+
+using System;
 using System.Collections;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
+
+#endregion
 
 namespace CRYFORCE.Engine
 {
@@ -11,19 +15,23 @@ namespace CRYFORCE.Engine
     /// </summary>
     public static class RSA
     {
-        /// <summary>Открывающий маркер RSA-ключа: размер.</summary>
+        /// <summary>
+        /// Открывающий маркер RSA-ключа: размер.
+        /// </summary>
         private static string _bitStrengthOpeningMarker = "<BitStrength>";
 
-        /// <summary>Закрывающий маркер RSA-ключа: размер.</summary>
+        /// <summary>
+        /// Закрывающий маркер RSA-ключа: размер.
+        /// </summary>
         private static string _bitStrengthClosingMarker = "</BitStrength>";
 
         /// <summary>
         /// Генерирование пары открытый / закрытый ключ
         /// </summary>
-        /// <param name="bitStrength">Стойкость ключа.</param>
-        /// <param name="publicKey">Открытый ключ.</param>
-        /// <param name="privateKey">Закрытый ключ.</param>
-        public static void GenerateRsaKeyPair(int bitStrength, out string publicKey, out string privateKey)
+        /// <param name="bitStrength"> Стойкость ключа. </param>
+        /// <param name="publicKey"> Открытый ключ. </param>
+        /// <param name="privateKey"> Закрытый ключ. </param>
+        public static void GenerateRSAKeyPair(int bitStrength, out string publicKey, out string privateKey)
         {
             var RSAProvider = new RSACryptoServiceProvider(bitStrength);
             publicKey = _bitStrengthOpeningMarker + bitStrength.ToString() + _bitStrengthClosingMarker + RSAProvider.ToXmlString(false);
@@ -33,9 +41,9 @@ namespace CRYFORCE.Engine
         /// <summary>
         /// Шифрование строки алгоритмом RSA
         /// </summary>
-        /// <param name="inputString">Входная строка.</param>
-        /// <param name="publicKey">Открытый ключ.</param>
-        /// <returns>Зашифрованная строка в XML.</returns>
+        /// <param name="inputString"> Входная строка. </param>
+        /// <param name="publicKey"> Открытый ключ. </param>
+        /// <returns> Зашифрованная строка в XML. </returns>
         public static string EncryptString(string inputString, string publicKey)
         {
             // Определяем размер ключа RSA...
@@ -72,6 +80,7 @@ namespace CRYFORCE.Engine
             int dataLength = alignedBytes.Length;
             int iterations = dataLength / maxLength;
             var stringBuilder = new StringBuilder();
+
             for(int i = 0; i <= iterations; i++)
             {
                 var tempBytes = new byte[(dataLength - maxLength * i > maxLength) ? maxLength : dataLength - maxLength * i];
@@ -79,15 +88,16 @@ namespace CRYFORCE.Engine
                 byte[] encryptedBytes = rsaCryptoServiceProvider.Encrypt(tempBytes, true);
                 stringBuilder.Append(Convert.ToBase64String(encryptedBytes));
             }
+
             return stringBuilder.ToString();
         }
 
         /// <summary>
         /// Расшифровка строки, зашифрованной посредством RSA
         /// </summary>
-        /// <param name="inputString">Входная строка.</param>
-        /// <param name="privateKey">Закрытый ключ.</param>
-        /// <returns>Расшифрованная строка.</returns>
+        /// <param name="inputString"> Входная строка. </param>
+        /// <param name="privateKey"> Закрытый ключ. </param>
+        /// <returns> Расшифрованная строка. </returns>
         public static string DecryptString(string inputString, string privateKey)
         {
             // Определяем размер ключа RSA...

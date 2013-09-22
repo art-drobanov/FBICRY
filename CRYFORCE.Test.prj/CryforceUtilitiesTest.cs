@@ -1,7 +1,11 @@
-﻿using System;
+﻿#region
+
+using System;
 using System.IO;
 
 using NUnit.Framework;
+
+#endregion
 
 namespace CRYFORCE.Engine.Test
 {
@@ -18,7 +22,9 @@ namespace CRYFORCE.Engine.Test
 
         #endregion
 
-        /// <summary>Была произведена установка?</summary>
+        /// <summary>
+        /// Была произведена установка?
+        /// </summary>
         public bool SetUpIsOK { get; set; }
 
         /// <summary>

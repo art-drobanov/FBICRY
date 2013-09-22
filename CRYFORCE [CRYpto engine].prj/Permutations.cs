@@ -1,23 +1,31 @@
-﻿using System;
+﻿#region
+
+using System;
+
+#endregion
 
 namespace CRYFORCE.Engine
 {
     /// <summary>
     /// Класс для генерирования перестановок элементов множества (n!)
     /// </summary>
-    /// <typeparam name="T">Параметр шаблона.</typeparam>
+    /// <typeparam name="T"> Параметр шаблона. </typeparam>
     public class Permutations<T>
     {
-        /// <summary>Рабочий материал.</summary>
+        /// <summary>
+        /// Рабочий материал.
+        /// </summary>
         private readonly T[] _seed;
 
-        /// <summary>Фиксатор состояния.</summary>
+        /// <summary>
+        /// Фиксатор состояния.
+        /// </summary>
         private int[] _st;
 
         /// <summary>
         /// Конструктор
         /// </summary>
-        /// <param name="seed">Массив исходных объектов для генерации перестановок.</param>
+        /// <param name="seed"> Массив исходных объектов для генерации перестановок. </param>
         public Permutations(T[] seed)
         {
             _seed = (T[])seed.Clone();
@@ -36,8 +44,8 @@ namespace CRYFORCE.Engine
         /// <summary>
         /// Перестановка двух элементов местами
         /// </summary>
-        /// <param name="a">Первый элемент.</param>
-        /// <param name="b">Второй элемент.</param>
+        /// <param name="a"> Первый элемент. </param>
+        /// <param name="b"> Второй элемент. </param>
         private static void Swap(ref T a, ref T b)
         {
             T t = a;
@@ -48,8 +56,8 @@ namespace CRYFORCE.Engine
         /// <summary>
         /// Вычисление функции факториала
         /// </summary>
-        /// <param name="n">Аргумент.</param>
-        /// <returns>Значение n!</returns>
+        /// <param name="n"> Аргумент. </param>
+        /// <returns> Значение n! </returns>
         private static int Fact(int n)
         {
             int result = 1;
@@ -64,7 +72,7 @@ namespace CRYFORCE.Engine
         /// <summary>
         /// Получение следующей перестановки элементов
         /// </summary>
-        /// <returns>Булевский флаг операции.</returns>
+        /// <returns> Булевский флаг операции. </returns>
         private bool NextPermutation()
         {
             if(_seed.Length < 2)
@@ -97,8 +105,10 @@ namespace CRYFORCE.Engine
         /// <summary>
         /// Получение набора перестановок
         /// </summary>
-        /// <returns>Набор перестановок.</returns>
-        /// <remarks>Внимание! Повторный вызов даст перестановки с реверсированного seed, последующий - с прямого и т.д.</remarks>
+        /// <returns> Набор перестановок. </returns>
+        /// <remarks>
+        /// Внимание! Повторный вызов даст перестановки с реверсированного seed, последующий - с прямого и т.д.
+        /// </remarks>
         public T[][] MakePermutationsSet()
         {
             var result = new T[Fact(_seed.Length)][];

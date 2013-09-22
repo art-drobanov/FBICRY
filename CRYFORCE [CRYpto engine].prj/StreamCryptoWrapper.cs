@@ -1,6 +1,10 @@
-﻿using System;
+﻿#region
+
+using System;
 using System.IO;
 using System.Security.Cryptography;
+
+#endregion
 
 namespace CRYFORCE.Engine
 {
@@ -11,28 +15,44 @@ namespace CRYFORCE.Engine
     {
         #region Data
 
-        /// <summary>Вектор инициализации алгоритма шифрования.</summary>
+        /// <summary>
+        /// Вектор инициализации алгоритма шифрования.
+        /// </summary>
         private byte[] _IV;
 
-        /// <summary>Набор базовых операций криптографического преобразования для расшифровки.</summary>
+        /// <summary>
+        /// Набор базовых операций криптографического преобразования для расшифровки.
+        /// </summary>
         private ICryptoTransform _decryptor;
 
-        /// <summary>Набор базовых операций криптографического преобразования для шифрования.</summary>
+        /// <summary>
+        /// Набор базовых операций криптографического преобразования для шифрования.
+        /// </summary>
         private ICryptoTransform _encryptor;
 
-        /// <summary>Экземпляр класса "SHA256".</summary>
+        /// <summary>
+        /// Экземпляр класса "SHA256".
+        /// </summary>
         private SHA256Cng _hash256;
 
-        /// <summary>Экземпляр класса "SHA512".</summary>
+        /// <summary>
+        /// Экземпляр класса "SHA512".
+        /// </summary>
         private SHA512Cng _hash512;
 
-        /// <summary>Ключ.</summary>
+        /// <summary>
+        /// Ключ.
+        /// </summary>
         private byte[] _key;
 
-        /// <summary>Алгоритм шифрования Rijndael.</summary>
-        /// <remarks>Алгоритм шифрования Rijndael является прототипом AES, но имеет размер блока 256 бит
+        /// <summary>
+        /// Алгоритм шифрования Rijndael.
+        /// </summary>
+        /// <remarks>
+        /// Алгоритм шифрования Rijndael является прототипом AES, но имеет размер блока 256 бит
         /// (а не 128, как у AES, т.к. для прототипа не задавалось соответствие аппаратным криптопроцессорам,
-        /// ориентированным на ограниченную разрядность).</remarks>
+        /// ориентированным на ограниченную разрядность).
+        /// </remarks>
         private RijndaelManaged _rijndael;
 
         #endregion Data
@@ -49,8 +69,8 @@ namespace CRYFORCE.Engine
         /// <summary>
         /// Конструктор
         /// </summary>
-        /// <param name="password">Пароль в форме строки.</param>
-        /// <param name="iterations">Количество итераций при хешировании пароля.</param>
+        /// <param name="password"> Пароль в форме строки. </param>
+        /// <param name="iterations"> Количество итераций при хешировании пароля. </param>
         public StreamCryptoWrapper(byte[] password, int iterations = 1)
         {
             Initialize(password, iterations);
@@ -72,7 +92,9 @@ namespace CRYFORCE.Engine
 
         #region Properties
 
-        /// <summary>Экземпляр класса инициализирован?</summary>
+        /// <summary>
+        /// Экземпляр класса инициализирован?
+        /// </summary>
         public bool IsInitialized { get; private set; }
 
         #endregion Properties
@@ -82,10 +104,10 @@ namespace CRYFORCE.Engine
         /// <summary>
         /// Получение хеша от строки
         /// </summary>
-        /// <param name="data">Данные для хеширования.</param>
-        /// <param name="iterations">Количество итераций.</param>
-        /// <param name="key">Ключ шифрования.</param>
-        /// <param name="IV">Инициализирующий вектор шифрования.</param>
+        /// <param name="data"> Данные для хеширования. </param>
+        /// <param name="iterations"> Количество итераций. </param>
+        /// <param name="key"> Ключ шифрования. </param>
+        /// <param name="IV"> Инициализирующий вектор шифрования. </param>
         private void Hash(byte[] data, int iterations, out byte[] key, out byte[] IV)
         {
             // Получаем инициирующий хеш входных данных...
@@ -113,8 +135,8 @@ namespace CRYFORCE.Engine
         /// <summary>
         /// Инициализация экземпляра класса
         /// </summary>
-        /// <param name="password">Пароль в форме строки.</param>
-        /// <param name="iterations">Количество итераций при хешировании пароля.</param>
+        /// <param name="password"> Пароль в форме строки. </param>
+        /// <param name="iterations"> Количество итераций при хешировании пароля. </param>
         public void Initialize(byte[] password, int iterations = 1)
         {
             // Очистка конфиденциальных данных
@@ -148,20 +170,9 @@ namespace CRYFORCE.Engine
             CryforceUtilities.ClearArray(_IV);
 
             // Чистим криптографические сущности...
-            if(_hash256 != null)
-            {
-                _hash256.Clear();
-            }
-
-            if(_hash512 != null)
-            {
-                _hash512.Clear();
-            }
-
-            if(_rijndael != null)
-            {
-                _rijndael.Clear();
-            }
+            if(_hash256 != null) _hash256.Clear();
+            if(_hash512 != null) _hash512.Clear();
+            if(_rijndael != null) _rijndael.Clear();
 
             // Инициализируем криптографические сущности...
             _hash256 = new SHA256Cng();
@@ -172,10 +183,12 @@ namespace CRYFORCE.Engine
         /// <summary>
         /// Получение потока-обертки, работающего с шифрованием
         /// </summary>
-        /// <remarks>При шифровании нужно оборачивать выходной поток, а при расшифровке - входной.</remarks>
-        /// <param name="stream">Входной поток.</param>
-        /// <param name="encryptionMode">Используется режим шифрования?</param>
-        /// <returns>Поток-обертка, работающий с шифрованием.</returns>
+        /// <remarks>
+        ///   При шифровании нужно оборачивать выходной поток, а при расшифровке - входной.
+        /// </remarks>
+        /// <param name="stream"> Входной поток. </param>
+        /// <param name="encryptionMode"> Используется режим шифрования? </param>
+        /// <returns> Поток-обертка, работающий с шифрованием. </returns>
         public Stream WrapStream(Stream stream, bool encryptionMode)
         {
             if(!IsInitialized)

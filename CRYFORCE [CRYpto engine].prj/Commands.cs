@@ -1,8 +1,14 @@
+#region
+
 using System;
+
+#endregion
 
 namespace CRYFORCE.Engine
 {
-    /// <summary>Команды шифрования.</summary>
+    /// <summary>
+    /// Команды шифрования.
+    /// </summary>
     public enum Commands
     {
         E,

@@ -1,10 +1,14 @@
-﻿using System;
+﻿#region
+
+using System;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 
 using EventArgsUtilities;
+
+#endregion
 
 namespace CRYFORCE.Engine
 {
@@ -19,7 +23,9 @@ namespace CRYFORCE.Engine
 
         #region Constants
 
-        /// <summary>Размер буфера в ОЗУ под каждый поток.</summary>
+        /// <summary>
+        /// Размер буфера в ОЗУ под каждый поток.
+        /// </summary>
         private const int DEFAULT_BUFFER_SIZE_PER_STREAM = 16 * 1024 * 1024; // 16 мегабайт
 
         #endregion Constants
@@ -30,10 +36,14 @@ namespace CRYFORCE.Engine
 
         #region Events
 
-        /// <summary>Событие обновления прогресса обработки.</summary>
+        /// <summary>
+        /// Событие обновления прогресса обработки.
+        /// </summary>
         public event EventHandler<EventArgsGeneric<ProgressChangedArg>> ProgressChanged;
 
-        /// <summary>Событие обработки полученного в ходе работы сообщения.</summary>
+        /// <summary>
+        /// Событие обработки полученного в ходе работы сообщения.
+        /// </summary>
         public event EventHandler<EventArgsGeneric<MessageReceivedArg>> MessageReceived;
 
         #endregion Events
@@ -51,8 +61,8 @@ namespace CRYFORCE.Engine
         /// <summary>
         /// Конструктор с параметрами
         /// </summary>
-        /// <param name="workInMemory">Работать в ОЗУ?</param>
-        /// <param name="workInTempDir">Работать в директории для временных файлов?</param>
+        /// <param name="workInMemory"> Работать в ОЗУ? </param>
+        /// <param name="workInTempDir"> Работать в директории для временных файлов? </param>
         public Cryforce(bool workInMemory, bool workInTempDir)
             : this(workInMemory, workInTempDir, DEFAULT_BUFFER_SIZE_PER_STREAM)
         {
@@ -61,10 +71,10 @@ namespace CRYFORCE.Engine
         /// <summary>
         /// Конструктор с параметрами
         /// </summary>
-        /// <param name="workInMemory">Работать в ОЗУ?</param>
-        /// <param name="workInTempDir">Работать в директории для временных файлов?</param>
-        /// <param name="bufferSizePerStream">Размер буфера на файловый поток.</param>
-        /// <param name="rndSeed">Инициализирующее значение генератора случайных чисел.</param>
+        /// <param name="workInMemory"> Работать в ОЗУ? </param>
+        /// <param name="workInTempDir"> Работать в директории для временных файлов? </param>
+        /// <param name="bufferSizePerStream"> Размер буфера на файловый поток. </param>
+        /// <param name="rndSeed"> Инициализирующее значение генератора случайных чисел. </param>
         public Cryforce(bool workInMemory, bool workInTempDir, int bufferSizePerStream, int rndSeed)
             : this(workInMemory, workInTempDir, bufferSizePerStream)
         {
@@ -74,9 +84,9 @@ namespace CRYFORCE.Engine
         /// <summary>
         /// Конструктор с параметрами
         /// </summary>
-        /// <param name="workInMemory">Работать в ОЗУ?</param>
-        /// <param name="workInTempDir">Работать в директории для временных файлов?</param>
-        /// <param name="bufferSizePerStream">Размер буфера на файловый поток.</param>
+        /// <param name="workInMemory"> Работать в ОЗУ? </param>
+        /// <param name="workInTempDir"> Работать в директории для временных файлов? </param>
+        /// <param name="bufferSizePerStream"> Размер буфера на файловый поток. </param>
         public Cryforce(bool workInMemory, bool workInTempDir, int bufferSizePerStream)
         {
             WorkInMemory = workInMemory;
@@ -89,19 +99,29 @@ namespace CRYFORCE.Engine
 
         #region Properties
 
-        /// <summary>Работаем в ОЗУ?</summary>
+        /// <summary>
+        /// Работаем в ОЗУ?
+        /// </summary>
         public bool WorkInMemory { get; set; }
 
-        /// <summary>Работаем в директории для временных файлов?</summary>
+        /// <summary>
+        /// Работаем в директории для временных файлов?
+        /// </summary>
         public bool WorkInTempDir { get; set; }
 
-        /// <summary>Размер буфера в ОЗУ под каждый поток.</summary>
+        /// <summary>
+        /// Размер буфера в ОЗУ под каждый поток.
+        /// </summary>
         public int BufferSizePerStream { get; set; }
 
-        /// <summary>Инициализирующее значение генератора случайных чисел.</summary>
+        /// <summary>
+        /// Инициализирующее значение генератора случайных чисел.
+        /// </summary>
         public int RndSeed { get; set; }
 
-        /// <summary>Затирать выходной поток нулями?</summary>
+        /// <summary>
+        /// Затирать выходной поток нулями?
+        /// </summary>
         public bool ZeroOut { get; set; }
 
         #endregion Properties
@@ -119,9 +139,9 @@ namespace CRYFORCE.Engine
         /// <summary>
         /// Обвязка вызова события "Изменение прогресса процесса"
         /// </summary>
-        /// <param name="processDescription">Описание процесса.</param>
-        /// <param name="processProgress">Прогресс процесса.</param>
-        /// <param name="rFlag">Переводить каретку?</param>
+        /// <param name="processDescription"> Описание процесса. </param>
+        /// <param name="processProgress"> Прогресс процесса. </param>
+        /// <param name="rFlag"> Переводить каретку? </param>
         public void Progress(string processDescription, double processProgress, bool rFlag = false)
         {
             if(ProgressChanged != null)
@@ -134,8 +154,8 @@ namespace CRYFORCE.Engine
         /// <summary>
         /// Обвязка вызова обработчика события "Получено сообщение"
         /// </summary>
-        /// <param name="messageBody">Тело сообщения.</param>
-        /// <param name="messagePostfix">Постфикс сообщения.</param>
+        /// <param name="messageBody"> Тело сообщения. </param>
+        /// <param name="messagePostfix"> Постфикс сообщения. </param>
         public void Message(string messageBody, string messagePostfix = "")
         {
             if(MessageReceived != null)
@@ -147,11 +167,11 @@ namespace CRYFORCE.Engine
         /// <summary>
         /// Шифрование по алгоритму Rijndael-256
         /// </summary>
-        /// <param name="inputStream">Входной поток.</param>
-        /// <param name="key">Ключ для первого прохода шифрования.</param>
-        /// <param name="outputStream">Выходной поток.</param>
-        /// <param name="encryptionMode">Используется шифрование?</param>
-        /// <param name="iterations">Количество итераций хеширования пароля.</param>
+        /// <param name="inputStream"> Входной поток. </param>
+        /// <param name="key"> Ключ для первого прохода шифрования. </param>
+        /// <param name="outputStream"> Выходной поток. </param>
+        /// <param name="encryptionMode"> Используется шифрование? </param>
+        /// <param name="iterations"> Количество итераций хеширования пароля. </param>
         public void SingleRijndael(Stream inputStream, byte[] key, Stream outputStream, bool encryptionMode, int iterations = 1)
         {
             if(!inputStream.CanSeek)
@@ -199,12 +219,12 @@ namespace CRYFORCE.Engine
         /// <summary>
         /// Двойное шифрование по алгоритму Rijndael-256
         /// </summary>
-        /// <param name="inputStream">Входной поток.</param>
-        /// <param name="key1">Ключ для первого прохода шифрования.</param>
-        /// <param name="key2">Ключ для второго прохода шифрования.</param>
-        /// <param name="outputStream">Выходной поток.</param>
-        /// <param name="encryptionMode">Используется шифрование?</param>
-        /// <param name="iterations">Количество итераций хеширования пароля.</param>
+        /// <param name="inputStream"> Входной поток. </param>
+        /// <param name="key1"> Ключ для первого прохода шифрования. </param>
+        /// <param name="key2"> Ключ для второго прохода шифрования. </param>
+        /// <param name="outputStream"> Выходной поток. </param>
+        /// <param name="encryptionMode"> Используется шифрование? </param>
+        /// <param name="iterations"> Количество итераций хеширования пароля. </param>
         public void DoubleRijndael(Stream inputStream, byte[] key1, byte[] key2, Stream outputStream, bool encryptionMode, int iterations = 1)
         {
             if(!inputStream.CanSeek)
@@ -344,9 +364,9 @@ namespace CRYFORCE.Engine
         /// <summary>
         /// Генерация пары открытый/закрытый ключ
         /// </summary>
-        /// <param name="publicKeyStream">Поток для записи открытого ключа.</param>
-        /// <param name="privateKeyStream">Поток для записи закрытого ключа.</param>
-        /// <param name="seedStream">Поток, содержащий случайные данные.</param>
+        /// <param name="publicKeyStream"> Поток для записи открытого ключа. </param>
+        /// <param name="privateKeyStream"> Поток для записи закрытого ключа. </param>
+        /// <param name="seedStream"> Поток, содержащий случайные данные. </param>
         public void CreateEccKeys(Stream publicKeyStream, Stream privateKeyStream, Stream seedStream = null)
         {
             byte[] seedDataFromStream = null;
@@ -424,10 +444,10 @@ namespace CRYFORCE.Engine
         /// <summary>
         /// Генерирование симметричных ключей
         /// </summary>
-        /// <param name="publicKeyFromOtherPartyStream">Поток открытого ключа другой стороны.</param>
-        /// <param name="privateKeyStream">Поток своего закрытого ключа.</param>
-        /// <param name="symmetricKey1">Симметричный ключ №1 (256 bit).</param>
-        /// <param name="symmetricKey2">Симметричный ключ №2 (256 bit).</param>
+        /// <param name="publicKeyFromOtherPartyStream"> Поток открытого ключа другой стороны. </param>
+        /// <param name="privateKeyStream"> Поток своего закрытого ключа. </param>
+        /// <param name="symmetricKey1"> Симметричный ключ №1 (256 bit). </param>
+        /// <param name="symmetricKey2"> Симметричный ключ №2 (256 bit). </param>
         public void GetSymmetricKeys(Stream publicKeyFromOtherPartyStream, Stream privateKeyStream,
                                      out byte[] symmetricKey1, out byte[] symmetricKey2)
         {
@@ -468,9 +488,9 @@ namespace CRYFORCE.Engine
         /// <summary>
         /// Вычисление ЭЦП потока данных
         /// </summary>
-        /// <param name="privateKeyStream">Приватный ключ.</param>
-        /// <param name="dataStream">Поток данных.</param>
-        /// <param name="signStream">ЭЦП для потока данных.</param>
+        /// <param name="privateKeyStream"> Приватный ключ. </param>
+        /// <param name="dataStream"> Поток данных. </param>
+        /// <param name="signStream"> ЭЦП для потока данных. </param>
         public void SignData(Stream privateKeyStream, Stream dataStream, Stream signStream)
         {
             if(!privateKeyStream.CanSeek)
@@ -497,10 +517,10 @@ namespace CRYFORCE.Engine
         /// <summary>
         /// Проверка ЭЦП на базе открытого ключа другой стороны
         /// </summary>
-        /// <param name="dataStream">Поток данных.</param>
-        /// <param name="signStream">ЭЦП.</param>
-        /// <param name="publicKeyFromOtherPartyStream">Поток открытого ключа другой стороны.</param>
-        /// <returns>Булевский флаг операции.</returns>
+        /// <param name="dataStream"> Поток данных. </param>
+        /// <param name="signStream"> ЭЦП. </param>
+        /// <param name="publicKeyFromOtherPartyStream"> Поток открытого ключа другой стороны. </param>
+        /// <returns> Булевский флаг операции. </returns>
         public bool VerifySign(Stream dataStream, Stream signStream, Stream publicKeyFromOtherPartyStream)
         {
             if(!publicKeyFromOtherPartyStream.CanSeek)

@@ -1,12 +1,16 @@
-﻿using System;
+﻿#region
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
+#endregion
+
 namespace CRYFORCE.Engine
 {
     /// <summary>
-    /// Класс разбиения/склеивания файлов на битовые потоки
+    ///   Класс разбиения/склеивания файлов на битовые потоки
     /// </summary>
     public class BitSplitter : IDisposable
     {
@@ -15,9 +19,9 @@ namespace CRYFORCE.Engine
         /// <summary>
         /// Метод разбиения группы из 8 байт на набор "битовых" байт
         /// </summary>
-        /// <param name="bytesIn">Исходный набор байт.</param>
-        /// <param name="bytesOut">Массив "битовых" байт.</param>
-        /// <returns>Массив "битовых" байт.</returns>
+        /// <param name="bytesIn"> Исходный набор байт. </param>
+        /// <param name="bytesOut"> Массив "битовых" байт. </param>
+        /// <returns> Массив "битовых" байт. </returns>
         public static void Split8Bytes(byte[] bytesIn, byte[] bytesOut)
         {
             // Каждый i-ый байт выходного потока формируется из i-ых бит
@@ -36,20 +40,28 @@ namespace CRYFORCE.Engine
 
         #region Constants
 
-        /// <summary>Количество битов в байте.</summary>
+        /// <summary>
+        /// Количество битов в байте.
+        /// </summary>
         private const int NBITS = 8;
 
-        /// <summary>Размер буфера в ОЗУ под каждый поток.</summary>
+        /// <summary>
+        /// Размер буфера в ОЗУ под каждый поток.
+        /// </summary>
         private const int DEFAULT_BUFFER_SIZE_PER_STREAM = 16 * 1024 * 1024; // 16 мегабайт
 
         #endregion Constants
 
         #region Data
 
-        /// <summary>Сущность для работы с перестановками битовой карты (для перемешивания битов).</summary>
+        /// <summary>
+        /// Сущность для работы с перестановками битовой карты (для перемешивания битов).
+        /// </summary>
         private readonly BitMaps _bitMaps;
 
-        /// <summary>Битовые потоки.</summary>
+        /// <summary>
+        /// Битовые потоки.
+        /// </summary>
         private Stream[] _bitStreams;
 
         #endregion Data
@@ -63,9 +75,9 @@ namespace CRYFORCE.Engine
         /// <summary>
         /// Конструктор с параметрами
         /// </summary>
-        /// <param name="key1">Ключ для первого прохода шифрования.</param>
-        /// <param name="key2">Ключ для второго прохода шифрования.</param>
-        /// <param name="workInMemory">Работать в ОЗУ?</param>
+        /// <param name="key1"> Ключ для первого прохода шифрования. </param>
+        /// <param name="key2"> Ключ для второго прохода шифрования. </param>
+        /// <param name="workInMemory"> Работать в ОЗУ? </param>
         public BitSplitter(byte[] key1, byte[] key2, bool workInMemory)
         {
             BufferSizePerStream = DEFAULT_BUFFER_SIZE_PER_STREAM;
@@ -79,10 +91,10 @@ namespace CRYFORCE.Engine
         /// <summary>
         /// Конструктор с параметрами
         /// </summary>
-        /// <param name="bitStreamsNames">Имена битовых потоков.</param>
-        /// <param name="key1">Ключ для первого прохода шифрования.</param>
-        /// <param name="key2">Ключ для второго прохода шифрования.</param>
-        /// <param name="workInMemory">Работать в ОЗУ?</param>
+        /// <param name="bitStreamsNames"> Имена битовых потоков. </param>
+        /// <param name="key1"> Ключ для первого прохода шифрования. </param>
+        /// <param name="key2"> Ключ для второго прохода шифрования. </param>
+        /// <param name="workInMemory"> Работать в ОЗУ? </param>
         public BitSplitter(IEnumerable<string> bitStreamsNames, byte[] key1, byte[] key2, bool workInMemory)
         {
             BufferSizePerStream = DEFAULT_BUFFER_SIZE_PER_STREAM;
@@ -114,22 +126,34 @@ namespace CRYFORCE.Engine
         /// </summary>
         public Cryforce Cf { get; set; }
 
-        /// <summary>Работаем в ОЗУ?</summary>
+        /// <summary>
+        /// Работаем в ОЗУ?
+        /// </summary>
         public bool WorkInMemory { get; set; }
 
-        /// <summary>Размер буфера в ОЗУ под каждый поток.</summary>
+        /// <summary>
+        /// Размер буфера в ОЗУ под каждый поток.
+        /// </summary>
         public int BufferSizePerStream { get; set; }
 
-        /// <summary>Инициализирующее значение генератора случайных чисел.</summary>
+        /// <summary>
+        /// Инициализирующее значение генератора случайных чисел.
+        /// </summary>
         public int RndSeed { get; set; }
 
-        /// <summary>Затирать выходной поток нулями?</summary>
+        /// <summary>
+        /// Затирать выходной поток нулями?
+        /// </summary>
         public bool ZeroOut { get; set; }
 
-        /// <summary>Экземпляр класса инициализирован?</summary>
+        /// <summary>
+        /// Экземпляр класса инициализирован?
+        /// </summary>
         public bool IsInitialized { get; private set; }
 
-        /// <summary>Имена битовых потоков.</summary>
+        /// <summary>
+        /// Имена битовых потоков.
+        /// </summary>
         public string[] BitStreamsNames { get; private set; }
 
         #endregion Properties
@@ -147,8 +171,8 @@ namespace CRYFORCE.Engine
         /// <summary>
         /// Инициализация экземпляра класса
         /// </summary>
-        /// <param name="bitStreamsNames">Имена битовых потоков.</param>
-        /// <param name="workInMemory">Работать в ОЗУ?</param>
+        /// <param name="bitStreamsNames"> Имена битовых потоков. </param>
+        /// <param name="workInMemory"> Работать в ОЗУ? </param>
         public void Initialize(IEnumerable<string> bitStreamsNames, bool workInMemory)
         {
             if(bitStreamsNames.Count() < NBITS)
@@ -176,8 +200,8 @@ namespace CRYFORCE.Engine
         /// <summary>
         /// Разбиение на битовые потоки с последующим "склеиванием" в единый поток бит
         /// </summary>
-        /// <param name="inputStream">Входной поток.</param>
-        /// <param name="outputStream">Выходной поток.</param>
+        /// <param name="inputStream"> Входной поток. </param>
+        /// <param name="outputStream"> Выходной поток. </param>
         public void SplitToBitstream(Stream inputStream, Stream outputStream)
         {
             if(!IsInitialized)
@@ -298,8 +322,8 @@ namespace CRYFORCE.Engine
         /// <summary>
         /// Считывание из единого битового потока с последующим восстановлением порядка следования бит
         /// </summary>
-        /// <param name="inputStream">Входной поток.</param>
-        /// <param name="outputStream">Выходной поток.</param>
+        /// <param name="inputStream"> Входной поток. </param>
+        /// <param name="outputStream"> Выходной поток. </param>
         public void UnsplitFromBitstream(Stream inputStream, Stream outputStream)
         {
             if(!IsInitialized)
@@ -463,8 +487,8 @@ namespace CRYFORCE.Engine
         /// <summary>
         /// Очистка конфиденциальных данных
         /// </summary>
-        /// <param name="rndSeed">Инициализирующее значение генератора случайных чисел.</param>
-        /// <param name="zeroOut">Затирать выходной поток нулями?</param>
+        /// <param name="rndSeed"> Инициализирующее значение генератора случайных чисел. </param>
+        /// <param name="zeroOut"> Затирать выходной поток нулями? </param>
         public void Clear(int rndSeed, bool zeroOut)
         {
             // Производим стирание данных потоков, чтобы было невозможным восстановление) при помощи программных средств

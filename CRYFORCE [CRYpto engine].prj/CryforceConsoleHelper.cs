@@ -1,8 +1,12 @@
-﻿using System;
+﻿#region
+
+using System;
 using System.IO;
 using System.Linq;
 
 using EventArgsUtilities;
+
+#endregion
 
 namespace CRYFORCE.Engine
 {
@@ -10,22 +14,34 @@ namespace CRYFORCE.Engine
     {
         #region Private
 
-        /// <summary>Версия ПО.</summary>
+        /// <summary>
+        /// Версия ПО.
+        /// </summary>
         private static string buildVersion = "1.0.7.15 proto";
 
-        /// <summary>Год.</summary>
+        /// <summary>
+        /// Год.
+        /// </summary>
         private static string buildYear = "2013";
 
-        /// <summary>Стандартное имя открытого ключа.</summary>
+        /// <summary>
+        /// Стандартное имя открытого ключа.
+        /// </summary>
         private static string publicKeyFilename = "FBICRY.PUB.txt";
 
-        /// <summary>Стандартное имя закрытого ключа.</summary>
+        /// <summary>
+        /// Стандартное имя закрытого ключа.
+        /// </summary>
         private static string privateKeyFilename = "FBICRY.ECC.txt";
 
-        /// <summary>Стандартное имя лога ошибок.</summary>
+        /// <summary>
+        /// Стандартное имя лога ошибок.
+        /// </summary>
         private static string errLogFilename = "!ErrLog.txt";
 
-        /// <summary>Задаем расширение ЭЦП.</summary>
+        /// <summary>
+        /// Задаем расширение ЭЦП.
+        /// </summary>
         private static string signExt = ".sig";
 
         /// <summary>
@@ -94,6 +110,7 @@ namespace CRYFORCE.Engine
         /// <summary>
         /// Вывод логотипа
         /// </summary>
+        /// <param name="cf"> Ссылка на основной класс ядра шифрования. </param>
         private static void LogoOut(Cryforce cf)
         {
             cf.Message("");
@@ -112,6 +129,7 @@ namespace CRYFORCE.Engine
         /// <summary>
         /// Вывод версии
         /// </summary>
+        /// <param name="cf"> Ссылка на основной класс ядра шифрования. </param>
         private static void VersionOut(Cryforce cf)
         {
             cf.Message("", "\t");
@@ -126,6 +144,7 @@ namespace CRYFORCE.Engine
         /// <summary>
         /// Вывод справки
         /// </summary>
+        /// <param name="cf"> Ссылка на основной класс ядра шифрования. </param>
         private static void HelpOut(Cryforce cf)
         {
             cf.Message("\tFBICRYcmd <команда> <входной файл> <выходной файл> [файл-ключ] [итераций хеша]");
@@ -153,8 +172,8 @@ namespace CRYFORCE.Engine
         /// <summary>
         /// Запись исключения в лог ошибок
         /// </summary>
-        /// <param name="errLogFilename">Имя перезаписываемого лог-файла.</param>
-        /// <param name="e">Исключение, текст которого нужно сохранить.</param>
+        /// <param name="errLogFilename"> Имя перезаписываемого лог-файла. </param>
+        /// <param name="e"> Исключение, текст которого нужно сохранить. </param>
         private static void ErrLogOut(string errLogFilename, Exception e)
         {
             if(File.Exists(errLogFilename))
@@ -234,9 +253,7 @@ namespace CRYFORCE.Engine
                 catch(Exception e)
                 {
                     cf.Message("Ошибка при создании ключей!");
-
                     ErrLogOut(errLogFilename, e);
-
                     Console.ResetColor();
                     return;
                 }
@@ -245,14 +262,9 @@ namespace CRYFORCE.Engine
                     // Закрываем файловые потоки
                     publicKeyStream.Flush();
                     publicKeyStream.Close();
-
                     privateKeyStream.Flush();
                     privateKeyStream.Close();
-
-                    if(seedStream != null)
-                    {
-                        seedStream.Close();
-                    }
+                    if(seedStream != null) seedStream.Close();
                 }
 
                 cf.Message("");
@@ -296,7 +308,6 @@ namespace CRYFORCE.Engine
                 {
                     cf.Message("Ошибка при вычислении ЭЦП!");
                     ErrLogOut(errLogFilename, e);
-
                     Console.ResetColor();
                     return;
                 }
@@ -305,7 +316,6 @@ namespace CRYFORCE.Engine
                     // Закрываем файловые потоки
                     privateKeyStream.Close();
                     dataStream.Close();
-
                     signStream.Flush();
                     signStream.Close();
                 }
@@ -375,7 +385,6 @@ namespace CRYFORCE.Engine
                 Console.ForegroundColor = ConsoleColor.DarkRed;
                 cf.Message("");
                 cf.Message("Внимание: текущая версия операционной системы не поддерживается - требуется Vista SP1 или выше!");
-
                 Console.ResetColor();
                 return;
             }
@@ -447,7 +456,6 @@ namespace CRYFORCE.Engine
                 default:
                     {
                         cf.Message("Неизвестный режим обработки!");
-
                         Console.ResetColor();
                         return;
                     }
@@ -494,7 +502,6 @@ namespace CRYFORCE.Engine
                 catch
                 {
                     cf.Message(string.Format("Ошибка чтения данных файла-пароля \"{0}\"!", args[3]));
-
                     Console.ResetColor();
                     return;
                 }
@@ -542,7 +549,6 @@ namespace CRYFORCE.Engine
                 {
                     cf.Message("Ошибка при вычислении симметричных ключей ECDH!");
                     ErrLogOut(errLogFilename, e);
-
                     Console.ResetColor();
                     return;
                 }
@@ -605,7 +611,6 @@ namespace CRYFORCE.Engine
                 Console.ForegroundColor = ConsoleColor.Red;
                 cf.Message("");
                 cf.Message("Ошибка в ходе криптографического преобразования (неверный ключ?).");
-
                 Console.ResetColor();
                 return;
             }

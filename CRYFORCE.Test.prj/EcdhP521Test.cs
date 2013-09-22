@@ -1,8 +1,12 @@
-﻿using System;
+﻿#region
+
+using System;
 using System.IO;
 using System.Text;
 
 using NUnit.Framework;
+
+#endregion
 
 namespace CRYFORCE.Engine.Test
 {
@@ -19,7 +23,9 @@ namespace CRYFORCE.Engine.Test
 
         #endregion
 
-        /// <summary>Была произведена установка?</summary>
+        /// <summary>
+        /// Была произведена установка?
+        /// </summary>
         public bool SetUpIsOK { get; set; }
 
         /// <summary>
@@ -39,7 +45,7 @@ namespace CRYFORCE.Engine.Test
 
                 string data = "This is a sample string to digital signature test! Это тестовая строка для проверки ЭЦП!";
 
-                var rnd = new Random(DateTime.Now.Ticks.GetHashCode());
+                Random rnd = new Random(DateTime.Now.Ticks.GetHashCode());
 
                 var seedArr = new byte[64]; // 512 bit
                 rnd.NextBytes(seedArr);
@@ -55,8 +61,8 @@ namespace CRYFORCE.Engine.Test
                 // Два прогона - один проход без Hmac, другой с ним...
                 for(int m = 0; m < 2; m++)
                 {
-                    var alice = new EcdhP521(aliceSeed, null, HmacKey); // Приватного ключа нет - он будет сгенерирован!
-                    var bob = new EcdhP521(bobSeed, null, HmacKey); // Приватного ключа нет - он будет сгенерирован!
+                    EcdhP521 alice = new EcdhP521(aliceSeed, null, HmacKey); // Приватного ключа нет - он будет сгенерирован!
+                    EcdhP521 bob = new EcdhP521(bobSeed, null, HmacKey); // Приватного ключа нет - он будет сгенерирован!
 
                     File.WriteAllText("alicePublicKey.txt", alice.PublicKey);
                     File.WriteAllText("alicePrivateKey.txt", alice.PrivateKey);
@@ -100,11 +106,11 @@ namespace CRYFORCE.Engine.Test
 
                     //
 
-                    byte[][] aliceSymmetricKeys256 = alice.Keys256;
-                    byte[] aliceSymmetricKey512 = alice.Key512;
+                    var aliceSymmetricKeys256 = alice.Keys256;
+                    var aliceSymmetricKey512 = alice.Key512;
 
-                    byte[][] bobSymmetricKeys256 = bob.Keys256;
-                    byte[] bobSymmetricKey512 = bob.Key512;
+                    var bobSymmetricKeys256 = bob.Keys256;
+                    var bobSymmetricKey512 = bob.Key512;
 
                     for(int k = 0; k < 2; k++)
                     {

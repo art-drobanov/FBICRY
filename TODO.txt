@@ -1,29 +1,5 @@
-﻿ Заюзать методы везде, где можно:
- 
- 	/// <summary>
-        /// Обвязка вызова события "Изменение прогресса процесса"
-        /// </summary>
-        /// <param name="processDescription">Описание процесса.</param>
-        /// <param name="processProgress">Прогресс процесса.</param>
-        private void ProgressChangedHelper(string processDescription, double processProgress)
-        {
-            if(ProgressChanged != null)
-            {
-                ProgressChanged(null, new EventArgsGeneric<ProgressChangedArg>(new ProgressChangedArg(processDescription, processProgress)));
-            }
-        }
-
-        /// <summary>
-        /// Обвязка вызова обработчика события "Получено сообщение"
-        /// </summary>
-        /// <param name="messageBody">Тело сообщения.</param>
-        private void MessageReceivedHelper(string messageBody)
-        {
-            if(MessageReceived != null)
-            {
-                MessageReceived(null, new EventArgsGeneric<MessageReceivedArg>(new MessageReceivedArg(messageBody)));
-            }
-        }
+﻿Вывод сообщений и прогресса реализован через методы класса Cryforce::Message() и Cryforce::Progress().
+Подумать о дальнейшей отвязке от консоли. Сделать так, чтобы само ядро не было завязано на консоль.
 
 Сделать для операций создания, удаления файлов хендлеры? Унифицированный метод, либо юзверь юзает дефолтные хендлеры, либо
 предоставляет свои собственные. Существует же логика работы с файлами, когда и что делать.

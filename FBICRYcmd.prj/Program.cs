@@ -1,6 +1,10 @@
-﻿using System;
+﻿#region
+
+using System;
 
 using CRYFORCE.Engine;
+
+#endregion
 
 namespace FBICRYcmd
 {

@@ -1,6 +1,10 @@
-﻿using System;
+﻿#region
+
+using System;
 using System.IO;
 using System.Security.Cryptography;
+
+#endregion
 
 namespace CRYFORCE.Engine
 {
@@ -11,10 +15,14 @@ namespace CRYFORCE.Engine
     {
         #region Data
 
-        /// <summary>Индекс в ключе для работы с битовой картой.</summary>
+        /// <summary>
+        /// Индекс в ключе для работы с битовой картой.
+        /// </summary>
         private int _bitmapKeyIdx;
 
-        /// <summary>Текущий индекс в перестановках битовой карты.</summary>
+        /// <summary>
+        /// Текущий индекс в перестановках битовой карты.
+        /// </summary>
         private int _bitmapsIdx;
 
         #endregion Data
@@ -24,16 +32,14 @@ namespace CRYFORCE.Engine
         /// <summary>
         /// Конструктор с параметрами
         /// </summary>
-        /// <param name="key1">Ключ для первого прохода шифрования.</param>
-        /// <param name="key2">Ключ для второго прохода шифрования.</param>
+        /// <param name="key1"> Ключ для первого прохода шифрования. </param>
+        /// <param name="key2"> Ключ для второго прохода шифрования. </param>
         public BitMaps(byte[] key1, byte[] key2)
         {
-            Bitmaps = new Permutations<int>(new[] {0, 1, 2, 3, 4, 5, 6, 7}).MakePermutationsSet(); // 40320 перестановок 8 бит
-            BitmapsIdx = 0;
-
             // Создаем ключ на базе двух ключей
             BitmapKey = CryforceUtilities.MergeArrays(key1, key2);
-            BitmapKeyIdx = 0;
+            Bitmaps = new Permutations<int>(new[] {0, 1, 2, 3, 4, 5, 6, 7}).MakePermutationsSet(); // 40320 перестановок 8 бит
+            BitmapsIdx = BitmapKeyIdx = 0;
 
             // Производим самообновление ключа
             RefreshKey();
@@ -55,23 +61,33 @@ namespace CRYFORCE.Engine
 
         #region Properties
 
-        /// <summary>Перестановки битовой карты.</summary>
+        /// <summary>
+        /// Перестановки битовой карты.
+        /// </summary>
         public int[][] Bitmaps { get; private set; }
 
-        /// <summary>Текущий индекс в перестановках битовой карты.</summary>
+        /// <summary>
+        /// Текущий индекс в перестановках битовой карты.
+        /// </summary>
         public int BitmapsIdx
         {
             get { return _bitmapsIdx; }
             set { _bitmapsIdx = value % 40320; } // 40320 = 8!
         }
 
-        /// <summary>Ключ для работы с битовой картой.</summary>
+        /// <summary>
+        /// Ключ для работы с битовой картой.
+        /// </summary>
         public byte[] BitmapKey { get; private set; }
 
-        /// <summary>Параноидальный режим?</summary>
+        ///<summary>
+        /// Параноидальный режим?
+        ///</summary>
         public bool ParanoidMode { get; private set; }
 
-        /// <summary>Индекс в ключе для работы с битовой картой.</summary>
+        /// <summary>
+        /// Индекс в ключе для работы с битовой картой.
+        /// </summary>
         public int BitmapKeyIdx
         {
             get { return _bitmapKeyIdx; }
@@ -83,10 +99,7 @@ namespace CRYFORCE.Engine
                     _bitmapKeyIdx = value % BitmapKey.Length;
 
                     // Если режим параноидальный - сразу после "перехода" за размер ключа - обновляем его
-                    if(ParanoidMode)
-                    {
-                        RefreshKey();
-                    }
+                    if(ParanoidMode) RefreshKey();
                 }
             }
         }
@@ -98,7 +111,7 @@ namespace CRYFORCE.Engine
         /// <summary>
         /// Метод получения следующей перестановки (на базе ключевых данных)
         /// </summary>
-        /// <returns>Битовая перестановка.</returns>
+        /// <returns> Битовая перестановка. </returns>
         public int[] GetNextBitmap()
         {
             byte b1 = BitmapKey[BitmapKeyIdx++];
@@ -112,9 +125,7 @@ namespace CRYFORCE.Engine
         /// </summary>
         public void ClearKey()
         {
-            BitmapsIdx = 0;
-            BitmapKeyIdx = 0;
-
+            BitmapsIdx = BitmapKeyIdx = 0;
             CryforceUtilities.ClearArray(BitmapKey);
         }
 

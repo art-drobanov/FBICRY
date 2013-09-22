@@ -1,8 +1,12 @@
-﻿using System;
+﻿#region
+
+using System;
 using System.IO;
 using System.Linq;
 
 using NUnit.Framework;
+
+#endregion
 
 namespace CRYFORCE.Engine.Test
 {
@@ -19,7 +23,9 @@ namespace CRYFORCE.Engine.Test
 
         #endregion
 
-        /// <summary>Была произведена установка?</summary>
+        /// <summary>
+        /// Была произведена установка?
+        /// </summary>
         public bool SetUpIsOK { get; set; }
 
         /// <summary>
@@ -36,7 +42,7 @@ namespace CRYFORCE.Engine.Test
             try
             {
                 // Инициализируем генератор случайных чисел
-                var rnd = new Random(DateTime.Now.Ticks.GetHashCode());
+                Random rnd = new Random(DateTime.Now.Ticks.GetHashCode());
 
                 var password = new byte[255];
                 var inputData = new byte[(1024 * 1024)]; // Размер тестовых данных - 1 Мб
@@ -53,9 +59,9 @@ namespace CRYFORCE.Engine.Test
                 int iterations = rnd.Next(1, 100);
 
                 // Шифрование
-                var streamCryptoWrapper = new StreamCryptoWrapper();
+                StreamCryptoWrapper streamCryptoWrapper = new StreamCryptoWrapper();
                 streamCryptoWrapper.Initialize(password, iterations);
-                var inputStream = new MemoryStream(inputData);
+                MemoryStream inputStream = new MemoryStream(inputData);
                 Stream outputStream = streamCryptoWrapper.WrapStream(new MemoryStream(outputData), true); // Шифрование
                 inputStream.CopyTo(outputStream);
                 inputStream.Close();
@@ -66,7 +72,7 @@ namespace CRYFORCE.Engine.Test
                 streamCryptoWrapper = new StreamCryptoWrapper();
                 streamCryptoWrapper.Initialize(password, iterations);
                 Stream inputStream2 = streamCryptoWrapper.WrapStream(new MemoryStream(outputData), false); // Расшифровка
-                var outputStream2 = new MemoryStream(inputData2);
+                MemoryStream outputStream2 = new MemoryStream(inputData2);
                 inputStream2.CopyTo(outputStream2);
                 inputStream2.Close();
                 outputStream2.Flush();

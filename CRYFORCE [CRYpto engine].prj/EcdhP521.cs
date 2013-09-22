@@ -1,7 +1,11 @@
-﻿using System;
+﻿#region
+
+using System;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
+
+#endregion
 
 namespace CRYFORCE.Engine
 {
@@ -16,29 +20,43 @@ namespace CRYFORCE.Engine
 
         #region Constants
 
-        /// <summary>Длина префикса ключа Cng.</summary>
+        /// <summary>
+        /// Длина префикса ключа Cng.
+        /// </summary>
         private const int CNG_KEY_PREFIX_LEN = 8;
 
-        /// <summary>Размер открытого ключа.</summary>
+        /// <summary>
+        /// Размер открытого ключа.
+        /// </summary>
         private const int PUBLIC_KEY_SIZE = 176;
 
-        /// <summary>Размер закрытого ключа.</summary>
+        /// <summary>
+        /// Размер закрытого ключа.
+        /// </summary>
         private const int PRIVATE_KEY_SIZE = 264;
 
         #endregion Constants
 
         #region Data
 
-        /// <summary>Экземпляр класса, реализующего обмен ключами на основе шифрования по эллиптическим кривым.</summary>
+        /// <summary>
+        /// Экземпляр класса, реализующего обмен ключами на основе шифрования по эллиптическим кривым.
+        /// </summary>
         private ECDiffieHellmanCng _ECDiffieHellmanCng;
 
-        /// <summary>Экземпляр класса, реализующего ЭЦП на основе шифрования по эллиптическим кривым.</summary>
+        /// <summary>
+        /// Экземпляр класса, реализующего ЭЦП на основе шифрования по эллиптическим кривым.
+        /// </summary>
         private ECDsaCng _ECDsaCng;
 
-        /// <summary>Параметры создания ключа.</summary>
+        /// <summary>
+        /// Параметры создания ключа.
+        /// </summary>
         private CngKeyCreationParameters _cngKeyCreationParameters;
 
-        /// <summary>Хеш-функция для целей формирования персонализированного ключа.</summary>
+        /// <summary>
+        /// Хеш-функция для целей формирования персонализированного ключа.
+        /// </summary>
         private SHA512Cng _hash512;
 
         #endregion Data
@@ -59,9 +77,9 @@ namespace CRYFORCE.Engine
         /// <summary>
         /// Конструктор
         /// </summary>
-        /// <param name="seed">Инициализирующее случайное значение.</param>
-        /// <param name="privateKey">Закрытый ключ.</param>
-        /// <param name="hmacKey">Код аутентичности сообщения на базе хеш-функции.</param>
+        /// <param name="seed"> Инициализирующее случайное значение. </param>
+        /// <param name="privateKey"> Закрытый ключ. </param>
+        /// <param name="hmacKey"> Код аутентичности сообщения на базе хеш-функции. </param>
         public EcdhP521(Object seed, string privateKey, Object hmacKey = null)
         {
             // Инициализатор
@@ -155,7 +173,9 @@ namespace CRYFORCE.Engine
             get { return Convert.ToBase64String(PrivateKeyBin); }
         }
 
-        /// <summary>Экземпляр класса инициализирован?</summary>
+        /// <summary>
+        /// Экземпляр класса инициализирован?
+        /// </summary>
         public bool IsInitialized { get; private set; }
 
         #endregion Properties
@@ -165,9 +185,9 @@ namespace CRYFORCE.Engine
         /// <summary>
         /// Экспорт двоичных данных ключа
         /// </summary>
-        /// <param name="cngKey">Оригинальный ключ.</param>
-        /// <param name="isPublic">Ключ является публичным?</param>
-        /// <returns>Двоичные данные ключа.</returns>
+        /// <param name="cngKey"> Оригинальный ключ. </param>
+        /// <param name="isPublic"> Ключ является публичным? </param>
+        /// <returns> Двоичные данные ключа. </returns>
         private byte[] ExportKeyBinData(CngKey cngKey, bool isPublic)
         {
             // Экспортируем все доступные данные ключа
@@ -187,10 +207,10 @@ namespace CRYFORCE.Engine
         /// <summary>
         /// Импорт двоичных данных ключа
         /// </summary>
-        /// <param name="cngKeyShortBinData">Двоичные данные ключа.</param>
-        /// <param name="isPublic">Ключ является публичным?</param>
-        /// <param name="isDigitalSignature">Ключ предназначен для ЭЦП?</param>
-        /// <returns>Оригинальный ключ.</returns>
+        /// <param name="cngKeyShortBinData"> Двоичные данные ключа. </param>
+        /// <param name="isPublic"> Ключ является публичным? </param>
+        /// <param name="isDigitalSignature"> Ключ предназначен для ЭЦП? </param>
+        /// <returns> Оригинальный ключ. </returns>
         private CngKey ImportKeyBinData(byte[] cngKeyShortBinData, bool isPublic, bool isDigitalSignature)
         {
             // Создаем эталонный ключ для извлечения заголовка (на тот случай, если в очередной реализации будет изменен формат)
@@ -218,8 +238,8 @@ namespace CRYFORCE.Engine
         /// <summary>
         /// Получение предпочтительной части открытого ключа абонента
         /// </summary>
-        /// <param name="publicKey">Открытый ключ ЭЦП.</param>
-        /// <returns>Предпочтительная часть ключа.</returns>
+        /// <param name="publicKey"> Открытый ключ ЭЦП. </param>
+        /// <returns> Предпочтительная часть ключа. </returns>
         private string GetEcdsaPrefferedKeyPart(string publicKey)
         {
             // Строка с ключом для ЭЦП
@@ -242,12 +262,12 @@ namespace CRYFORCE.Engine
         /// <summary>
         /// Проверка ЭЦП
         /// </summary>
-        /// <param name="data">Массив данных.</param>
-        /// <param name="offset">Смещение до участка интереса.</param>
-        /// <param name="count">Длина байт участка интереса.</param>
-        /// <param name="signature">ЭЦП.</param>
-        /// <param name="publicKey">Открытый ключ для проверки ЭЦП.</param>
-        /// <returns>Булевский флаг проверки ЭЦП.</returns>
+        /// <param name="data"> Массив данных. </param>
+        /// <param name="offset"> Смещение до участка интереса. </param>
+        /// <param name="count"> Длина байт участка интереса. </param>
+        /// <param name="signature"> ЭЦП. </param>
+        /// <param name="publicKey"> Открытый ключ для проверки ЭЦП. </param>
+        /// <returns> Булевский флаг проверки ЭЦП. </returns>
         private bool VerifyData(byte[] data, int offset, int count, byte[] signature, byte[] publicKey)
         {
             if(!IsInitialized)
@@ -265,10 +285,10 @@ namespace CRYFORCE.Engine
         /// <summary>
         /// Проверка ЭЦП
         /// </summary>
-        /// <param name="data">Поток данных.</param>
-        /// <param name="signature">ЭЦП.</param>
-        /// <param name="publicKey">Открытый ключ для проверки ЭЦП.</param>
-        /// <returns>Булевский флаг проверки ЭЦП.</returns>
+        /// <param name="data"> Поток данных. </param>
+        /// <param name="signature"> ЭЦП. </param>
+        /// <param name="publicKey"> Открытый ключ для проверки ЭЦП. </param>
+        /// <returns> Булевский флаг проверки ЭЦП. </returns>
         private bool VerifyData(Stream data, byte[] signature, byte[] publicKey)
         {
             if(!IsInitialized)
@@ -286,10 +306,10 @@ namespace CRYFORCE.Engine
         /// <summary>
         /// Проверка ЭЦП
         /// </summary>
-        /// <param name="data">Массив данных.</param>
-        /// <param name="signature">ЭЦП.</param>
-        /// <param name="publicKey">Открытый ключ для проверки ЭЦП.</param>
-        /// <returns>Булевский флаг проверки ЭЦП.</returns>
+        /// <param name="data"> Массив данных. </param>
+        /// <param name="signature"> ЭЦП. </param>
+        /// <param name="publicKey"> Открытый ключ для проверки ЭЦП. </param>
+        /// <returns> Булевский флаг проверки ЭЦП. </returns>
         private bool VerifyHash(byte[] data, byte[] signature, byte[] publicKey)
         {
             if(!IsInitialized)
@@ -315,9 +335,9 @@ namespace CRYFORCE.Engine
         /// <summary>
         /// Инициализация экземпляра класса
         /// </summary>
-        /// <param name="seed">Инициализирующее случайное значение.</param>
-        /// <param name="privateKey">Закрытый ключ.</param>
-        /// <param name="hmacKey">Код аутентичности сообщения на базе хеш-функции.</param>
+        /// <param name="seed"> Инициализирующее случайное значение. </param>
+        /// <param name="privateKey"> Закрытый ключ. </param>
+        /// <param name="hmacKey"> Код аутентичности сообщения на базе хеш-функции. </param>
         public void Initialize(Object seed, string privateKey, Object hmacKey = null)
         {
             // Защита от потери конфиденциальных данных при многократном вызове Initialize
@@ -397,13 +417,13 @@ namespace CRYFORCE.Engine
         /// <summary>
         /// Инициализация экземпляра класса c персонализацией
         /// </summary>
-        /// <param name="personString">Персонализирующая строка.</param>
-        /// <param name="maxIters">Персонализирующая строка.</param>
-        /// <param name="iterHandler">Обработчик события "прошедшая итерация".</param>
-        /// <param name="seed">Инициализирующее случайное значение.</param>
-        /// <param name="privateKey">Закрытый ключ.</param>
-        /// <param name="hmacKey">Код аутентичности сообщения на базе хеш-функции.</param>
-        /// <returns>Булевский флаг операции.</returns>
+        /// <param name="personString"> Персонализирующая строка. </param>
+        /// <param name="maxIters"> Персонализирующая строка. </param>
+        /// <param name="iterHandler"> Обработчик события "прошедшая итерация". </param>
+        /// <param name="seed"> Инициализирующее случайное значение. </param>
+        /// <param name="privateKey"> Закрытый ключ. </param>
+        /// <param name="hmacKey"> Код аутентичности сообщения на базе хеш-функции. </param>
+        /// <returns> Булевский флаг операции. </returns>
         public bool Initialize(string personString, int maxIters, Func<int, int> iterHandler, Object seed, string privateKey, Object hmacKey = null)
         {
             byte[] seedBuffer;
@@ -447,7 +467,7 @@ namespace CRYFORCE.Engine
         /// <summary>
         /// Генерация симметричного ключа на основе двух открытых и закрытого
         /// </summary>
-        /// <returns>Булевский флаг операции.</returns>
+        /// <returns> Булевский флаг операции. </returns>
         public bool CreateSymmetricKey()
         {
             if(!IsInitialized)
@@ -476,10 +496,10 @@ namespace CRYFORCE.Engine
         /// <summary>
         /// Вычисление ЭЦП
         /// </summary>
-        /// <param name="data">Массив данных.</param>
-        /// <param name="offset">Смещение до участка интереса.</param>
-        /// <param name="count">Длина байт участка интереса.</param>
-        /// <returns>ЭЦП.</returns>
+        /// <param name="data"> Массив данных. </param>
+        /// <param name="offset"> Смещение до участка интереса. </param>
+        /// <param name="count"> Длина байт участка интереса. </param>
+        /// <returns> ЭЦП. </returns>
         public string SignData(byte[] data, int offset, int count)
         {
             if(!IsInitialized)
@@ -493,9 +513,9 @@ namespace CRYFORCE.Engine
         /// <summary>
         /// Вычисление ЭЦП
         /// </summary>
-        /// <param name="data">Массив данных.</param>
-        /// <param name="offset">Смещение до участка интереса.</param>
-        /// <returns>ЭЦП.</returns>
+        /// <param name="data"> Массив данных. </param>
+        /// <param name="offset"> Смещение до участка интереса. </param>
+        /// <returns> ЭЦП. </returns>
         public string SignData(byte[] data, int offset)
         {
             if(!IsInitialized)
@@ -509,8 +529,8 @@ namespace CRYFORCE.Engine
         /// <summary>
         /// Вычисление ЭЦП
         /// </summary>
-        /// <param name="data">Массив данных.</param>
-        /// <returns>ЭЦП.</returns>
+        /// <param name="data"> Массив данных. </param>
+        /// <returns> ЭЦП. </returns>
         public string SignData(byte[] data)
         {
             if(!IsInitialized)
@@ -524,8 +544,8 @@ namespace CRYFORCE.Engine
         /// <summary>
         /// Вычисление ЭЦП
         /// </summary>
-        /// <param name="data">Поток данных.</param>
-        /// <returns>ЭЦП.</returns>
+        /// <param name="data"> Поток данных. </param>
+        /// <returns> ЭЦП. </returns>
         public string SignData(Stream data)
         {
             if(!IsInitialized)
@@ -539,8 +559,8 @@ namespace CRYFORCE.Engine
         /// <summary>
         /// Вычисление ЭЦП
         /// </summary>
-        /// <param name="data">Строка данных.</param>
-        /// <returns>ЭЦП.</returns>
+        /// <param name="data"> Строка данных. </param>
+        /// <returns> ЭЦП. </returns>
         public string SignData(string data)
         {
             if(!IsInitialized)
@@ -554,8 +574,8 @@ namespace CRYFORCE.Engine
         /// <summary>
         /// Вычисление ЭЦП
         /// </summary>
-        /// <param name="data">Массив данных.</param>
-        /// <returns>ЭЦП.</returns>
+        /// <param name="data"> Массив данных. </param>
+        /// <returns> ЭЦП. </returns>
         public string SignHash(byte[] data)
         {
             if(!IsInitialized)
@@ -569,12 +589,12 @@ namespace CRYFORCE.Engine
         /// <summary>
         /// Проверка ЭЦП
         /// </summary>
-        /// <param name="data">Массив данных.</param>
-        /// <param name="offset">Смещение до участка интереса.</param>
-        /// <param name="count">Длина байт участка интереса.</param>
-        /// <param name="signature">ЭЦП.</param>
-        /// <param name="publicKey">Открытый ключ для проверки ЭЦП.</param>
-        /// <returns>Булевский флаг проверки ЭЦП.</returns>
+        /// <param name="data"> Массив данных. </param>
+        /// <param name="offset"> Смещение до участка интереса. </param>
+        /// <param name="count"> Длина байт участка интереса. </param>
+        /// <param name="signature"> ЭЦП. </param>
+        /// <param name="publicKey"> Открытый ключ для проверки ЭЦП. </param>
+        /// <returns> Булевский флаг проверки ЭЦП. </returns>
         public bool VerifyData(byte[] data, int offset, int count, string signature, string publicKey)
         {
             publicKey = GetEcdsaPrefferedKeyPart(publicKey); // Берем предпочтительную часть расширенного ключа
@@ -584,11 +604,11 @@ namespace CRYFORCE.Engine
         /// <summary>
         /// Проверка ЭЦП
         /// </summary>
-        /// <param name="data">Массив данных.</param>
-        /// <param name="offset">Смещение до участка интереса.</param>
-        /// <param name="signature">ЭЦП.</param>
-        /// <param name="publicKey">Открытый ключ для проверки ЭЦП.</param>
-        /// <returns>Булевский флаг проверки ЭЦП.</returns>
+        /// <param name="data"> Массив данных. </param>
+        /// <param name="offset"> Смещение до участка интереса. </param>
+        /// <param name="signature"> ЭЦП. </param>
+        /// <param name="publicKey"> Открытый ключ для проверки ЭЦП. </param>
+        /// <returns> Булевский флаг проверки ЭЦП. </returns>
         public bool VerifyData(byte[] data, int offset, string signature, string publicKey)
         {
             byte[] signatureByteArr = Convert.FromBase64String(signature.Base64String());
@@ -599,10 +619,10 @@ namespace CRYFORCE.Engine
         /// <summary>
         /// Проверка ЭЦП
         /// </summary>
-        /// <param name="data">Массив данных.</param>
-        /// <param name="signature">ЭЦП.</param>
-        /// <param name="publicKey">Открытый ключ для проверки ЭЦП.</param>
-        /// <returns>Булевский флаг проверки ЭЦП.</returns>
+        /// <param name="data"> Массив данных. </param>
+        /// <param name="signature"> ЭЦП. </param>
+        /// <param name="publicKey"> Открытый ключ для проверки ЭЦП. </param>
+        /// <returns> Булевский флаг проверки ЭЦП. </returns>
         public bool VerifyData(byte[] data, string signature, string publicKey)
         {
             byte[] signatureByteArr = Convert.FromBase64String(signature.Base64String());
@@ -613,10 +633,10 @@ namespace CRYFORCE.Engine
         /// <summary>
         /// Проверка ЭЦП
         /// </summary>
-        /// <param name="data">Строка данных.</param>
-        /// <param name="signature">ЭЦП.</param>
-        /// <param name="publicKey">Открытый ключ для проверки ЭЦП.</param>
-        /// <returns>Булевский флаг проверки ЭЦП.</returns>
+        /// <param name="data"> Строка данных. </param>
+        /// <param name="signature"> ЭЦП. </param>
+        /// <param name="publicKey"> Открытый ключ для проверки ЭЦП. </param>
+        /// <returns> Булевский флаг проверки ЭЦП. </returns>
         public bool VerifyData(string data, string signature, string publicKey)
         {
             byte[] signatureByteArr = Convert.FromBase64String(signature.Base64String());
@@ -627,10 +647,10 @@ namespace CRYFORCE.Engine
         /// <summary>
         /// Проверка ЭЦП
         /// </summary>
-        /// <param name="data">Поток данных.</param>
-        /// <param name="signature">ЭЦП.</param>
-        /// <param name="publicKey">Открытый ключ для проверки ЭЦП.</param>
-        /// <returns>Булевский флаг проверки ЭЦП.</returns>
+        /// <param name="data"> Поток данных. </param>
+        /// <param name="signature"> ЭЦП. </param>
+        /// <param name="publicKey"> Открытый ключ для проверки ЭЦП. </param>
+        /// <returns> Булевский флаг проверки ЭЦП. </returns>
         public bool VerifyData(Stream data, string signature, string publicKey)
         {
             publicKey = GetEcdsaPrefferedKeyPart(publicKey); // Берем предпочтительную часть расширенного ключа
@@ -640,10 +660,10 @@ namespace CRYFORCE.Engine
         /// <summary>
         /// Проверка ЭЦП
         /// </summary>
-        /// <param name="data">Массив данных.</param>
-        /// <param name="signature">ЭЦП.</param>
-        /// <param name="publicKey">Открытый ключ для проверки ЭЦП.</param>
-        /// <returns>Булевский флаг проверки ЭЦП.</returns>
+        /// <param name="data"> Массив данных. </param>
+        /// <param name="signature"> ЭЦП. </param>
+        /// <param name="publicKey"> Открытый ключ для проверки ЭЦП. </param>
+        /// <returns> Булевский флаг проверки ЭЦП. </returns>
         public bool VerifyHash(byte[] data, string signature, string publicKey)
         {
             publicKey = GetEcdsaPrefferedKeyPart(publicKey); // Берем предпочтительную часть расширенного ключа

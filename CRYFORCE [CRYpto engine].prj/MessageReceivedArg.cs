@@ -1,4 +1,8 @@
+#region
+
 using System;
+
+#endregion
 
 namespace CRYFORCE.Engine
 {
@@ -7,24 +11,32 @@ namespace CRYFORCE.Engine
     /// </summary>
     public class MessageReceivedArg
     {
-        /// <summary>Тело сообщения.</summary>
+        /// <summary>
+        /// Тело сообщения.
+        /// </summary>
         public readonly string MessageBody;
 
-        /// <summary>Класс сообщения.</summary>
+        /// <summary>
+        /// Класс сообщения.
+        /// </summary>
         public readonly long MessageClassId;
 
-        /// <summary>Идентификатор сообщения.</summary>
+        /// <summary>
+        /// Идентификатор сообщения.
+        /// </summary>
         public readonly Guid MessageGuid;
 
-        /// <summary>Постфикс сообщения.</summary>
+        /// <summary>
+        /// Постфикс сообщения.
+        /// </summary>
         public readonly string MessagePostfix;
 
         /// <summary>
         /// Конструктор аргумента обработчика события "Получено сообщение"
         /// </summary>
-        /// <param name="messageBody">Тело сообщения.</param>
-        /// <param name="messagePostfix">Постфикс сообщение (например, возврат каретки).</param>
-        /// <param name="messageClassId">Класс сообщения.</param>
+        /// <param name="messageBody"> Тело сообщения. </param>
+        /// <param name="messagePostfix"> Постфикс сообщение (например, возврат каретки). </param>
+        /// <param name="messageClassId"> Класс сообщения. </param>
         public MessageReceivedArg(string messageBody, string messagePostfix = "", long messageClassId = 0)
         {
             MessageBody = messageBody;
