@@ -1,16 +1,17 @@
 ﻿using System;
+
 using CRYFORCE.Engine;
 
 namespace FBICRYcmd
 {
-	class Program
-	{
+    class Program
+    {
         /// <summary>
-        /// Версия 1.0.7.15
+        /// FBICRY - консольная версия
         /// </summary>
         private static void Main(string[] args)
         {
-            CryforceMainEngine.FBICRY_Main(args);
+            CryforceConsoleHelper.Main(args);
         }
-	}
+    }
 }

@@ -1,20 +1,32 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
+
 using EventArgsUtilities;
 
 namespace CRYFORCE.Engine
 {
-    public static class CryforceMainEngine
+    public static class CryforceConsoleHelper
     {
         #region Private
 
-        /// <summary>
-        /// Версия ПО
-        /// </summary>
-        private static string version = "1.0.7.15 proto";
+        /// <summary>Версия ПО.</summary>
+        private static string buildVersion = "1.0.7.15 proto";
+
+        /// <summary>Год.</summary>
+        private static string buildYear = "2013";
+
+        /// <summary>Стандартное имя открытого ключа.</summary>
+        private static string publicKeyFilename = "FBICRY.PUB.txt";
+
+        /// <summary>Стандартное имя закрытого ключа.</summary>
+        private static string privateKeyFilename = "FBICRY.ECC.txt";
+
+        /// <summary>Стандартное имя лога ошибок.</summary>
+        private static string errLogFilename = "!ErrLog.txt";
+
+        /// <summary>Задаем расширение ЭЦП.</summary>
+        private static string signExt = ".sig";
 
         /// <summary>
         /// Обработчик события "Изменился прогресс обработки"
@@ -82,61 +94,60 @@ namespace CRYFORCE.Engine
         /// <summary>
         /// Вывод логотипа
         /// </summary>
-        private static void LogoOut()
+        private static void LogoOut(Cryforce cf)
         {
-            Console.WriteLine();
-            Console.WriteLine();
-            Console.WriteLine("\t▒▒▒▒▒▒▒▒  ░▒▒▒▒▒▒▒    ▒▒░    ░▒▒▒▒     ▒▒▒▒▒▒▒░   ▒▒▒     ░▒▒");
-            Console.WriteLine("\t████████▒ █████████▓  ███  ▓████████▒  █████████▒ ▓██▓   ▒███");
-            Console.WriteLine("\t██▒       ██▓    ███  ██▓  ██▓    ███  ██▒    ███  ░██▓ ░██▒ ");
-            Console.WriteLine("\t███▓▓▓▓▓  █████████   ██▓ ░██░         ██▓▒▒▒▒██▒   ░██▓██▒  ");
-            Console.WriteLine("\t████████  ███▒▒▒▒██▓  ██▓ ░██░         █████████░     ███░   ");
-            Console.WriteLine("\t██▒       ██▓    ▓██  ██▓ ░██▓    ███  ██▒    ███     ▓██    ");
-            Console.WriteLine("\t██▓       █████████▓  ██▓  ▓████████▒  ██▓    ███     ███    ");
-            Console.WriteLine("\t░░        ░░░░░░░░    ░░     ░▒▒▒▒░    ░░     ░░░     ░░░    ");
-            Console.WriteLine();
-            Console.Write("\t");
+            cf.Message("");
+            cf.Message("");
+            cf.Message("\t▒▒▒▒▒▒▒▒  ░▒▒▒▒▒▒▒    ▒▒░    ░▒▒▒▒     ▒▒▒▒▒▒▒░   ▒▒▒     ░▒▒");
+            cf.Message("\t████████▒ █████████▓  ███  ▓████████▒  █████████▒ ▓██▓   ▒███");
+            cf.Message("\t██▒       ██▓    ███  ██▓  ██▓    ███  ██▒    ███  ░██▓ ░██▒ ");
+            cf.Message("\t███▓▓▓▓▓  █████████   ██▓ ░██░         ██▓▒▒▒▒██▒   ░██▓██▒  ");
+            cf.Message("\t████████  ███▒▒▒▒██▓  ██▓ ░██░         █████████░     ███░   ");
+            cf.Message("\t██▒       ██▓    ▓██  ██▓ ░██▓    ███  ██▒    ███     ▓██    ");
+            cf.Message("\t██▓       █████████▓  ██▓  ▓████████▒  ██▓    ███     ███    ");
+            cf.Message("\t░░        ░░░░░░░░    ░░     ░▒▒▒▒░    ░░     ░░░     ░░░    ");
+            cf.Message("");
         }
 
         /// <summary>
         /// Вывод версии
         /// </summary>
-        private static void VersionOut()
+        private static void VersionOut(Cryforce cf)
         {
+            cf.Message("", "\t");
             Console.BackgroundColor = ConsoleColor.DarkGreen;
             Console.ForegroundColor = ConsoleColor.Black;
-            Console.Write(" FBICRYcmd {0} (c) 2☺12 Дробанов Артём Федорович (DrAF) ", version);
+            cf.Message(string.Format(" FBICRYcmd {0} (c) {1} Дробанов Артём Федорович (DrAF) ", buildVersion, buildYear));
             Console.BackgroundColor = ConsoleColor.Black;
-            Console.WriteLine();
-            Console.WriteLine();
-            Console.WriteLine();
+            cf.Message("");
+            cf.Message("");
         }
 
         /// <summary>
         /// Вывод справки
         /// </summary>
-        private static void HelpOut()
+        private static void HelpOut(Cryforce cf)
         {
-            Console.WriteLine("\tFBICRYcmd <команда> <входной файл> <выходной файл> [файл-ключ] [итераций хеша]");
-            Console.WriteLine();
-            Console.WriteLine("\tКоманды: e  - шифровать (на основе открытого ключа другого абонента);");
-            Console.WriteLine("\t         e1 - шифровать (Rijndael-256);");
-            Console.WriteLine("\t         e2 - шифровать (двойной Rijndael-256 с перестановкой битов между слоями).");
-            Console.WriteLine();
-            Console.WriteLine("\tКоманды: d  - дешифровать (на основе открытого ключа другого абонента);");
-            Console.WriteLine("\t         d1 - дешифровать (Rijndael-256);");
-            Console.WriteLine("\t         d2 - дешифровать (двойной Rijndael-256 с перестановкой битов между слоями).");
-            Console.WriteLine();
-            Console.WriteLine("\tКоманды: g  - сгенерировать пару открытый/закрытый ключ для ECDH521 (вторым аргументом");
-            Console.WriteLine("\t              можно передать файл, который будет использован как набор случайных данных);");
-            Console.WriteLine("\t         s  - подписать файл своим закрытым ключом (проверка валидности подписи - открытым);");
-            Console.WriteLine("\t              Пример вычисления подписи: FBICRYcmd.exe s input.txt");
-            Console.WriteLine("\t         c  - проверить валидность указанной подписи (сам файл находится автоматически)");
-            Console.WriteLine("\t              для передаваемого следующим аргументом открытого ключа.");
-            Console.WriteLine("\t              Пример проверки подписи: FBICRYcmd.exe с input.txt.sig FBICRY.PUB.txt");
-            Console.WriteLine();
-            Console.WriteLine("\tПри вводе пароля, при нажатии каждой клавиши можно использовать модификаторы");
-            Console.WriteLine("\t\"Alt\", \"Shift\", \"Control\"...");
+            cf.Message("\tFBICRYcmd <команда> <входной файл> <выходной файл> [файл-ключ] [итераций хеша]");
+            cf.Message("");
+            cf.Message("\tКоманды: e  - шифровать (на основе открытого ключа другого абонента);");
+            cf.Message("\t         e1 - шифровать (Rijndael-256);");
+            cf.Message("\t         e2 - шифровать (двойной Rijndael-256 с перестановкой битов между слоями).");
+            cf.Message("");
+            cf.Message("\tКоманды: d  - дешифровать (на основе открытого ключа другого абонента);");
+            cf.Message("\t         d1 - дешифровать (Rijndael-256);");
+            cf.Message("\t         d2 - дешифровать (двойной Rijndael-256 с перестановкой битов между слоями).");
+            cf.Message("");
+            cf.Message("\tКоманды: g  - сгенерировать пару открытый/закрытый ключ для ECDH521 (вторым аргументом");
+            cf.Message("\t              можно передать файл, который будет использован как набор случайных данных);");
+            cf.Message("\t         s  - подписать файл своим закрытым ключом (проверка валидности подписи - открытым);");
+            cf.Message("\t              Пример вычисления подписи: FBICRYcmd.exe s input.txt");
+            cf.Message("\t         c  - проверить валидность указанной подписи (сам файл находится автоматически)");
+            cf.Message("\t              для передаваемого следующим аргументом открытого ключа.");
+            cf.Message("\t              Пример проверки подписи: FBICRYcmd.exe с input.txt.sig FBICRY.PUB.txt");
+            cf.Message("");
+            cf.Message("\tПри вводе пароля, при нажатии каждой клавиши можно использовать модификаторы");
+            cf.Message("\t\"Alt\", \"Shift\", \"Control\"...");
         }
 
         /// <summary>
@@ -161,36 +172,31 @@ namespace CRYFORCE.Engine
         /// <summary>
         /// Основной метод обработки, ориентированный на имена файлов
         /// </summary>
-        public static void FBICRY_Main(string[] args)
+        public static void Main(string[] args)
         {
-            // Задаем имена открытого и закрытого ключей
-            string publicKeyFilename  = "FBICRY.PUB.txt";
-            string privateKeyFilename = "FBICRY.ECC.txt";
-            string errLogFilename = "!ErrLog.txt";
-
-            // Задаем расширение ЭЦП
-            string signExt = ".sig";
+            // Криптографическое ядро...
+            var cf = new Cryforce();
+            //...должно быть подписано на события обновления прогресса...
+            cf.ProgressChanged += OnProgressChanged;
+            //...и вывода сообщений
+            cf.MessageReceived += OnMessageReceived;
 
             // Выполняем очистку консоли, вывод логотипа и версии...
             try
             {
                 ConsoleClearAndPrepare();
-                LogoOut();
-                VersionOut();
+                LogoOut(cf);
+                VersionOut(cf);
             }
             catch
             {
                 //...при возникновении проблем - сообщаем об этом
-                Console.WriteLine("Ошибка вывода в консоль!");
+                cf.Message("Ошибка вывода в консоль!");
                 return;
             }
 
             // Текст в консоль комфортнее выводить серым
             Console.ForegroundColor = ConsoleColor.DarkGray;
-
-            // Криптографическое ядро
-            var cryforce = new Cryforce();
-            cryforce.ProgressChanged += OnProgressChanged;
 
             // Проверка на запрос генерации пары открытый/закрытый ключ...
             if((args.Length != 0) && (args[0].ToLower() == "g"))
@@ -206,28 +212,29 @@ namespace CRYFORCE.Engine
                 // Удаляем выходные файлы, если таковые имеются...
                 if(File.Exists(publicKeyFilename))
                 {
-                    Console.WriteLine("Файл открытого ключа \"{0}\" уже существует!", publicKeyFilename);
+                    cf.Message(string.Format("Файл открытого ключа \"{0}\" уже существует!", publicKeyFilename));
                     return;
                 }
 
                 if(File.Exists(privateKeyFilename))
                 {
-                    Console.WriteLine("Файл закрытого ключа \"{0}\" уже существует!", privateKeyFilename);
+                    cf.Message(string.Format("Файл закрытого ключа \"{0}\" уже существует!", privateKeyFilename));
                     return;
                 }
 
                 // Открываем потоки для генерирования ключей...
-                Stream publicKeyStream  = new FileStream(publicKeyFilename, FileMode.Create, FileAccess.Write);
+                Stream publicKeyStream = new FileStream(publicKeyFilename, FileMode.Create, FileAccess.Write);
                 Stream privateKeyStream = new FileStream(privateKeyFilename, FileMode.Create, FileAccess.Write);
 
                 //...и создаем сами ключи
                 try
                 {
-                    cryforce.CreateEccKeys(publicKeyStream, privateKeyStream, seedStream);
+                    cf.CreateEccKeys(publicKeyStream, privateKeyStream, seedStream);
                 }
                 catch(Exception e)
                 {
-                    Console.WriteLine("Ошибка при создании ключей!");
+                    cf.Message("Ошибка при создании ключей!");
+
                     ErrLogOut(errLogFilename, e);
 
                     Console.ResetColor();
@@ -248,8 +255,8 @@ namespace CRYFORCE.Engine
                     }
                 }
 
-                Console.WriteLine();
-                Console.WriteLine("Генерирование открытого и закрытого ключей завершено (\"{0}\" и \"{1}\")!", publicKeyFilename, privateKeyFilename);
+                cf.Message("");
+                cf.Message(string.Format("Генерирование открытого и закрытого ключей завершено (\"{0}\" и \"{1}\")!", publicKeyFilename, privateKeyFilename));
 
                 return;
             }
@@ -259,7 +266,7 @@ namespace CRYFORCE.Engine
             {
                 if(!File.Exists(privateKeyFilename))
                 {
-                    Console.WriteLine("Файл закрытого ключа \"{0}\" не существует!", privateKeyFilename);
+                    cf.Message(string.Format("Файл закрытого ключа \"{0}\" не существует!", privateKeyFilename));
                     return;
                 }
 
@@ -279,15 +286,15 @@ namespace CRYFORCE.Engine
                 Stream signStream = new FileStream(signFilename, FileMode.Create, FileAccess.Write);
 
                 // Вычисляем ЭЦП
-                Console.WriteLine("Начато вычисление ЭЦП файла \"{0}\"...", args[1]);
+                cf.Message(string.Format("Начато вычисление ЭЦП файла \"{0}\"...", args[1]));
 
                 try
                 {
-                    cryforce.SignData(privateKeyStream, dataStream, signStream);
+                    cf.SignData(privateKeyStream, dataStream, signStream);
                 }
                 catch(Exception e)
                 {
-                    Console.WriteLine("Ошибка при вычислении ЭЦП!");
+                    cf.Message("Ошибка при вычислении ЭЦП!");
                     ErrLogOut(errLogFilename, e);
 
                     Console.ResetColor();
@@ -303,8 +310,8 @@ namespace CRYFORCE.Engine
                     signStream.Close();
                 }
 
-                Console.WriteLine("Вычисление ЭЦП завершено!");
-                Console.WriteLine("Создан файл \"{0}\"", signFilename);
+                cf.Message("Вычисление ЭЦП завершено!");
+                cf.Message(string.Format("Создан файл \"{0}\"", signFilename));
 
                 return;
             }
@@ -315,7 +322,7 @@ namespace CRYFORCE.Engine
                 // Проверяем файл открытого ключа на существование
                 if(!File.Exists(args[2]))
                 {
-                    Console.WriteLine("Файл открытого ключа другой стороны \"{0}\" не существует!", args[2]);
+                    cf.Message(string.Format("Файл открытого ключа другой стороны \"{0}\" не существует!", args[2]));
                     return;
                 }
 
@@ -324,7 +331,7 @@ namespace CRYFORCE.Engine
 
                 if(!File.Exists(dataFileName))
                 {
-                    Console.WriteLine("Файл данных \"{0}\", ассоциируемый с файлом ЭЦП \"{1}\", не существует!", dataFileName, args[1]);
+                    cf.Message(string.Format("Файл данных \"{0}\", ассоциируемый с файлом ЭЦП \"{1}\", не существует!", dataFileName, args[1]));
                     return;
                 }
 
@@ -334,8 +341,8 @@ namespace CRYFORCE.Engine
                 Stream publicKeyFromOtherPartyStream = new FileStream(args[2], FileMode.Open, FileAccess.Read);
 
                 // Осуществляем проверку ЭЦП
-                Console.WriteLine("Начата проверка ЭЦП файла \"{0}\"...", dataFileName);
-                bool result = cryforce.VerifySign(dataStream, signStream, publicKeyFromOtherPartyStream);
+                cf.Message(string.Format("Начата проверка ЭЦП файла \"{0}\"...", dataFileName));
+                bool result = cf.VerifySign(dataStream, signStream, publicKeyFromOtherPartyStream);
 
                 // Закрываем файловые потоки
                 dataStream.Close();
@@ -344,13 +351,13 @@ namespace CRYFORCE.Engine
 
                 if(result)
                 {
-                    Console.WriteLine("Файл \"{0}\" соответствует предъявленной ЭЦП \"{1}\" и открытому ключу \"{2}\"...", dataFileName, args[1], args[2]);
-                    Console.WriteLine("All OK!");
+                    cf.Message(string.Format("Файл \"{0}\" соответствует предъявленной ЭЦП \"{1}\" и открытому ключу \"{2}\"...", dataFileName, args[1], args[2]));
+                    cf.Message("All OK!");
                 }
                 else
                 {
-                    Console.WriteLine("ФАЙЛ \"{0}\" НЕ СООТВЕТСТВУЕТ ПРЕДЪЯВЛЕННОЙ ЭЦП \"{1}\" и открытому ключу \"{2}\"!", dataFileName, args[1], args[2]);
-                    Console.WriteLine("ERROR!");
+                    cf.Message(string.Format("ФАЙЛ \"{0}\" НЕ СООТВЕТСТВУЕТ ПРЕДЪЯВЛЕННОЙ ЭЦП \"{1}\" и открытому ключу \"{2}\"!", dataFileName, args[1], args[2]));
+                    cf.Message("ERROR!");
                 }
 
                 return;
@@ -359,15 +366,15 @@ namespace CRYFORCE.Engine
             // Если задано слишком малое количество аргументов - выводим справку...
             if(args.Count() < 3)
             {
-                HelpOut();
+                HelpOut(cf);
             }
 
             // Проверка версии ОС
             if(!CryforceUtilities.OSVersionCheck())
             {
                 Console.ForegroundColor = ConsoleColor.DarkRed;
-                Console.WriteLine();
-                Console.WriteLine("Внимание: текущая версия операционной системы не поддерживается - требуется Vista SP1 или выше!");
+                cf.Message("");
+                cf.Message("Внимание: текущая версия операционной системы не поддерживается - требуется Vista SP1 или выше!");
 
                 Console.ResetColor();
                 return;
@@ -392,8 +399,8 @@ namespace CRYFORCE.Engine
                         single = false;
                         encryption = true;
                         ecdh = true;
-                        Console.WriteLine("Режим шифрования на основе открытого ключа другого абонента");
-                        Console.WriteLine("(двойной Rijndael-256 с перестановкой битов между слоями)...");
+                        cf.Message("Режим шифрования на основе открытого ключа другого абонента");
+                        cf.Message("(двойной Rijndael-256 с перестановкой битов между слоями)...");
                         break;
                     }
                 case "e1":
@@ -401,7 +408,7 @@ namespace CRYFORCE.Engine
                         single = true;
                         encryption = true;
                         ecdh = false;
-                        Console.WriteLine("Режим шифрования (Rijndael-256)...");
+                        cf.Message("Режим шифрования (Rijndael-256)...");
                         break;
                     }
                 case "e2":
@@ -409,7 +416,7 @@ namespace CRYFORCE.Engine
                         single = false;
                         encryption = true;
                         ecdh = false;
-                        Console.WriteLine("Режим шифрования (двойной Rijndael-256 с перестановкой битов между слоями)...");
+                        cf.Message("Режим шифрования (двойной Rijndael-256 с перестановкой битов между слоями)...");
                         break;
                     }
                 case "d":
@@ -417,8 +424,8 @@ namespace CRYFORCE.Engine
                         single = false;
                         encryption = false;
                         ecdh = true;
-                        Console.WriteLine("Режим дешифрования на основе открытого ключа другого абонента");
-                        Console.WriteLine("(двойной Rijndael-256 с перестановкой битов между слоями)...");
+                        cf.Message("Режим дешифрования на основе открытого ключа другого абонента");
+                        cf.Message("(двойной Rijndael-256 с перестановкой битов между слоями)...");
                         break;
                     }
                 case "d1":
@@ -426,7 +433,7 @@ namespace CRYFORCE.Engine
                         single = true;
                         encryption = false;
                         ecdh = false;
-                        Console.WriteLine("Режим дешифрования (Rijndael-256)...");
+                        cf.Message("Режим дешифрования (Rijndael-256)...");
                         break;
                     }
                 case "d2":
@@ -434,24 +441,24 @@ namespace CRYFORCE.Engine
                         single = false;
                         encryption = false;
                         ecdh = false;
-                        Console.WriteLine("Режим дешифрования (двойной Rijndael-256 с перестановкой битов между слоями)...");
+                        cf.Message("Режим дешифрования (двойной Rijndael-256 с перестановкой битов между слоями)...");
                         break;
                     }
                 default:
                     {
-                        Console.WriteLine("Неизвестный режим обработки!");
+                        cf.Message("Неизвестный режим обработки!");
 
                         Console.ResetColor();
                         return;
                     }
             }
 
-            Console.WriteLine();
+            cf.Message("");
 
             // Проверяем входной файл
             if(!File.Exists(args[1]))
             {
-                Console.WriteLine("Входной файл \"{0}\" не существует!", args[1]);
+                cf.Message(string.Format("Входной файл \"{0}\" не существует!", args[1]));
 
                 Console.ResetColor();
                 return;
@@ -480,13 +487,13 @@ namespace CRYFORCE.Engine
                     passwordDataForKeyFromFile = File.ReadAllBytes(args[3]);
                     if(passwordDataForKeyFromFile.Length < 2)
                     {
-                        Console.WriteLine("Файл-пароль не может быть меньше 2 байт!");
+                        cf.Message("Файл-пароль не может быть меньше 2 байт!");
                         throw new Exception();
                     }
                 }
                 catch
                 {
-                    Console.WriteLine("Ошибка чтения данных файла-пароля \"{0}\"!", args[3]);
+                    cf.Message(string.Format("Ошибка чтения данных файла-пароля \"{0}\"!", args[3]));
 
                     Console.ResetColor();
                     return;
@@ -511,13 +518,13 @@ namespace CRYFORCE.Engine
                 // Проверяем файлы ключей на существование
                 if(!File.Exists(args[3]))
                 {
-                    Console.WriteLine("Файл открытого ключа другой стороны \"{0}\" не существует!", args[3]);
+                    cf.Message(string.Format("Файл открытого ключа другой стороны \"{0}\" не существует!", args[3]));
                     return;
                 }
 
                 if(!File.Exists(privateKeyFilename))
                 {
-                    Console.WriteLine("Файл закрытого ключа \"{0}\" не существует!", privateKeyFilename);
+                    cf.Message(string.Format("Файл закрытого ключа \"{0}\" не существует!", privateKeyFilename));
                     return;
                 }
 
@@ -528,12 +535,12 @@ namespace CRYFORCE.Engine
                 //...а затем формируем симметричные ключи
                 try
                 {
-                    cryforce.GetSymmetricKeys(publicKeyFromOtherPartyStream, privateKeyStream,
-                                              out passwordDataForKeyFromFile1, out passwordDataForKeyFromFile2);
+                    cf.GetSymmetricKeys(publicKeyFromOtherPartyStream, privateKeyStream,
+                                        out passwordDataForKeyFromFile1, out passwordDataForKeyFromFile2);
                 }
                 catch(Exception e)
                 {
-                    Console.WriteLine("Ошибка при вычислении симметричных ключей ECDH!");
+                    cf.Message("Ошибка при вычислении симметричных ключей ECDH!");
                     ErrLogOut(errLogFilename, e);
 
                     Console.ResetColor();
@@ -544,26 +551,26 @@ namespace CRYFORCE.Engine
             // Пароль с клавиатуры считываем в любом случае...
             if(single)
             {
-                Console.WriteLine("Введите пароль:");
+                cf.Message("Введите пароль:");
                 passwordDataForKeyFromKeyboard = CryforceUtilities.GetPasswordBytesSafely();
-                Console.WriteLine();
+                cf.Message("");
             }
             else
             {
-                Console.WriteLine("Введите пароль №1:");
+                cf.Message("Введите пароль №1:");
                 passwordDataForKeyFromKeyboard1 = CryforceUtilities.GetPasswordBytesSafely();
-                Console.WriteLine();
+                cf.Message("");
 
-                Console.WriteLine("Введите пароль №2:");
+                cf.Message("Введите пароль №2:");
                 passwordDataForKeyFromKeyboard2 = CryforceUtilities.GetPasswordBytesSafely();
-                Console.WriteLine();
+                cf.Message("");
             }
 
             // Удаляем выходной файл, если такой имеется (невосстановимое удаление)
             if(File.Exists(args[2]))
             {
-                Console.WriteLine("Предварительное затирание данных выходного файла, который будет перезаписан...");
-                CryforceUtilities.WipeFile(OnProgressChanged, args[2], cryforce.BufferSizePerStream, true);
+                cf.Message("Предварительное затирание данных выходного файла, который будет перезаписан...");
+                CryforceUtilities.WipeFile(cf, args[2], cf.BufferSizePerStream, true);
                 File.Delete(args[2]);
             }
 
@@ -578,38 +585,38 @@ namespace CRYFORCE.Engine
             }
 
             // Подготовка ключей для шифрования...
-            Console.WriteLine("Подготовка ключей для шифрования, {0} итер.", iterations.ToString());
+            cf.Message(string.Format("Подготовка ключей для шифрования, {0} итер.", iterations.ToString()));
             try
             {
                 if(single)
                 {
                     passwordDataForKey = CryforceUtilities.MergeArrays(passwordDataForKeyFromFile, passwordDataForKeyFromKeyboard);
-                    cryforce.SingleRijndael(inputStream, passwordDataForKey, outputStream, encryption, iterations);
+                    cf.SingleRijndael(inputStream, passwordDataForKey, outputStream, encryption, iterations);
                 }
                 else
                 {
                     passwordDataForKey1 = CryforceUtilities.MergeArrays(passwordDataForKeyFromFile1, passwordDataForKeyFromKeyboard1);
                     passwordDataForKey2 = CryforceUtilities.MergeArrays(passwordDataForKeyFromFile2, passwordDataForKeyFromKeyboard2);
-                    cryforce.DoubleRijndael(inputStream, passwordDataForKey1, passwordDataForKey2, outputStream, encryption, iterations);
+                    cf.DoubleRijndael(inputStream, passwordDataForKey1, passwordDataForKey2, outputStream, encryption, iterations);
                 }
             }
             catch
             {
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine();
-                Console.WriteLine("Ошибка в ходе криптографического преобразования (неверный ключ?).");
+                cf.Message("");
+                cf.Message("Ошибка в ходе криптографического преобразования (неверный ключ?).");
 
                 Console.ResetColor();
                 return;
             }
 
             // Сброс буферов...
-            Console.WriteLine("Сброс буферов...");
+            cf.Message("Сброс буферов...");
             inputStream.Close();
             outputStream.Flush();
             outputStream.Close();
 
-            Console.WriteLine("Очистка ключей...");
+            cf.Message("Очистка ключей...");
 
             // Парольные данные, получаемые из файла
             CryforceUtilities.ClearArray(passwordDataForKeyFromFile);
@@ -626,13 +633,13 @@ namespace CRYFORCE.Engine
             CryforceUtilities.ClearArray(passwordDataForKey1);
             CryforceUtilities.ClearArray(passwordDataForKey2);
 
-            Console.WriteLine();
-            Console.WriteLine("Завершено!");
+            cf.Message("");
+            cf.Message("Завершено!");
 
             // Сбрасываем цветовой режим
             Console.ResetColor();
         }
-        
+
         #endregion Public
     }
 }

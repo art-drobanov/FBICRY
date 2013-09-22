@@ -2,8 +2,8 @@ using System;
 
 namespace CRYFORCE.Engine
 {
-    /// <summary>Команды утилиты FBICRY.</summary>
-    public enum FBICRY_Commands
+    /// <summary>Команды шифрования.</summary>
+    public enum Commands
     {
         E,
         E1,
