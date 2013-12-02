@@ -599,7 +599,7 @@ namespace CRYFORCE.Engine
         /// </summary>
         /// <param name="publicKey"> Открытый ключ ЭЦП. </param>
         /// <returns> Предпочтительная часть ключа. </returns>
-        public string GetEcdsaPrefferedKeyPart(string publicKey)
+        public static string GetEcdsaPrefferedKeyPart(string publicKey)
         {
             // Строка с ключом для ЭЦП
             string stringECDSA;
