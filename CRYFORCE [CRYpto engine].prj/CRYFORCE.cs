@@ -421,18 +421,18 @@ namespace CRYFORCE.Engine
             // Пишем открытые ключи...
             var swPublicKey = new StreamWriter(publicKeyStream, Encoding.ASCII);
             swPublicKey.Write("[ ;|;; ");
-            swPublicKey.Write(ecdhP521_ECDH.PublicKey);
+            swPublicKey.Write(ecdhP521_ECDH.PublicKeyECDH);
             swPublicKey.Write(" ;|;; ");
-            swPublicKey.Write(ecdhP521_ECDSA.PublicKey);
+            swPublicKey.Write(ecdhP521_ECDSA.PublicKeyECDSA);
             swPublicKey.Write(" ]");
             swPublicKey.Flush();
 
             // Пишем закрытые ключи...
             var swPrivateKey = new StreamWriter(privateKeyStream, Encoding.ASCII);
             swPrivateKey.Write("[ ( ; ) ");
-            swPrivateKey.Write(ecdhP521_ECDH.PrivateKey);
+            swPrivateKey.Write(ecdhP521_ECDH.PrivateKeyECDH);
             swPrivateKey.Write(" ( ; ) ");
-            swPrivateKey.Write(ecdhP521_ECDSA.PrivateKey);
+            swPrivateKey.Write(ecdhP521_ECDSA.PrivateKeyECDSA);
             swPrivateKey.Write(" ]");
             swPrivateKey.Flush();
 

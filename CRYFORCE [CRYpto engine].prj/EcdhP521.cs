@@ -130,17 +130,33 @@ namespace CRYFORCE.Engine
         /// <summary>
         /// Открытый ключ
         /// </summary>
-        public byte[] PublicKeyBin
+        public byte[] PublicKeyBinECDH
         {
             get { return ExportKeyBinData(_ECDiffieHellmanCng.Key, true); }
         }
 
         /// <summary>
+        /// Открытый ключ для ЭЦП
+        /// </summary>
+        public byte[] PublicKeyBinECDSA
+        {
+            get { return ExportKeyBinData(_ECDsaCng.Key, true); }
+        }
+
+        /// <summary>
         /// Открытый ключ (в формате Base64)
         /// </summary>
-        public string PublicKey
+        public string PublicKeyECDH
         {
-            get { return Convert.ToBase64String(PublicKeyBin); }
+            get { return Convert.ToBase64String(PublicKeyBinECDH); }
+        }
+
+        /// <summary>
+        /// Открытый ключ для ЭЦП (в формате Base64)
+        /// </summary>
+        public string PublicKeyECDSA
+        {
+            get { return Convert.ToBase64String(PublicKeyBinECDSA); }
         }
 
         /// <summary>
@@ -160,17 +176,33 @@ namespace CRYFORCE.Engine
         /// <summary>
         /// Закрытый ключ
         /// </summary>
-        public byte[] PrivateKeyBin
+        public byte[] PrivateKeyBinECDH
         {
             get { return ExportKeyBinData(_ECDiffieHellmanCng.Key, false); }
         }
 
         /// <summary>
+        /// Закрытый ключ для ЭЦП
+        /// </summary>
+        public byte[] PrivateKeyBinECDSA
+        {
+            get { return ExportKeyBinData(_ECDsaCng.Key, false); }
+        }
+
+        /// <summary>
         /// Закрытый ключ (в формате Base64)
         /// </summary>
-        public string PrivateKey
+        public string PrivateKeyECDH
         {
-            get { return Convert.ToBase64String(PrivateKeyBin); }
+            get { return Convert.ToBase64String(PrivateKeyBinECDH); }
+        }
+
+        /// <summary>
+        /// Закрытый ключ для ЭЦП (в формате Base64)
+        /// </summary>
+        public string PrivateKeyECDSA
+        {
+            get { return Convert.ToBase64String(PrivateKeyBinECDSA); }
         }
 
         /// <summary>
@@ -214,7 +246,7 @@ namespace CRYFORCE.Engine
         private CngKey ImportKeyBinData(byte[] cngKeyShortBinData, bool isPublic, bool isDigitalSignature)
         {
             // Создаем эталонный ключ для извлечения заголовка (на тот случай, если в очередной реализации будет изменен формат)
-            CngKey cngKeyEtalon = CngKey.Create(isDigitalSignature ? CngAlgorithm.ECDsaP521 : CngAlgorithm.ECDiffieHellmanP521, "CngKey", _cngKeyCreationParameters);
+            CngKey cngKeyEtalon = CngKey.Create(isDigitalSignature ? CngAlgorithm.ECDsaP521 : CngAlgorithm.ECDiffieHellmanP521, isDigitalSignature ? "ECDSA" : "ECDH", _cngKeyCreationParameters);
             byte[] cngKeyEtalonBinData = cngKeyEtalon.Export(isPublic ? CngKeyBlobFormat.EccPublicBlob : CngKeyBlobFormat.EccPrivateBlob);
 
             // Вычисляем длину оригинального ключа
@@ -233,30 +265,6 @@ namespace CRYFORCE.Engine
             CngKey cngKey = CngKey.Import(cngKeyLongBinData, isPublic ? CngKeyBlobFormat.EccPublicBlob : CngKeyBlobFormat.EccPrivateBlob);
 
             return cngKey;
-        }
-
-        /// <summary>
-        /// Получение предпочтительной части открытого ключа абонента
-        /// </summary>
-        /// <param name="publicKey"> Открытый ключ ЭЦП. </param>
-        /// <returns> Предпочтительная часть ключа. </returns>
-        private string GetEcdsaPrefferedKeyPart(string publicKey)
-        {
-            // Строка с ключом для ЭЦП
-            string stringECDSA;
-
-            try
-            {
-                // Пытаемся грузить расширенную часть ключа...
-                stringECDSA = publicKey.Base64String().Substring(PUBLIC_KEY_SIZE, PUBLIC_KEY_SIZE);
-            }
-            catch
-            {
-                //...если не получилось - формируем ключ для ECDSA на основе ключа для ECDH
-                stringECDSA = publicKey.Base64String().Substring(0, PUBLIC_KEY_SIZE);
-            }
-
-            return stringECDSA;
         }
 
         /// <summary>
@@ -349,21 +357,21 @@ namespace CRYFORCE.Engine
             // Ключ для алгоритма ECDSA
             CngKey cngKeyECDSA;
 
-            // Задаем параметры создания ключа
-            _cngKeyCreationParameters = new CngKeyCreationParameters();
-            _cngKeyCreationParameters.ExportPolicy = CngExportPolicies.AllowPlaintextExport;
-            _cngKeyCreationParameters.KeyCreationOptions = CngKeyCreationOptions.OverwriteExistingKey;
-            _cngKeyCreationParameters.KeyUsage = CngKeyUsages.AllUsages;
-            _cngKeyCreationParameters.Provider = CngProvider.MicrosoftSoftwareKeyStorageProvider;
+            // Задаем параметры создания ключа...
+            _cngKeyCreationParameters = new CngKeyCreationParameters()
+                                        {
+                                            ExportPolicy = CngExportPolicies.AllowPlaintextExport,
+                                            KeyCreationOptions = CngKeyCreationOptions.OverwriteExistingKey,
+                                            KeyUsage = CngKeyUsages.AllUsages,
+                                            Provider = CngProvider.MicrosoftSoftwareKeyStorageProvider,
+                                        };
 
             // Если закрытый ключ не задан...
             if(privateKey == null)
             {
                 // - создаем его...
-                cngKeyECDH = CngKey.Create(CngAlgorithm.ECDiffieHellmanP521, "CngKey", _cngKeyCreationParameters);
-
-                //...и экспортируя в двоичные данные подготовленный ключ DH, задаем на его основе ключ для ЭЦП
-                cngKeyECDSA = ImportKeyBinData(ExportKeyBinData(cngKeyECDH, false), false, true);
+                cngKeyECDH  = CngKey.Create(CngAlgorithm.ECDiffieHellmanP521, "ECDH",  _cngKeyCreationParameters);
+                cngKeyECDSA = CngKey.Create(CngAlgorithm.ECDsaP521,           "ECDSA", _cngKeyCreationParameters);
             }
             else //...а иначе используем предоставленный...
             {
@@ -384,7 +392,7 @@ namespace CRYFORCE.Engine
                     stringECDSA = privateKey.Base64String().Substring(0, PRIVATE_KEY_SIZE);
                 }
 
-                // Формируем ключ для ЭЦП на основе тех данных, что удалось добыть
+                // Формируем ключ для ЭЦП на основе тех данных, что удалось добыть...
                 cngKeyECDSA = ImportKeyBinData(Convert.FromBase64String(stringECDSA), false, true); // ЭЦП
             }
 
@@ -443,7 +451,7 @@ namespace CRYFORCE.Engine
                 Initialize(seed, privateKey, hmacKey);
 
                 //...дала требуемую персонализацию...
-                if(PublicKey.Contains(personString))
+                if(PublicKeyECDH.Contains(personString))
                 {
                     //...выходим с "успешным" флагом
                     return true;
@@ -587,6 +595,30 @@ namespace CRYFORCE.Engine
         }
 
         /// <summary>
+        /// Получение предпочтительной части открытого ключа абонента
+        /// </summary>
+        /// <param name="publicKey"> Открытый ключ ЭЦП. </param>
+        /// <returns> Предпочтительная часть ключа. </returns>
+        public string GetEcdsaPrefferedKeyPart(string publicKey)
+        {
+            // Строка с ключом для ЭЦП
+            string stringECDSA;
+
+            try
+            {
+                // Пытаемся грузить расширенную часть ключа...
+                stringECDSA = publicKey.Base64String().Substring(PUBLIC_KEY_SIZE, PUBLIC_KEY_SIZE);
+            }
+            catch
+            {
+                //...если не получилось - формируем ключ для ECDSA на основе ключа для ECDH
+                stringECDSA = publicKey.Base64String().Substring(0, PUBLIC_KEY_SIZE);
+            }
+
+            return stringECDSA;
+        }
+
+        /// <summary>
         /// Проверка ЭЦП
         /// </summary>
         /// <param name="data"> Массив данных. </param>
@@ -613,7 +645,7 @@ namespace CRYFORCE.Engine
         {
             byte[] signatureByteArr = Convert.FromBase64String(signature.Base64String());
             publicKey = GetEcdsaPrefferedKeyPart(publicKey); // Берем предпочтительную часть расширенного ключа
-            return VerifyData(data, offset, signature.Length, signatureByteArr, Convert.FromBase64String(publicKey.Base64String()));
+            return VerifyData(data, offset, data.Length, signatureByteArr, Convert.FromBase64String(publicKey.Base64String()));
         }
 
         /// <summary>
@@ -627,7 +659,7 @@ namespace CRYFORCE.Engine
         {
             byte[] signatureByteArr = Convert.FromBase64String(signature.Base64String());
             publicKey = GetEcdsaPrefferedKeyPart(publicKey); // Берем предпочтительную часть расширенного ключа
-            return VerifyData(data, 0, signature.Length, signatureByteArr, Convert.FromBase64String(publicKey.Base64String()));
+            return VerifyData(data, 0, data.Length, signatureByteArr, Convert.FromBase64String(publicKey.Base64String()));
         }
 
         /// <summary>
@@ -640,8 +672,9 @@ namespace CRYFORCE.Engine
         public bool VerifyData(string data, string signature, string publicKey)
         {
             byte[] signatureByteArr = Convert.FromBase64String(signature.Base64String());
+            byte[] dataArr = Encoding.Unicode.GetBytes(data);
             publicKey = GetEcdsaPrefferedKeyPart(publicKey); // Берем предпочтительную часть расширенного ключа
-            return VerifyData(Encoding.Unicode.GetBytes(data), 0, signature.Length, signatureByteArr, Convert.FromBase64String(publicKey.Base64String()));
+            return VerifyData(dataArr, 0, dataArr.Length, signatureByteArr, Convert.FromBase64String(publicKey.Base64String()));
         }
 
         /// <summary>

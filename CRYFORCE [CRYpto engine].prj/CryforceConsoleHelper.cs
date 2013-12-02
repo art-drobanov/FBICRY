@@ -17,7 +17,7 @@ namespace CRYFORCE.Engine
         /// <summary>
         /// Версия ПО.
         /// </summary>
-        private static string buildVersion = "1.0.7.15 proto";
+        private static string buildVersion = "1.0.7.15";
 
         /// <summary>
         /// Год.

@@ -62,20 +62,20 @@ namespace CRYFORCE.Engine.Test
                 for(int m = 0; m < 2; m++)
                 {
                     EcdhP521 alice = new EcdhP521(aliceSeed, null, HmacKey); // Приватного ключа нет - он будет сгенерирован!
-                    EcdhP521 bob = new EcdhP521(bobSeed, null, HmacKey); // Приватного ключа нет - он будет сгенерирован!
+                    EcdhP521 bob = new EcdhP521(bobSeed, null, HmacKey);     // Приватного ключа нет - он будет сгенерирован!
 
-                    File.WriteAllText("alicePublicKey.txt", alice.PublicKey);
-                    File.WriteAllText("alicePrivateKey.txt", alice.PrivateKey);
+                    File.WriteAllText("alicePublicKey.txt", alice.PublicKeyECDH);
+                    File.WriteAllText("alicePrivateKey.txt", alice.PrivateKeyECDH);
                     File.WriteAllText("aliceDataSign.txt", alice.SignData(data));
 
-                    File.WriteAllText("bobPublicKey.txt", bob.PublicKey);
-                    File.WriteAllText("bobPrivateKey.txt", bob.PrivateKey);
+                    File.WriteAllText("bobPublicKey.txt", bob.PublicKeyECDH);
+                    File.WriteAllText("bobPrivateKey.txt", bob.PrivateKeyECDH);
                     File.WriteAllText("bobDataSign.txt", bob.SignData(data));
 
                     //
 
                     alice = new EcdhP521(null, File.ReadAllText("alicePrivateKey.txt")); // Читаем СВОЙ приватный ключ!
-                    bob = new EcdhP521(null, File.ReadAllText("bobPrivateKey.txt")); // Читаем СВОЙ приватный ключ!
+                    bob = new EcdhP521(null, File.ReadAllText("bobPrivateKey.txt"));     // Читаем СВОЙ приватный ключ!
 
                     alice.PublicKeyFromOtherParty = File.ReadAllText("bobPublicKey.txt"); // Импортируем ЧУЖОЙ открытый ключ!
                     bob.PublicKeyFromOtherParty = File.ReadAllText("alicePublicKey.txt"); // Импортируем ЧУЖОЙ открытый ключ!
