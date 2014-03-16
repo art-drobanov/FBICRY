@@ -15,7 +15,7 @@ namespace CRYFORCE.Engine
     /// <summary>
     /// Основной класс ядра шифрования
     /// </summary>
-    public class Cryforce
+    public class Cryforce : IMessage
     {
         #region Static
 
@@ -293,7 +293,7 @@ namespace CRYFORCE.Engine
             inputStreamAtLevel1.SafeSeekBegin();
             outputStreamAtLevel1.SafeSeekBegin();
 
-            var bitSplitter = new BitSplitter(tempFilenamesToBitSplitter, key1, key2, WorkInMemory) {RndSeed = RndSeed, Cf = this};
+            var bitSplitter = new BitSplitter(tempFilenamesToBitSplitter, key1, key2, WorkInMemory) {RndSeed = RndSeed, msg = this};
             if(encryptionMode)
             {
                 bitSplitter.SplitToBitstream(inputStreamAtLevel1, outputStreamAtLevel1);

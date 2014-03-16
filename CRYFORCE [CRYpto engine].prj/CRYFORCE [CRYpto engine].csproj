@@ -52,6 +52,7 @@
     <Compile Include="CryforceConsoleHelper.cs" />
     <Compile Include="EcdhP521.cs" />
     <Compile Include="Commands.cs" />
+    <Compile Include="IMessage.cs" />
     <Compile Include="MessageReceivedArg.cs" />
     <Compile Include="Permutations.cs" />
     <Compile Include="ProgressChangedArg.cs" />

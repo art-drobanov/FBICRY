@@ -110,63 +110,63 @@ namespace CRYFORCE.Engine
         /// <summary>
         /// Вывод логотипа
         /// </summary>
-        /// <param name="cf"> Ссылка на основной класс ядра шифрования. </param>
-        private static void LogoOut(Cryforce cf)
+        /// <param name="msg"> Ссылка на интерфейс вывода сообщений. </param>
+        private static void LogoOut(IMessage msg)
         {
-            cf.Message("");
-            cf.Message("");
-            cf.Message("\t▒▒▒▒▒▒▒▒  ░▒▒▒▒▒▒▒    ▒▒░    ░▒▒▒▒     ▒▒▒▒▒▒▒░   ▒▒▒     ░▒▒");
-            cf.Message("\t████████▒ █████████▓  ███  ▓████████▒  █████████▒ ▓██▓   ▒███");
-            cf.Message("\t██▒       ██▓    ███  ██▓  ██▓    ███  ██▒    ███  ░██▓ ░██▒ ");
-            cf.Message("\t███▓▓▓▓▓  █████████   ██▓ ░██░         ██▓▒▒▒▒██▒   ░██▓██▒  ");
-            cf.Message("\t████████  ███▒▒▒▒██▓  ██▓ ░██░         █████████░     ███░   ");
-            cf.Message("\t██▒       ██▓    ▓██  ██▓ ░██▓    ███  ██▒    ███     ▓██    ");
-            cf.Message("\t██▓       █████████▓  ██▓  ▓████████▒  ██▓    ███     ███    ");
-            cf.Message("\t░░        ░░░░░░░░    ░░     ░▒▒▒▒░    ░░     ░░░     ░░░    ");
-            cf.Message("");
+            msg.Message("");
+            msg.Message("");
+            msg.Message("\t▒▒▒▒▒▒▒▒  ░▒▒▒▒▒▒▒    ▒▒░    ░▒▒▒▒     ▒▒▒▒▒▒▒░   ▒▒▒     ░▒▒");
+            msg.Message("\t████████▒ █████████▓  ███  ▓████████▒  █████████▒ ▓██▓   ▒███");
+            msg.Message("\t██▒       ██▓    ███  ██▓  ██▓    ███  ██▒    ███  ░██▓ ░██▒ ");
+            msg.Message("\t███▓▓▓▓▓  █████████   ██▓ ░██░         ██▓▒▒▒▒██▒   ░██▓██▒  ");
+            msg.Message("\t████████  ███▒▒▒▒██▓  ██▓ ░██░         █████████░     ███░   ");
+            msg.Message("\t██▒       ██▓    ▓██  ██▓ ░██▓    ███  ██▒    ███     ▓██    ");
+            msg.Message("\t██▓       █████████▓  ██▓  ▓████████▒  ██▓    ███     ███    ");
+            msg.Message("\t░░        ░░░░░░░░    ░░     ░▒▒▒▒░    ░░     ░░░     ░░░    ");
+            msg.Message("");
         }
 
         /// <summary>
         /// Вывод версии
         /// </summary>
-        /// <param name="cf"> Ссылка на основной класс ядра шифрования. </param>
-        private static void VersionOut(Cryforce cf)
+        /// <param name="msg"> Ссылка на интерфейс вывода сообщений. </param>
+        private static void VersionOut(IMessage msg)
         {
-            cf.Message("", "\t");
+            msg.Message("", "\t");
             Console.BackgroundColor = ConsoleColor.DarkGreen;
             Console.ForegroundColor = ConsoleColor.Black;
-            cf.Message(string.Format(" FBICRYcmd {0} (c) {1} Дробанов Артём Федорович (DrAF) ", buildVersion, buildYear));
+            msg.Message(string.Format(" FBICRYcmd {0} (c) {1} Дробанов Артём Федорович (DrAF) ", buildVersion, buildYear));
             Console.BackgroundColor = ConsoleColor.Black;
-            cf.Message("");
-            cf.Message("");
+            msg.Message("");
+            msg.Message("");
         }
 
         /// <summary>
         /// Вывод справки
         /// </summary>
-        /// <param name="cf"> Ссылка на основной класс ядра шифрования. </param>
-        private static void HelpOut(Cryforce cf)
+        /// <param name="msg"> Ссылка на интерфейс вывода сообщений. </param>
+        private static void HelpOut(IMessage msg)
         {
-            cf.Message("\tFBICRYcmd <команда> <входной файл> <выходной файл> [файл-ключ] [итераций хеша]");
-            cf.Message("");
-            cf.Message("\tКоманды: e  - шифровать (на основе открытого ключа другого абонента);");
-            cf.Message("\t         e1 - шифровать (Rijndael-256);");
-            cf.Message("\t         e2 - шифровать (двойной Rijndael-256 с перестановкой битов между слоями).");
-            cf.Message("");
-            cf.Message("\tКоманды: d  - дешифровать (на основе открытого ключа другого абонента);");
-            cf.Message("\t         d1 - дешифровать (Rijndael-256);");
-            cf.Message("\t         d2 - дешифровать (двойной Rijndael-256 с перестановкой битов между слоями).");
-            cf.Message("");
-            cf.Message("\tКоманды: g  - сгенерировать пару открытый/закрытый ключ для ECDH521 (вторым аргументом");
-            cf.Message("\t              можно передать файл, который будет использован как набор случайных данных);");
-            cf.Message("\t         s  - подписать файл своим закрытым ключом (проверка валидности подписи - открытым);");
-            cf.Message("\t              Пример вычисления подписи: FBICRYcmd.exe s input.txt");
-            cf.Message("\t         c  - проверить валидность указанной подписи (сам файл находится автоматически)");
-            cf.Message("\t              для передаваемого следующим аргументом открытого ключа.");
-            cf.Message("\t              Пример проверки подписи: FBICRYcmd.exe с input.txt.sig FBICRY.PUB.txt");
-            cf.Message("");
-            cf.Message("\tПри вводе пароля, при нажатии каждой клавиши можно использовать модификаторы");
-            cf.Message("\t\"Alt\", \"Shift\", \"Control\"...");
+            msg.Message("\tFBICRYcmd <команда> <входной файл> <выходной файл> [файл-ключ] [итераций хеша]");
+            msg.Message("");
+            msg.Message("\tКоманды: e  - шифровать (на основе открытого ключа другого абонента);");
+            msg.Message("\t         e1 - шифровать (Rijndael-256);");
+            msg.Message("\t         e2 - шифровать (двойной Rijndael-256 с перестановкой битов между слоями).");
+            msg.Message("");
+            msg.Message("\tКоманды: d  - дешифровать (на основе открытого ключа другого абонента);");
+            msg.Message("\t         d1 - дешифровать (Rijndael-256);");
+            msg.Message("\t         d2 - дешифровать (двойной Rijndael-256 с перестановкой битов между слоями).");
+            msg.Message("");
+            msg.Message("\tКоманды: g  - сгенерировать пару открытый/закрытый ключ для ECDH521 (вторым аргументом");
+            msg.Message("\t              можно передать файл, который будет использован как набор случайных данных);");
+            msg.Message("\t         s  - подписать файл своим закрытым ключом (проверка валидности подписи - открытым);");
+            msg.Message("\t              Пример вычисления подписи: FBICRYcmd.exe s input.txt");
+            msg.Message("\t         c  - проверить валидность указанной подписи (сам файл находится автоматически)");
+            msg.Message("\t              для передаваемого следующим аргументом открытого ключа.");
+            msg.Message("\t              Пример проверки подписи: FBICRYcmd.exe с input.txt.sig FBICRY.PUB.txt");
+            msg.Message("");
+            msg.Message("\tПри вводе пароля, при нажатии каждой клавиши можно использовать модификаторы");
+            msg.Message("\t\"Alt\", \"Shift\", \"Control\"...");
         }
 
         /// <summary>

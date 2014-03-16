@@ -124,7 +124,7 @@ namespace CRYFORCE.Engine
         /// <summary>
         /// Ссылка на основной класс ядра шифрования.
         /// </summary>
-        public Cryforce Cf { get; set; }
+        public IMessage msg { get; set; }
 
         /// <summary>
         /// Работаем в ОЗУ?
@@ -190,7 +190,7 @@ namespace CRYFORCE.Engine
             for(int i = 0; i < _bitStreams.Length; i++)
             {
                 //...готовим их к работе...
-                _bitStreams[i] = CryforceUtilities.PrepareOutputStream(Cf, BitStreamsNames[i], BufferSizePerStream, ZeroOut, WorkInMemory, RndSeed);
+                _bitStreams[i] = CryforceUtilities.PrepareOutputStream(msg, BitStreamsNames[i], BufferSizePerStream, ZeroOut, WorkInMemory, RndSeed);
             }
 
             // Указываем, что инициализация прошла успешно
@@ -292,7 +292,7 @@ namespace CRYFORCE.Engine
                 // Выводим прогресс
                 if(++nIter % itersForPercent == 0)
                 {
-                    if(Cf != null) Cf.Progress("SplitToBitstream (1/2)", (nIter / (double)nItersTotal) * 100, true);
+                    if(msg != null) msg.Progress("SplitToBitstream (1/2)", (nIter / (double)nItersTotal) * 100, true);
                 }
             }
 
@@ -301,7 +301,7 @@ namespace CRYFORCE.Engine
             {
                 _bitStreams[i].Seek(0, SeekOrigin.Begin);
                 _bitStreams[i].CopyTo(outputStream);
-                if(Cf != null) Cf.Progress("SplitToBitstream (2/2)", (i / (double)NBITS) * 100, true);
+                if(msg != null) msg.Progress("SplitToBitstream (2/2)", (i / (double)NBITS) * 100, true);
             }
 
             // Чистим данные...
@@ -316,7 +316,7 @@ namespace CRYFORCE.Engine
             outputStream.Flush();
 
             // Вывод прогресса...
-            if(Cf != null) Cf.Progress("BitSplitter", 100);
+            if(msg != null) msg.Progress("BitSplitter", 100);
         }
 
         /// <summary>
@@ -395,7 +395,7 @@ namespace CRYFORCE.Engine
                 }
 
                 // Сообщаем о прогрессе
-                if(Cf != null) Cf.Progress("UnsplitFromBitstream (1/2)", (i / (double)NBITS) * 100, true);
+                if(msg != null) msg.Progress("UnsplitFromBitstream (1/2)", (i / (double)NBITS) * 100, true);
             }
 
             // Чистим временный буфер
@@ -457,7 +457,7 @@ namespace CRYFORCE.Engine
                 // Выводим прогресс
                 if(++nIter % itersForPercent == 0)
                 {
-                    if(Cf != null) Cf.Progress("UnsplitFromBitstream (2/2)", (nIter / (double)nItersTotal) * 100, true);
+                    if(msg != null) msg.Progress("UnsplitFromBitstream (2/2)", (nIter / (double)nItersTotal) * 100, true);
                 }
             }
 
@@ -473,7 +473,7 @@ namespace CRYFORCE.Engine
             outputStream.Flush();
 
             // Вывод прогресса...
-            if(Cf != null) Cf.Progress("BitSplitter", 100);
+            if(msg != null) msg.Progress("BitSplitter", 100);
         }
 
         /// <summary>
@@ -494,7 +494,7 @@ namespace CRYFORCE.Engine
             // Производим стирание данных потоков, чтобы было невозможным восстановление) при помощи программных средств
             foreach(Stream bitStream in _bitStreams)
             {
-                CryforceUtilities.WipeStream(Cf, bitStream, BufferSizePerStream, 0, bitStream.Length, zeroOut, rndSeed);
+                CryforceUtilities.WipeStream(msg, bitStream, BufferSizePerStream, 0, bitStream.Length, zeroOut, rndSeed);
             }
         }
 
@@ -509,7 +509,7 @@ namespace CRYFORCE.Engine
             // Производим стирание данных потоков, чтобы было невозможным восстановление) при помощи программных средств
             foreach(Stream bitStream in _bitStreams)
             {
-                CryforceUtilities.WipeStream(Cf, bitStream, BufferSizePerStream, 0, bitStream.Length, ZeroOut, RndSeed);
+                CryforceUtilities.WipeStream(msg, bitStream, BufferSizePerStream, 0, bitStream.Length, ZeroOut, RndSeed);
                 bitStream.Flush();
                 bitStream.Close();
             }

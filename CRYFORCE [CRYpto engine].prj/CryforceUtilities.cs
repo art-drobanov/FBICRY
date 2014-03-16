@@ -119,12 +119,12 @@ namespace CRYFORCE.Engine
         /// <summary>
         /// Метод копирования одного потока в другой
         /// </summary>
-        /// <param name="cf"> Ссылка на основной класс ядра шифрования. </param>
+        /// <param name="msg"> Ссылка на интерфейс вывода сообщений. </param>
         /// <param name="source"> Исходный поток. </param>
         /// <param name="destination"> Целевой поток. </param>
         /// <param name="dataSize"> Размер данных, подлежащих копированию. </param>
         /// <param name="bufferSize"> Размер буфера для копирования. </param>
-        public static void StreamCopy(Cryforce cf, Stream source, Stream destination, long dataSize, int bufferSize)
+        public static void StreamCopy(IMessage msg, Stream source, Stream destination, long dataSize, int bufferSize)
         {
             // Обеспечиваем минимальный размер буфера
             bufferSize = bufferSize == 0 ? 4096 : bufferSize;
@@ -140,7 +140,7 @@ namespace CRYFORCE.Engine
             {
                 destination.Write(buffer, 0, count);
                 totalCount += count;
-                if(cf != null) cf.Progress("StreamCopy", (totalCount / (double)dataSize) * 100, true);
+                if(msg != null) msg.Progress("StreamCopy", (totalCount / (double)dataSize) * 100, true);
             }
         }
 
@@ -303,14 +303,14 @@ namespace CRYFORCE.Engine
         /// <summary>
         /// Заполнение потока случайным паттерном по стандарту DoD_5220_22_E
         /// </summary>
-        /// <param name="cf"> Ссылка на основной класс ядра шифрования. </param>
+        /// <param name="msg"> Ссылка на интерфейс вывода сообщений. </param>
         /// <param name="stream"> Исходный поток. </param>
         /// <param name="bufferSizePerStream"> Размер буфера на файловый поток. </param>
         /// <param name="offset"> Смещение от начала потока. </param>
         /// <param name="count"> Количество байт, подлежащих стиранию. </param>
         /// <param name="zeroOut"> Затирать выходной поток нулями? </param>
         /// <param name="rndSeed"> Инициализирующее значение генератора случайных чисел. </param>
-        public static void WipeStream(Cryforce cf, Stream stream, int bufferSizePerStream,
+        public static void WipeStream(IMessage msg, Stream stream, int bufferSizePerStream,
                                       long offset, long count, bool zeroOut, int rndSeed = int.MinValue)
         {
             // Проверка на нулевой размер буфера
@@ -390,18 +390,18 @@ namespace CRYFORCE.Engine
             }
 
             // Сообщаем о прогрессе...
-            if(cf != null) cf.Progress("WipeStream", 100);
+            if(msg != null) msg.Progress("WipeStream", 100);
         }
 
         /// <summary>
         /// Стирание данных файла по алгоритму DoD 5220.22-E
         /// </summary>
-        /// <param name="cf"> Ссылка на основной класс ядра шифрования. </param>
+        /// <param name="msg"> Ссылка на интерфейс вывода сообщений. </param>
         /// <param name="fileName"> Имя файла. </param>
         /// <param name="bufferSizePerStream"> Размер буфера на файловый поток. </param>
         /// <param name="zeroOut"> Затирать выходной поток нулями? </param>
         /// <param name="rndSeed"> Инициализирующее значение генератора случайных чисел. </param>
-        public static void WipeFile(Cryforce cf, string fileName, int bufferSizePerStream, bool zeroOut, int rndSeed = int.MinValue)
+        public static void WipeFile(IMessage msg, string fileName, int bufferSizePerStream, bool zeroOut, int rndSeed = int.MinValue)
         {
             // Если указанный временный файл уже существует...
             if(File.Exists(fileName))
@@ -413,7 +413,7 @@ namespace CRYFORCE.Engine
                 var bs = new BufferedStream(new FileStream(fileName, FileMode.Open, FileAccess.ReadWrite, FileShare.None), bufferSizePerStream);
 
                 //...и стираем данные файла,...
-                WipeStream(cf, bs, bufferSizePerStream, 0, bs.Length, zeroOut, rndSeed);
+                WipeStream(msg, bs, bufferSizePerStream, 0, bs.Length, zeroOut, rndSeed);
 
                 //...закрывая затем файловый поток
                 bs.Close();
@@ -423,13 +423,13 @@ namespace CRYFORCE.Engine
         /// <summary>
         /// Подготовка выходного потока к работе
         /// </summary>
-        /// <param name="cf"> Ссылка на основной класс ядра шифрования. </param>
+        /// <param name="msg"> Ссылка на интерфейс вывода сообщений. </param>
         /// <param name="fileName"> Имя файла. </param>
         /// <param name="bufferSizePerStream"> Размер буфера на файловый поток. </param>
         /// <param name="zeroOut"> Затирать выходной поток нулями? </param>
         /// <param name="workInMemory"> Работать в ОЗУ? </param>
         /// <param name="rndSeed"> Инициализирующее значение генератора случайных чисел. </param>
-        public static Stream PrepareOutputStream(Cryforce cf, string fileName, int bufferSizePerStream,
+        public static Stream PrepareOutputStream(IMessage msg, string fileName, int bufferSizePerStream,
                                                  bool zeroOut, bool workInMemory, int rndSeed = int.MinValue)
         {
             // Если работаем не в ОЗУ...
@@ -439,7 +439,7 @@ namespace CRYFORCE.Engine
                 if(File.Exists(fileName))
                 {
                     //...затираем файл, с которым планируется работать...
-                    WipeFile(cf, fileName, bufferSizePerStream, zeroOut, rndSeed);
+                    WipeFile(msg, fileName, bufferSizePerStream, zeroOut, rndSeed);
                 }
 
                 //...и создаем файловый поток с требуемым именем
